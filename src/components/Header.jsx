@@ -1,29 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '../context/useLanguage';
+import { UI_LANGUAGES } from '../context/uiLanguages';
+import { useT } from '../i18n/useT';
 
-// Прямой импорт только 5 нужных SVG
-import flagGb from 'flag-icons/flags/4x3/gb.svg';
-import flagRu from 'flag-icons/flags/4x3/ru.svg';
-import flagUa from 'flag-icons/flags/4x3/ua.svg';
-import flagEs from 'flag-icons/flags/4x3/es.svg';
-import flagDe from 'flag-icons/flags/4x3/de.svg';
-
-const LANGUAGES = [
-  { code: 'en', flagSrc: flagGb, label: 'EN', name: 'English (UK)' },
-  { code: 'ru', flagSrc: flagRu, label: 'RU', name: 'Русский' },
-  { code: 'uk', flagSrc: flagUa, label: 'UA', name: 'Українська' },
-  { code: 'es', flagSrc: flagEs, label: 'ES', name: 'Español' },
-  { code: 'de', flagSrc: flagDe, label: 'DE', name: 'Deutsch' },
-];
-
-function Header({ onToggleTheme }) {
+function Header({ activeTab, onToggleTheme }) {
+  const { lang, selectLanguage } = useLanguage();
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState(LANGUAGES[0]);
   const langRef = useRef(null);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
-  const handleSelectLang = (lang) => {
-    setCurrentLang(lang);
+  const handleSelectLang = (code) => {
+    selectLanguage(code);
     setIsOpen(false);
   };
 
@@ -62,6 +51,30 @@ function Header({ onToggleTheme }) {
           Syn<span>tax</span>
         </a>
       </div>
+      {activeTab === "documentation" && (
+        <div className="topbar__center">
+          <div className="topbar__search">
+            <svg
+              className="search-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input type="search" placeholder={t("header.searchDocs")} aria-label={t("header.searchDocs")} />
+            <span className="search-kbd" aria-hidden="true">
+              <kbd>⌘</kbd>
+              <kbd>K</kbd>
+            </span>
+          </div>
+        </div>
+      )}
       <div className="topbar__right">
         <div className="lang" ref={langRef}>
           <button
@@ -69,11 +82,11 @@ function Header({ onToggleTheme }) {
             type="button"
             aria-haspopup="true"
             aria-expanded={isOpen}
-            aria-label={`Change language: ${currentLang.name}`}
+            aria-label={`${t("header.changeLanguage")}: ${lang.name}`}
             onClick={toggleDropdown}
           >
             <img
-              src={currentLang.flagSrc}
+              src={lang.flagSrc}
               alt=""
               className="lang__flag-img"
               aria-hidden="true"
@@ -81,20 +94,20 @@ function Header({ onToggleTheme }) {
           </button>
 
           <div className="lang__menu" role="menu" hidden={!isOpen}>
-            {LANGUAGES.map((lang) => {
-              const isActive = lang.code === currentLang.code;
+            {UI_LANGUAGES.map((item) => {
+              const isActive = item.code === lang.code;
               return (
                 <button
-                  key={lang.code}
+                  key={item.code}
                   className={`lang__item ${isActive ? 'is-active' : ''}`}
                   type="button"
                   role="menuitem"
-                  onClick={() => handleSelectLang(lang)}
+                  onClick={() => handleSelectLang(item.code)}
                 >
                   <span className="lang__code-badge" aria-hidden="true">
-                    {lang.label}
+                    {item.label}
                   </span>{' '}
-                  {lang.name}
+                  {item.name}
                   <svg
                     className="lang__check"
                     viewBox="0 0 24 24"
@@ -116,7 +129,7 @@ function Header({ onToggleTheme }) {
         <button
           className="icon-btn theme-toggle"
           type="button"
-          aria-label="Toggle theme"
+          aria-label={t("header.theme")}
           onClick={onToggleTheme}
         >
           <svg
@@ -145,7 +158,7 @@ function Header({ onToggleTheme }) {
           </svg>
         </button>
 
-        <button className="icon-btn" type="button" aria-label="Notifications">
+        <button className="icon-btn" type="button" aria-label={t("header.notifications")}>
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -160,7 +173,7 @@ function Header({ onToggleTheme }) {
           </svg>
         </button>
 
-        <button className="avatar" type="button" aria-label="Account">
+        <button className="avatar" type="button" aria-label={t("header.account")}>
           <svg
             viewBox="0 0 24 24"
             fill="none"

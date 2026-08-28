@@ -1,9 +1,12 @@
+import { useT } from "../i18n/useT";
+
 function WidgetPanel() {
+  const t = useT();
   return (
     <aside className="rail">
       {/* Daily challenge */}
       <section className="card rail-card rail-card--challenge">
-        <h2 className="rail-card__title">Daily Challenge</h2>
+        <h2 className="rail-card__title">{t("widget.dailyTitle")}</h2>
         <div className="challenge">
           <div className="challenge__head">
             <span className="challenge__icon" aria-hidden="true">
@@ -19,21 +22,18 @@ function WidgetPanel() {
                 <path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4" />
               </svg>
             </span>
-            <strong>Async Crawler</strong>
+            <strong>{t("widget.dailyName")}</strong>
           </div>
-          <p>
-            Build a simple async web crawler that fetches 5 URLs concurrently
-            and returns their status codes.
-          </p>
+          <p>{t("widget.dailyDesc")}</p>
           <a className="btn btn--secondary btn--full" href="#">
-            Start Challenge
+            {t("widget.start")}
           </a>
         </div>
       </section>
 
       {/* AI Mentor */}
       <section className="card rail-card rail-card--mentor">
-        <h2 className="rail-card__title">AI Mentor</h2>
+        <h2 className="rail-card__title">{t("widget.mentorTitle")}</h2>
         <div className="mentor">
           <div className="mentor__msg">
             <span className="mentor__avatar" aria-hidden="true">
@@ -53,21 +53,20 @@ function WidgetPanel() {
               </svg>
             </span>
             <p>
-              Hello! Do you need help understanding
-              <code>asyncio.gather()</code>?
+              {t("widget.mentorMsg")}
             </p>
           </div>
           <form className="mentor__form" onSubmit={(e) => e.preventDefault()}>
             <input
               className="field"
               type="text"
-              placeholder="Ask a question..."
-              aria-label="Ask the AI mentor a question"
+              placeholder={t("widget.mentorPlaceholder")}
+              aria-label={t("widget.mentorPlaceholder")}
             />
             <button
               className="btn btn--primary btn--send"
               type="submit"
-              aria-label="Send"
+              aria-label={t("widget.send")}
             >
               <svg
                 viewBox="0 0 24 24"

@@ -9,6 +9,12 @@ function App() {
     return localStorage.getItem("syntax-theme") || "dark";
   });
 
+  // Состояние активной вкладки (для дев-проверялов: ?tab=roadmap)
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    return tab || "lessons";
+  });
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("syntax-theme", theme);
@@ -21,11 +27,11 @@ function App() {
   return (
     <div className="app">
       {/* Передаем состояние и функцию клика в Header */}
-      <Header theme={theme} onToggleTheme={toggleTheme} />
+      <Header activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} />
       <div className="shell">
-        <Sidebar />
-        <MainContent />
-        <WidgetPanel />
+        <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} />
+        <MainContent activeTab={activeTab} theme={theme} />
+        <WidgetPanel activeTab={activeTab} />
       </div>
     </div>
   );
