@@ -33,7 +33,7 @@ function RoadmapNode({ status }) {
   );
 }
 
-function RoadmapView() {
+function RoadmapView({ onResume }) {
   const t = useT();
   const modules = t("roadmap.modules");
 
@@ -56,6 +56,9 @@ function RoadmapView() {
               className={`card roadmap__card ${
                 m.status === "current" ? "roadmap__card--current" : ""
               } ${m.status === "locked" ? "roadmap__card--locked" : ""}`}
+              tabIndex={m.status === "current" ? 0 : undefined}
+              aria-current={m.status === "current" ? "step" : undefined}
+              aria-label={`${modules[i].title}${m.status === "locked" ? " (" + t("roadmap.lockedAria") + ")" : ""}`}
             >
               <div className="roadmap__card-head">
                 {m.status === "current" ? (
@@ -73,7 +76,7 @@ function RoadmapView() {
                 </div>
               )}
               {m.status === "current" && (
-                <button type="button" className="btn btn--primary btn--full roadmap__cta">
+                <button type="button" className="btn btn--primary btn--full roadmap__cta" onClick={onResume}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="m8 6 8 6-8 6V6Z" />
                   </svg>

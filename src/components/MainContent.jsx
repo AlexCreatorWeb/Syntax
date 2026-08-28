@@ -1,19 +1,45 @@
 import { useState } from "react";
 import CodeEditor from "./CodeEditor";
+import MainView from "./views/MainView";
 import RoadmapView from "./views/RoadmapView";
 import TasksView from "./views/TasksView";
 import DocsView from "./views/DocsView";
+import RankingsView from "./views/RankingsView";
+import CommunityView from "./views/CommunityView";
 import { useT } from "../i18n/useT";
 
-function MainContent({ activeTab, theme }) {
+// Учебный контекст «урока» (демо-данные; дальше — с бэкенда)
+function lessonJob(t) {
+  return {
+    kind: "lesson",
+    title: t("lesson.title"),
+    desc: t("lesson.desc"),
+    backTab: "roadmap",
+  };
+}
+
+function taskJob(t, index) {
+  const item = t("tasks.items")[index];
+  return {
+    kind: "task",
+    title: item.title,
+    desc: item.desc,
+    backTab: "tasks",
+  };
+}
+
+function MainContent({ activeTab, theme, job, onNavigate }) {
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
+
+  const openLesson = () => onNavigate("editor", lessonJob(t));
+  const openTask = (index) => onNavigate("editor", taskJob(t, index));
 
   const renderLessonCard = () => (
     <section className="card lesson">
       <div className="lesson__top">
         <span className="chip chip--module">{t("lesson.chip")}</span>
-        <button type="button" className="btn btn--primary">
+        <button type="button" className="btn btn--primary" onClick={openLesson}>
           {t("lesson.continue")}
           <svg
             viewBox="0 0 24 24"
@@ -38,9 +64,9 @@ function MainContent({ activeTab, theme }) {
         <div
           className="bar"
           role="progressbar"
-          aria-valuenow="45"
-          aria-valuemin="0"
-          aria-valuemax="100"
+          aria-valuenow={45}
+          aria-valuemin={0}
+          aria-valuemax={100}
         >
           <div className="bar__fill" style={{ width: "45%" }}></div>
         </div>
@@ -57,18 +83,20 @@ function MainContent({ activeTab, theme }) {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "home":
+        return <MainView onNavigate={onNavigate} onContinue={openLesson} />;
       case "roadmap":
-        return <RoadmapView />;
+        return <RoadmapView onNavigate={onNavigate} onResume={openLesson} />;
       case "editor":
-        return <CodeEditor language={currentLanguage} theme={theme} />;
+        return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
       case "tasks":
-        return <TasksView />;
+        return <TasksView onSolve={openTask} />;
       case "documentation":
         return <DocsView />;
       case "rankings":
-        return renderPlaceholder("rankings");
+        return <RankingsView />;
       case "community":
-        return renderPlaceholder("community");
+        return <CommunityView />;
       case "settings":
         return renderPlaceholder("settings");
       case "support":

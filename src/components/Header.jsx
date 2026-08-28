@@ -3,11 +3,16 @@ import { useLanguage } from '../context/useLanguage';
 import { UI_LANGUAGES } from '../context/uiLanguages';
 import { useT } from '../i18n/useT';
 
-function Header({ activeTab, onToggleTheme }) {
+// Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
+// Таб-специфичный контент (заголовки, поиски) живёт внутри вьюх.
+function Header({ onToggleTheme, onNavigate }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState(null); // "notif" | "account" | null
   const langRef = useRef(null);
+  const notifRef = useRef(null);
+  const accountRef = useRef(null);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
@@ -17,64 +22,59 @@ function Header({ activeTab, onToggleTheme }) {
   };
 
   useEffect(() => {
+    // Каждый дропдаун закрывается независимо: клик вне своей обёртки.
     const handleClickOutside = (event) => {
-        if (langRef.current && !langRef.current.contains(event.target)) {
+      if (langRef.current && !langRef.current.contains(event.target)) {
         setIsOpen(false);
-        }
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setOpenMenu((m) => (m === "notif" ? null : m));
+      }
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setOpenMenu((m) => (m === "account" ? null : m));
+      }
     };
 
     const handleKeyDown = (event) => {
-        if (event.key === 'Escape') {
+      if (event.key === 'Escape') {
         setIsOpen((prevOpen) => {
-            if (prevOpen) {
+          if (prevOpen) {
             // Возвращаем фокус на кнопку-тоггл при закрытии через Escape
             langRef.current?.querySelector('.lang__toggle')?.focus();
-            }
-            return false;
+          }
+          return false;
         });
-        }
+        setOpenMenu(null);
+      }
+      // ⌘K / Ctrl+K — фокус на поиск в Документации
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        onNavigate && onNavigate("documentation");
+        setTimeout(() => window.dispatchEvent(new CustomEvent("syntax-focus-docs-search")), 60);
+      }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-    }, []);
+  }, [onNavigate]);
 
   return (
     <header className="topbar">
       <div className="topbar__left">
-        <a className="brand" href="#">
+        <button
+          type="button"
+          className="brand brand--link"
+          onClick={() => onNavigate && onNavigate("home")}
+          aria-label={t("header.home")}
+        >
           Syn<span>tax</span>
-        </a>
+        </button>
       </div>
-      {activeTab === "documentation" && (
-        <div className="topbar__center">
-          <div className="topbar__search">
-            <svg
-              className="search-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <input type="search" placeholder={t("header.searchDocs")} aria-label={t("header.searchDocs")} />
-            <span className="search-kbd" aria-hidden="true">
-              <kbd>⌘</kbd>
-              <kbd>K</kbd>
-            </span>
-          </div>
-        </div>
-      )}
       <div className="topbar__right">
         <div className="lang" ref={langRef}>
           <button
@@ -158,34 +158,103 @@ function Header({ activeTab, onToggleTheme }) {
           </svg>
         </button>
 
-        <button className="icon-btn" type="button" aria-label={t("header.notifications")}>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        <div className="tb-menu-wrap" ref={notifRef}>
+          <button
+            className="icon-btn icon-btn--notif"
+            type="button"
+            aria-label={t("notifications.title")}
+            aria-haspopup="true"
+            aria-expanded={openMenu === "notif"}
+            onClick={() => setOpenMenu((m) => (m === "notif" ? null : "notif"))}
           >
-            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-          </svg>
-        </button>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+            <span className="tb-menu-badge" aria-hidden="true"></span>
+          </button>
+          <div className="tb-menu" role="menu" hidden={openMenu !== "notif"}>
+            <span className="tb-menu__title">{t("notifications.title")}</span>
+            {(t("notifications.items") || []).map((item, i) => (
+              <button
+                key={i}
+                type="button"
+                role="menuitem"
+                className="tb-menu__item tb-menu__item--notif"
+                title={t("home.soon")}
+                aria-disabled="true"
+              >
+                <span
+                  className={`tb-menu__notif-dot ${item.important ? "is-important" : ""}`}
+                  aria-hidden="true"
+                />
+                {item.text}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <button className="avatar" type="button" aria-label={t("header.account")}>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
+        <div className="tb-menu-wrap" ref={accountRef}>
+          <button
+            className="avatar"
+            type="button"
+            aria-label={t("header.account")}
+            aria-haspopup="true"
+            aria-expanded={openMenu === "account"}
+            onClick={() => setOpenMenu((m) => (m === "account" ? null : "account"))}
           >
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6" />
-          </svg>
-        </button>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6" />
+            </svg>
+          </button>
+          <div className="tb-menu" role="menu" hidden={openMenu !== "account"}>
+            <button
+              type="button"
+              role="menuitem"
+              className="tb-menu__item"
+              title={t("home.soon")}
+              aria-disabled="true"
+            >
+              {t("account.profile")}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="tb-menu__item"
+              onClick={() => {
+                onNavigate("settings");
+                setOpenMenu(null);
+              }}
+            >
+              {t("sidebar.settings")}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="tb-menu__item"
+              title={t("home.soon")}
+              aria-disabled="true"
+            >
+              {t("account.logout")}
+            </button>
+          </div>
+        </div>
       </div>
     </header>
   );

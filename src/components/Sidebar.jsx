@@ -152,19 +152,25 @@ function Sidebar({ activeTab, onSelectTab }) {
 
   return (
     <aside className="sidebar">
-      <div className="streak card is-68">
+      <button
+        type="button"
+        className="streak card is-57 streak--link"
+        onClick={() => onSelectTab("roadmap")}
+        aria-label={t("sidebar.roadmap")}
+        title={t("sidebar.roadmap")}
+      >
         <div className="streak__ring" aria-hidden="true">
           <svg viewBox="0 0 44 44">
             <circle className="ring-bg" cx="22" cy="22" r="19" />
             <circle className="ring-fg" cx="22" cy="22" r="19" />
           </svg>
-          <span className="streak__pct">68%</span>
+          <span className="streak__pct">57%</span>
         </div>
         <div className="streak__meta">
           <strong>{t("sidebar.complete")}</strong>
           <span>{t("sidebar.streak")}</span>
         </div>
-      </div>
+      </button>
 
       <nav className="nav" aria-label="Main">
         {navItems.map((item) => (

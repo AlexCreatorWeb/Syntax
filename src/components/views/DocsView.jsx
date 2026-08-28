@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "../../i18n/useT";
 
 const GUIDE_ICONS = [
@@ -38,9 +38,19 @@ function ReadGuideLink({ t }) {
   );
 }
 
+// Код-примеры для секций справочника (коды не локализуем)
+const REF_CODE = [
+  `# Базовые типы\nx = 10          # int\nname = "Ada"    # str\nok = True       # bool\npi = 3.14       # float\n\n# Структуры\nnums = [1, 2, 3]       # list\npoint = (3, 4)         # tuple\nsizes = {1, 2, 3}      # set\nuser = {"name": "Ada"}  # dict`,
+  `def add(a, b, *, verbose=False):\n    """Сумма двух чисел."""\n    if verbose:\n        print(a, "+", b)\n    return a + b\n\n# Область видимости (LEGB)\ntotal = 0  # global\nprint(add(2, 3, verbose=True))`,
+  `# Импорт модулей\nimport json\nfrom pathlib import Path\n\n# Пакеты: syntax/core, syntax/utils\nfrom syntax.core import engine\n\nprint(engine.version)`,
+  `def parse_int(text, fallback=0):\n    try:\n        return int(text)\n    except ValueError:\n        print(f"Не удалось разобрать: {text!r}")\n        return fallback\n\nprint(parse_int("42"))   # 42\nprint(parse_int("один")) # 0`,
+];
+
 function ReferenceLibrary({ t }) {
   const sections = t("docs.refNav");
+  const sectionDocs = t("docs.refSections");
   const [activeIndex, setActiveIndex] = useState(0);
+  const active = sectionDocs[activeIndex] || { title: "", desc: "" };
 
   return (
     <section className="card reference">
@@ -62,29 +72,12 @@ function ReferenceLibrary({ t }) {
         </nav>
         <div className="reference__content">
           <div className="reference__doc-head">
-            <h3 className="reference__doc-title">{t("docs.docTitle")}</h3>
+            <h3 className="reference__doc-title">{active.title}</h3>
             <span className="code-chip">python 3.9+</span>
           </div>
-          <p className="reference__doc-desc">{t("docs.docDesc")}</p>
+          <p className="reference__doc-desc">{active.desc}</p>
           <pre className="code">
-            <code>
-              <span className="tk-cm"># Syntax: {"{key_expr: value_expr for item in iterable}"}</span>
-              {"\n\n"}
-              <span className="tk-kw">def</span> <span className="tk-fn">process_data</span>(data_list):
-              {"\n    "}
-              <span className="tk-cm"># Create a mapping of squares for even numbers</span>
-              {"\n    "}
-              squares_map = {"{"}x: x**<span className="tk-num">2</span> <span className="tk-kw">for</span> x <span className="tk-kw">in</span> data_list <span className="tk-kw">if</span> x % <span className="tk-num">2</span> == <span className="tk-num">0</span>
-              {"}"}
-              {"\n\n    "}
-              <span className="tk-kw">return</span> squares_map
-              {"\n\n"}
-              <span className="tk-cm"># Output: {"{2: 4, 4: 16, 6: 36}"}</span>
-              {"\n"}
-              result = <span className="tk-fn">process_data</span>([<span className="tk-num">1</span>, <span className="tk-num">2</span>, <span className="tk-num">3</span>, <span className="tk-num">4</span>, <span className="tk-num">5</span>, <span className="tk-num">6</span>])
-              {"\n"}
-              <span className="tk-fn">print</span>(result)
-            </code>
+            <code>{REF_CODE[activeIndex]}</code>
           </pre>
         </div>
       </div>
@@ -95,8 +88,14 @@ function ReferenceLibrary({ t }) {
 function DocsView() {
   const t = useT();
   const guides = t("docs.guides");
-  const tocItems = t("docs.toc");
-  const [activeTocIndex, setActiveTocIndex] = useState(0);
+  const searchRef = useRef(null);
+
+  // ⌘K / Ctrl+K — фокус на поиск (событие шлёт Header)
+  useEffect(() => {
+    const focus = () => searchRef.current?.focus();
+    window.addEventListener("syntax-focus-docs-search", focus);
+    return () => window.removeEventListener("syntax-focus-docs-search", focus);
+  }, []);
 
   return (
     <div className="docs-view">
@@ -104,6 +103,34 @@ function DocsView() {
         <h1 className="page-head__title">{t("docs.title")}</h1>
         <p className="page-head__desc">{t("docs.desc")}</p>
       </header>
+
+      <div className="docs__search-wrap">
+        <div className="docs__search">
+          <svg
+            className="search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input
+            ref={searchRef}
+            type="search"
+            placeholder={t("header.searchDocs")}
+            aria-label={t("header.searchDocs")}
+          />
+          <span className="search-kbd" aria-hidden="true">
+            <kbd>⌘</kbd>
+            <kbd>K</kbd>
+          </span>
+        </div>
+      </div>
 
       <div className="docs-layout">
         <div className="docs-main">
@@ -128,37 +155,6 @@ function DocsView() {
 
           <ReferenceLibrary t={t} />
         </div>
-
-        <aside className="docs-rail">
-          <section className="card docs-rail-card">
-            <span className="label-caps">{t("docs.tocTitle")}</span>
-            <nav className="toc" aria-label="Section navigation">
-              {tocItems.map((item, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className={i === activeTocIndex ? "is-active" : ""}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActiveTocIndex(i);
-                  }}
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
-          </section>
-          <section className="card docs-rail-card help-card">
-            <span className="label-caps">{t("docs.helpTitle")}</span>
-            <p>{t("docs.helpText")}</p>
-            <button type="button" className="btn btn--secondary btn--full">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M21 12a8 8 0 0 1-8 8H4l2.5-3A8 8 0 1 1 21 12Z" />
-              </svg>
-              {t("docs.community")}
-            </button>
-          </section>
-        </aside>
       </div>
     </div>
   );

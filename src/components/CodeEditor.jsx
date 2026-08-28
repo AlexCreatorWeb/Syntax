@@ -83,7 +83,30 @@ function setupEmmet(monaco) {
   monaco.__syntaxEmmet = true;
 }
 
-// Собирает превью: HTML-файл + инлайн CSS и JS из соседних вкладок
+// Скрипт перехвата console для превью/раннера (same-origin iframe)
+const CONSOLE_CAPTURE = `<script>
+  window.__logs = [];
+  (function () {
+    var fmt = function (a) {
+      try {
+        if (typeof a === "object" && a !== null) return JSON.stringify(a);
+        return String(a);
+      } catch (e) { return String(a); }
+    };
+    var push = function (type, args) {
+      window.__logs.push({ type: type, text: Array.prototype.map.call(args, fmt).join(" ") });
+    };
+    ["log", "info", "warn", "error"].forEach(function (k) {
+      var orig = console[k] ? console[k].bind(console) : function () {};
+      console[k] = function () { push(k, arguments); orig.apply(null, arguments); };
+    });
+    window.addEventListener("error", function (e) {
+      push("error", [e.message + (e.lineno ? " (line " + e.lineno + ")" : "")]);
+    });
+  })();
+</script>`;
+
+// Собирает превью: HTML-файл + инлайн CSS и JS из соседних вкладок (+ перехват console)
 function buildPreviewDoc(files, contents) {
   const htmlFile = files.find((f) => f.language === "html");
   if (!htmlFile) return null;
@@ -99,12 +122,21 @@ function buildPreviewDoc(files, contents) {
   const baseStyle = `<style>html, body { background-color: ${PREVIEW_BG}; }</style>`;
 
   let doc = contents[htmlFile.id] ?? "";
-  const injection = baseStyle + css + js;
+  const injection = baseStyle + css + CONSOLE_CAPTURE + js;
   doc = doc.includes("</body>") ? doc.replace("</body>", `${injection}\n</body>`) : doc + injection;
   return doc;
 }
 
-function CodeEditor({ language = "javascript", theme = "dark" }) {
+// Скрипт для «сухого» запуска JS-файлов без HTML: только console-перехват + JS
+function buildRunnerDoc(files, contents) {
+  const js = files
+    .filter((f) => f.language === "javascript")
+    .map((f) => `<script>\n${contents[f.id] ?? ""}\n</script>`)
+    .join("\n");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${CONSOLE_CAPTURE}${js}</body></html>`;
+}
+
+function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate }) {
   const t = useT();
 
   // Стартовый файл — пример кода технологии, выбранной пользователем
@@ -119,6 +151,18 @@ function CodeEditor({ language = "javascript", theme = "dark" }) {
   const [menuPos, setMenuPos] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
   const addMenuRef = useRef(null);
+
+  // Консоль / запуск / сдача
+  const [consoleLogs, setConsoleLogs] = useState([]);
+  const [ranOnce, setRanOnce] = useState(false);
+  const [runToken, setRunToken] = useState(0);
+  const [runnerDoc, setRunnerDoc] = useState("");
+  const [runnerToken, setRunnerToken] = useState(0);
+  const [submitStatus, setSubmitStatus] = useState(null); // null | "ok" | "fail"
+  const previewFrameRef = useRef(null);
+  const runnerFrameRef = useRef(null);
+  const willCollectRef = useRef(false);
+  const submitPendingRef = useRef(false);
 
   const activeFile = files.find((f) => f.id === activeId) || files[0];
   const hasHtml = files.some((f) => f.language === "html");
@@ -190,6 +234,39 @@ function CodeEditor({ language = "javascript", theme = "dark" }) {
   };
 
   const previewDoc = useMemo(() => buildPreviewDoc(files, contents), [files, contents]);
+  const hasJs = files.some((f) => f.language === "javascript");
+
+  const collectFrom = (frame) => {
+    let logs;
+    try {
+      logs = frame?.contentWindow?.__logs || [];
+    } catch {
+      logs = [];
+    }
+    setConsoleLogs(logs);
+    setRanOnce(true);
+    if (submitPendingRef.current) {
+      submitPendingRef.current = false;
+      setSubmitStatus(logs.some((l) => l.type === "error") ? "fail" : "ok");
+    }
+  };
+
+  const runCode = () => {
+    setSubmitStatus(null);
+    if (hasHtml) {
+      willCollectRef.current = true;
+      setRunToken((v) => v + 1);
+    } else if (hasJs) {
+      setRunnerDoc(buildRunnerDoc(files, contents));
+      setRunnerToken((v) => v + 1);
+    }
+  };
+
+  const submitSolution = () => {
+    setSubmitStatus(null);
+    submitPendingRef.current = true;
+    runCode();
+  };
 
   // Drag & drop: перестановка вкладок файлов
   const handleDragStart = (e, index) => {
@@ -231,6 +308,36 @@ function CodeEditor({ language = "javascript", theme = "dark" }) {
           {activeFile.name}
         </span>
         <div className="code-card__actions">
+          <button className="btn btn--primary btn--run" type="button" onClick={runCode}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m7 5 12 7-12 7V5Z" />
+            </svg>
+            {t("editor.run")}
+          </button>
+          {job && (
+            <button className="btn btn--ghost btn--run" type="button" onClick={submitSolution}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m5 12 5 5 9-10" />
+              </svg>
+              {t("editor.submit")}
+            </button>
+          )}
           {hasHtml && (
             <button
               className="icon-btn icon-btn--sm"
@@ -289,6 +396,40 @@ function CodeEditor({ language = "javascript", theme = "dark" }) {
         </div>
       </header>
 
+      {/* Статус сдачи решения */}
+      {submitStatus && (
+        <div className={`editor-status editor-status--${submitStatus}`} role="status">
+          {submitStatus === "ok" ? t("editor.submitOk") : t("editor.submitFail")}
+        </div>
+      )}
+
+      {/* Контекст урока/задания */}
+      {job && (
+        <div className="editor-job">
+          <div className="editor-job__row">
+            <span className="chip">
+              {job.kind === "lesson" ? t("editor.lessonLabel") : t("editor.taskLabel")}
+            </span>
+            <button type="button" className="editor-job__back" onClick={() => onNavigate(job.backTab)}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5M11 18l-6-6 6-6" />
+              </svg>
+              {t("editor.back")}
+            </button>
+          </div>
+          <h3 className="editor-job__title">{job.title}</h3>
+          <p className="editor-job__desc">{job.desc}</p>
+        </div>
+      )}
+
       {/* Вкладки файлов */}
       <div className="file-tabs">
         <div className="file-tabs__scroll" role="tablist" aria-label={t("editor.files")}>
@@ -319,7 +460,7 @@ function CodeEditor({ language = "javascript", theme = "dark" }) {
               <button
                 type="button"
                 className="file-tab__close"
-                aria-label={`Close ${f.name}`}
+                aria-label={t("editor.closeFile")}
                 onClick={(e) => {
                   e.stopPropagation();
                   closeFile(f.id);
@@ -389,44 +530,93 @@ function CodeEditor({ language = "javascript", theme = "dark" }) {
 
       <div className="code-card__editor-wrapper">
         <div className="code-card__editor-pane">
-          <Editor
-            height="100%"
-            language={activeFile.language}
-            theme={theme === "light" ? "syntax-light" : "syntax-dark"}
-            beforeMount={(monaco) => {
-            definePlatformThemes(monaco);
-            setupEmmet(monaco);
-          }}
-            value={contents[activeFile.id] ?? ""}
-            onChange={(value) =>
-              setContents((prev) => ({ ...prev, [activeFile.id]: value ?? "" }))
-            }
-            options={{
-              fontSize: 14,
-              fontFamily: "'JetBrains Mono', ui-monospace, Menlo, monospace",
-              lineHeight: 22,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              tabSize: 4,
-              padding: { top: 12, bottom: 12 },
-              glyphMargin: false,
-              folding: false,
-              renderLineHighlight: "line",
-              // Emmet работает через плагин emmet-monaco-es (см. setupEmmet): Tab разворачивает аббревиатуры
-              scrollbar: {
-                verticalScrollbarSize: 8,
-                horizontalScrollbarSize: 8,
-              },
+          <div className="editor-host">
+            <Editor
+              height="100%"
+              language={activeFile.language}
+              theme={theme === "light" ? "syntax-light" : "syntax-dark"}
+              beforeMount={(monaco) => {
+              definePlatformThemes(monaco);
+              setupEmmet(monaco);
             }}
-          />
+              value={contents[activeFile.id] ?? ""}
+              onChange={(value) =>
+                setContents((prev) => ({ ...prev, [activeFile.id]: value ?? "" }))
+              }
+              options={{
+                fontSize: 14,
+                fontFamily: "'JetBrains Mono', ui-monospace, Menlo, monospace",
+                lineHeight: 22,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                tabSize: 4,
+                padding: { top: 12, bottom: 12 },
+                glyphMargin: false,
+                folding: false,
+                renderLineHighlight: "line",
+                // Emmet работает через плагин emmet-monaco-es (см. setupEmmet): Tab разворачивает аббревиатуры
+                scrollbar: {
+                  verticalScrollbarSize: 8,
+                  horizontalScrollbarSize: 8,
+                },
+              }}
+            />
+          </div>
+
+          {/* Консоль: вывод console.log / ошибки выполнения */}
+          {ranOnce && (
+            <div className="editor-console">
+              <div className="editor-console__head">
+                <span>{t("editor.console")}</span>
+                <button
+                  type="button"
+                  className="editor-console__clear"
+                  onClick={() => setConsoleLogs([])}
+                >
+                  {t("editor.clear")}
+                </button>
+              </div>
+              <div className="editor-console__body">
+                {consoleLogs.length === 0 ? (
+                  <span className="editor-console__empty">—</span>
+                ) : (
+                  consoleLogs.map((log, i) => (
+                    <div key={i} className={`log-line log-line--${log.type}`}>
+                      {log.text}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
         {hasHtml && showPreview && (
           <iframe
             className="editor-preview"
             title={t("editor.preview")}
             srcDoc={previewDoc}
-            sandbox="allow-scripts"
+            key={runToken}
+            ref={previewFrameRef}
+            sandbox="allow-scripts allow-same-origin"
+            onLoad={() => {
+              if (willCollectRef.current) {
+                willCollectRef.current = false;
+                setTimeout(() => collectFrom(previewFrameRef.current), 250);
+              }
+            }}
+          />
+        )}
+        {/* Скрытый раннер для JS-файлов без HTML: результат — в консоли */}
+        {!hasHtml && hasJs && runnerToken > 0 && (
+          <iframe
+            key={runnerToken}
+            className="js-runner"
+            ref={runnerFrameRef}
+            title="JS runner"
+            srcDoc={runnerDoc}
+            sandbox="allow-scripts allow-same-origin"
+            onLoad={() => setTimeout(() => collectFrom(runnerFrameRef.current), 250)}
           />
         )}
       </div>
@@ -435,12 +625,6 @@ function CodeEditor({ language = "javascript", theme = "dark" }) {
 }
 
 export default CodeEditor;
-
-// touch-test 1
-
-// touch-test 2
-
-// touch-test 3
 
 
 

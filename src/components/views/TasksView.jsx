@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useT } from "../../i18n/useT";
 
 const TASKS = [
@@ -24,16 +24,24 @@ const TASKS = [
   },
 ];
 
-const INITIAL_SECONDS = 14 * 3600 + 22 * 60 + 5; // 14:22:05
-
-function formatTime(total) {
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
+function ChevronIcon() {
+  return (
+    <svg
+      className="filter-btn__chevron"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
 }
 
-function TaskCard({ task, t }) {
+function TaskCard({ task, t, onSolve }) {
   const item = t("tasks.items")[task.id - 1];
   return (
     <article className={`card task-card ${task.locked ? "task-card--locked" : ""}`}>
@@ -79,7 +87,7 @@ function TaskCard({ task, t }) {
           {t("tasks.locked")}
         </button>
       ) : (
-        <button type="button" className="btn btn--primary task-card__action">
+        <button type="button" className="btn btn--primary task-card__action" onClick={() => onSolve(task.id - 1)}>
           {t("tasks.solve")}
         </button>
       )}
@@ -87,61 +95,18 @@ function TaskCard({ task, t }) {
   );
 }
 
-function DailyChallenge({ t }) {
-  const [seconds, setSeconds] = useState(INITIAL_SECONDS);
-
-  useEffect(() => {
-    const id = setInterval(() => setSeconds((s) => (s > 0 ? s - 1 : 0)), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <section className="card daily-challenge">
-      <div className="daily-challenge__head">
-        <span className="daily-challenge__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 21c3.5 0 6-2.4 6-5.6 0-2.1-1.1-3.9-2.4-5.4C14.4 8.6 13 7 13 4.5c0 0-4.5 2-4.5 6 0-1-.5-2-1.5-2.8C6 9.4 6 11.6 6 15.4 6 18.6 8.5 21 12 21Z" />
-            <path d="M12 21c-1.7 0-3-1.3-3-3 0-1.4.8-2.4 1.6-3.3.6-.7 1.4-1.6 1.4-2.7 0 0 2 1.4 2 3.5 0 .8.4 1.2.4 2.5 0 1.7-1 3-2.4 3Z" />
-          </svg>
-          {t("tasks.daily.title")}
-        </span>
-        <span className="timer-chip" role="timer" aria-label="Time remaining">
-          {formatTime(seconds)}
-        </span>
-      </div>
-      <h3 className="daily-challenge__name">{t("tasks.daily.name")}</h3>
-      <p className="daily-challenge__desc">{t("tasks.daily.desc")}</p>
-      <div className="daily-challenge__reward">
-        <span className="xp">{t("tasks.daily.xpReward")}</span>
-        <span className="badge-hard">{t("tasks.daily.hard")}</span>
-      </div>
-      <button type="button" className="btn btn--ghost btn--full">
-        {t("tasks.daily.accept")}
-      </button>
-    </section>
-  );
-}
-
-function TaskAnalytics({ t }) {
-  return (
-    <section className="card analytics">
-      <span className="label-caps">{t("tasks.analytics.title")}</span>
-      <div className="analytics__grid">
-        <div className="stat-box">
-          <div className="stat-box__value">24</div>
-          <div className="stat-box__label">{t("tasks.analytics.completed")}</div>
-        </div>
-        <div className="stat-box">
-          <div className="stat-box__value stat-box__value--accent">85%</div>
-          <div className="stat-box__label">{t("tasks.analytics.accuracy")}</div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function TasksView() {
+function TasksView({ onSolve }) {
   const t = useT();
+  const [difficulty, setDifficulty] = useState("all");
+  const [query, setQuery] = useState("");
+
+  const items = t("tasks.items");
+  const visible = TASKS.filter((task) => {
+    const okDiff = difficulty === "all" || task.difficulty === difficulty;
+    const okQuery = !query || items[task.id - 1].title.toLowerCase().includes(query.toLowerCase());
+    return okDiff && okQuery;
+  });
+
   return (
     <div className="tasks-view">
       <header className="tasks-head">
@@ -150,38 +115,51 @@ function TasksView() {
           <p className="page-head__desc">{t("tasks.desc")}</p>
         </div>
         <div className="tasks-head__controls">
-          <button type="button" className="filter-btn">
-            {t("tasks.allDifficulties")}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          <button type="button" className="filter-btn">
+          <label className="filter-btn filter-btn--select">
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              aria-label={t("tasks.allDifficulties")}
+            >
+              <option value="all">{t("tasks.allDifficulties")}</option>
+              <option value="easy">{t("tasks.easy")}</option>
+              <option value="medium">{t("tasks.medium")}</option>
+              <option value="hard">{t("tasks.hard")}</option>
+            </select>
+            <ChevronIcon />
+          </label>
+          <button
+            type="button"
+            className="filter-btn"
+            title={t("home.soon")}
+            aria-disabled="true"
+          >
             {t("tasks.allStatuses")}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
+            <ChevronIcon />
           </button>
           <div className="tasks-search">
             <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="7" />
               <path d="m21 21-4.3-4.3" />
             </svg>
-            <input type="search" placeholder={t("tasks.search")} aria-label={t("tasks.search")} />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("tasks.search")}
+              aria-label={t("tasks.search")}
+            />
           </div>
         </div>
       </header>
 
-      <div className="tasks-layout">
-        <div className="task-list">
-          {TASKS.map((task) => (
-            <TaskCard key={task.id} task={task} t={t} />
-          ))}
-        </div>
-        <div className="tasks-rail">
-          <DailyChallenge t={t} />
-          <TaskAnalytics t={t} />
-        </div>
+      <div className="task-list">
+        {visible.map((task) => (
+          <TaskCard key={task.id} task={task} t={t} onSolve={onSolve} />
+        ))}
+        {visible.length === 0 && (
+          <div className="tasks-empty">{t("tasks.noResults")}</div>
+        )}
       </div>
     </div>
   );
