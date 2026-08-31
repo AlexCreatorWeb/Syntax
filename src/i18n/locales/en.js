@@ -291,6 +291,8 @@ export default {
     no: "No",
     thanks: "Thanks for the feedback!",
     breadcrumb: "Docs",
+    prevArticle: "Previous",
+    nextArticle: "Next",
     noResults: 'Nothing found for "{q}"',
     resultsCount: "{n} results",
     tocPage: "On this page",

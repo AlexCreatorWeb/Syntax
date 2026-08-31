@@ -113,7 +113,7 @@ function ArticleView({ article, prev, next, t }) {
         <nav className="docs-prevnext" aria-label="Article navigation">
           {prev ? (
             <a className="card docs-prevnext__item" href={`#/documentation/${prev.slug}`}>
-              <span className="docs-prevnext__dir">← {t("docs.breadcrumb")}</span>
+              <span className="docs-prevnext__dir">← {t("docs.prevArticle")}</span>
               <strong>{prev.title}</strong>
             </a>
           ) : (
@@ -121,7 +121,7 @@ function ArticleView({ article, prev, next, t }) {
           )}
           {next ? (
             <a className="card docs-prevnext__item docs-prevnext__item--next" href={`#/documentation/${next.slug}`}>
-              <span className="docs-prevnext__dir">{t("docs.breadcrumb")} →</span>
+              <span className="docs-prevnext__dir">{t("docs.nextArticle")} →</span>
               <strong>{next.title}</strong>
             </a>
           ) : (
@@ -270,7 +270,10 @@ function DocsView({ routeParam, activeTech }) {
 
   return (
     <div className="docs-view">
-      {/* Hero: заголовок + селектор трека (тех-пилюли, по умолчанию — активный трек) */}
+      {/* Hero (заголовок + селектор трека) и поиск — только обзор/empty-state;
+          статья — чистый читаемый режим (дерево + текст + TOC) */}
+      {!current && (
+        <>
       <header className="page-head docs-hero">
         <div>
           <h1 className="page-head__title">{t("docs.title")}</h1>
@@ -379,6 +382,8 @@ function DocsView({ routeParam, activeTech }) {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {current ? (
         /* Статья: дерево | статья (правый on-page TOC — во внешнем рейле через DocsAside) */

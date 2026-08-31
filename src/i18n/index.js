@@ -299,6 +299,8 @@ export const LOCALES = {
       no: "Нет",
       thanks: "Спасибо за обратную связь!",
       breadcrumb: "Docs",
+      prevArticle: "Предыдущая",
+      nextArticle: "Следующая",
       noResults: "Ничего не найдено по «{q}»",
       resultsCount: "{n} результатов",
       tocPage: "На этой странице",

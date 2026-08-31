@@ -1995,7 +1995,8 @@ code {
 
 /* --- UX-аудит Documentation: hero-селектор, поиск, дерево, статья, код, callouts --- */
 .docs-hero { align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.docs-for { display: flex; flex-direction: column; gap: 8px; max-width: 620px; }
+/* Селектор трека — на всю ширину, как tech-switch на других страницах (roadmap/tasks) */
+.docs-for { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 18px; }
 .docs-for .tech-switch { margin-bottom: 0; }
 .docs-for .tech-switch__item { padding: 5px 11px 5px 7px; font-size: 12px; }
 .tech-switch__name { white-space: nowrap; }
