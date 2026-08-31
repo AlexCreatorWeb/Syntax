@@ -32,7 +32,7 @@ function taskJob(t, index, techId) {
   };
 }
 
-function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup }) {
+function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam }) {
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
 
@@ -132,7 +132,8 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
         // key=activeTech: смена трека перемонтирует вьюху — tech-фильтр синхронен с выбранным треком
         return <TasksView key={activeTech || "none"} activeTech={activeTech} onSelectTech={onSelectTech} onSolve={(i, techId) => openTask(i, techId)} />;
       case "documentation":
-        return <DocsView />;
+        // routeParam — slug статьи из deep-link #/documentation/<slug> (валидация внутри DocsView)
+        return <DocsView routeParam={routeParam} activeTech={activeTech} onNavigate={onNavigate} />;
       case "rankings":
         return <RankingsView />;
       case "community":

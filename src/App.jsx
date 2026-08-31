@@ -27,6 +27,9 @@ function App() {
   });
 
   // Учебный контекст для редактора: { type: "lesson" | "task", title, desc }
+  // URL-параметр вкладки (#/documentation/<slug> — статья; #/technology/<id> — трек)
+  const [routeParam, setRouteParam] = useState(() => parseHash().param);
+
   const [job, setJob] = useState(null);
   // job, который нужно применить при следующем hashchange (навигация через URL)
   const pendingJob = useRef(null);
@@ -51,6 +54,7 @@ function App() {
     const onHash = () => {
       const { tab, param } = parseHash();
       setActiveTab(tab || "home");
+      setRouteParam(param);
       // Deep-link #/technology/<id>: трек из URL становится выбранным (переживает refresh)
       if (tab === "technology" && param && getTech(param)) {
         selectTech(param);
@@ -121,6 +125,7 @@ function App() {
           activeTech={activeTech}
           onSelectTech={selectTech}
           onSignup={openSignup}
+          routeParam={routeParam}
         />
         <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} job={job} activeTech={activeTech} isAuthed={isAuthed} />
       </div>
