@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
 import WidgetPanel from "./components/WidgetPanel";
+import SignupModal from "./components/SignupModal";
 
 // URL-роутинг: #/<tab> — refresh не теряет вкладку, работают bookmarks и back-кнопка
 const tabFromHash = () => window.location.hash.replace(/^#\/?/, "");
@@ -54,18 +55,52 @@ function App() {
     localStorage.setItem("syntax-theme", theme);
   }, [theme]);
 
+  // Spotlight: radial-градиент следует за курсором по карточкам .spotlight
+  useEffect(() => {
+    const onMove = (e) => {
+      const el = e.target.closest && e.target.closest(".spotlight");
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--sx", `${e.clientX - r.left}px`);
+      el.style.setProperty("--sy", `${e.clientY - r.top}px`);
+    };
+    document.addEventListener("mousemove", onMove);
+    return () => document.removeEventListener("mousemove", onMove);
+  }, []);
+
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
+  // Выбранный язык обучения: только на время сессии (клик по карточке на главной
+  // подставляет лого+название языка в хедер). По умолчанию и после перезагрузки
+  // — оригинальный лого платформы.
+  const [activeTech, setActiveTech] = useState("none");
+  const selectTech = useCallback((id) => setActiveTech(id), []);
+
+  // Гостевой sign-up: одна модалка на все гостевые действия (пока без бэкенда)
+  const [signupOpen, setSignupOpen] = useState(false);
+  const openSignup = useCallback(() => setSignupOpen(true), []);
+  const closeSignup = useCallback(() => setSignupOpen(false), []);
+
   return (
     <div className="app">
-      <Header onToggleTheme={toggleTheme} onNavigate={openTab} />
+      <div className="ambient" aria-hidden="true" />
+      <Header activeTech={activeTech} onToggleTheme={toggleTheme} onNavigate={openTab} onSignup={openSignup} />
       <div className="shell">
-        <Sidebar activeTab={activeTab} onSelectTab={openTab} />
-        <MainContent activeTab={activeTab} theme={theme} job={job} onNavigate={openTab} />
-        <WidgetPanel activeTab={activeTab} onNavigate={openTab} />
+        <Sidebar activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} onSelectTab={openTab} />
+        <MainContent
+          activeTab={activeTab}
+          theme={theme}
+          job={job}
+          onNavigate={openTab}
+          activeTech={activeTech}
+          onSelectTech={selectTech}
+          onSignup={openSignup}
+        />
+        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} />
       </div>
+      <SignupModal open={signupOpen} onClose={closeSignup} />
     </div>
   );
 }

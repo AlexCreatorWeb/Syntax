@@ -28,7 +28,7 @@ function taskJob(t, index) {
   };
 }
 
-function MainContent({ activeTab, theme, job, onNavigate }) {
+function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup }) {
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
 
@@ -84,7 +84,15 @@ function MainContent({ activeTab, theme, job, onNavigate }) {
   const renderTabContent = () => {
     switch (activeTab) {
       case "home":
-        return <MainView onNavigate={onNavigate} onContinue={openLesson} />;
+        return (
+          <MainView
+            onNavigate={onNavigate}
+            onSignup={onSignup}
+            onDemo={() => openLesson()}
+            activeTech={activeTech}
+            onSelectTech={onSelectTech}
+          />
+        );
       case "roadmap":
         return <RoadmapView onNavigate={onNavigate} onResume={openLesson} />;
       case "editor":

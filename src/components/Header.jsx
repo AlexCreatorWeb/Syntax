@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/useLanguage';
 import { UI_LANGUAGES } from '../context/uiLanguages';
 import { useT } from '../i18n/useT';
+import { getTech } from '../lib/techs';
 
 // Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
 // Таб-специфичный контент (заголовки, поиски) живёт внутри вьюх.
-function Header({ onToggleTheme, onNavigate }) {
+function Header({ activeTech, onToggleTheme, onNavigate, onSignup }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,9 @@ function Header({ onToggleTheme, onNavigate }) {
   const langRef = useRef(null);
   const notifRef = useRef(null);
   const accountRef = useRef(null);
+
+  const techData = getTech(activeTech);
+  const TechLogo = techData?.Logo;
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
@@ -72,7 +76,16 @@ function Header({ onToggleTheme, onNavigate }) {
           onClick={() => onNavigate && onNavigate("home")}
           aria-label={t("header.home")}
         >
-          Syn<span>tax</span>
+          {techData ? (
+            <>
+              <TechLogo />
+              <span className="brand__tech-name">{t(techData.label)}</span>
+            </>
+          ) : (
+            <span className="brand__word">
+              Syn<span className="brand__accent">tax</span>
+            </span>
+          )}
         </button>
       </div>
       <div className="topbar__right">
@@ -158,7 +171,7 @@ function Header({ onToggleTheme, onNavigate }) {
           </svg>
         </button>
 
-        <div className="tb-menu-wrap" ref={notifRef}>
+        <div className="tb-menu-wrap tb-menu-wrap--notif" ref={notifRef}>
           <button
             className="icon-btn icon-btn--notif"
             type="button"
@@ -200,6 +213,15 @@ function Header({ onToggleTheme, onNavigate }) {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="auth" >
+          <button type="button" className="auth__login" onClick={onSignup}>
+            {t("header.login")}
+          </button>
+          <button type="button" className="btn btn--primary auth__signup" onClick={onSignup}>
+            {t("header.signup")}
+          </button>
         </div>
 
         <div className="tb-menu-wrap" ref={accountRef}>
