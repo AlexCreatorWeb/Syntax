@@ -1,11 +1,13 @@
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
 
+// Значения — в «XP/10» для наглядности (демо); tooltip — реальные значения
 const WEEK_BARS = [30, 50, 40, 80, 60, 90]; // последнее — сегодня
 
-// Правый сайдбар вкладки Rankings (монтируется во внешнюю rail)
 function RankingsAside() {
   const t = useT();
+  const days = t("rankings.weeklyDays");
+  const weekTotal = WEEK_BARS.reduce((a, b) => a + b, 0) * 10;
 
   return (
     <>
@@ -32,25 +34,27 @@ function RankingsAside() {
             <span>{t("rankings.nextRank")}</span>
             <span className="rank-card__next-xp">{t("rankings.needXp")}</span>
           </div>
+          {/* 9840 / 10120 = 97% — совпадает с прогрессом в строке таблицы */}
           <div className="bar rank-card__bar">
-            <div className="bar__fill bar__fill--shimmer" style={{ width: "75%" }}></div>
+            <div className="bar__fill bar__fill--shimmer" style={{ width: "97%" }}></div>
           </div>
         </div>
 
         <div className="rank-card__weekly">
-          <h4>{t("rankings.weekly")}</h4>
+          <h4>
+            {t("rankings.weekly")} · +{weekTotal.toLocaleString("en-US")} XP {t("rankings.weeklyTotal")}
+          </h4>
           <div className="weekly" role="img" aria-label={`${t("rankings.weekly")}: ${WEEK_BARS.join(", ")}`}>
-            {WEEK_BARS.map((h, i) => {
+            {WEEK_BARS.map((v, i) => {
               const isToday = i === WEEK_BARS.length - 1;
               return (
                 <div
                   key={i}
-                  className={`weekly__bar ${isToday ? "weekly__bar--today" : ""}`}
-                  style={{ height: `${h}%` }}
+                  className={`weekly__col ${isToday ? "weekly__col--today" : ""}`}
+                  title={`+${v * 10} XP`}
                 >
-                  {isToday && (
-                    <span className="weekly__tooltip">{t("rankings.today")}</span>
-                  )}
+                  <div className={`weekly__bar ${isToday ? "weekly__bar--today" : ""}`} style={{ height: `${v}%` }} />
+                  <span className="weekly__day">{days[i] || ""}</span>
                 </div>
               );
             })}
@@ -78,16 +82,23 @@ function RankingsAside() {
             <span className="league-card__left">{t("rankings.timeLeft")}</span>
           </div>
           <div className="league-card__bar" role="img" aria-label={t("rankings.promotion")}>
-            <div className="league-card__zone league-card__zone--safe" style={{ width: "60%" }} />
-            <div className="league-card__zone league-card__zone--promo" style={{ width: "20%" }}>
-              <span className="league-card__marker" style={{ left: "70%" }} />
+            <div className="league-card__zone league-card__zone--safe" style={{ width: "60%" }} title={t("rankings.promoteNote")} />
+            <div className="league-card__zone league-card__zone--promo" style={{ width: "20%" }} title={t("rankings.promoteNote")}>
+              <span className="league-card__marker" style={{ left: "70%" }}>
+                <span className="league-card__marker-label">{t("rankings.leagueYou")}</span>
+              </span>
             </div>
-            <div className="league-card__zone league-card__zone--demote" style={{ width: "20%" }} />
+            <div className="league-card__zone league-card__zone--demote" style={{ width: "20%" }} title={t("rankings.demoteNote")} />
           </div>
           <div className="league-card__labels">
             <span>{t("rankings.safe")}</span>
             <span>{t("rankings.promote")}</span>
             <span className="league-card__label--demote">{t("rankings.demote")}</span>
+          </div>
+          {/* Пороги зон: «какой ранг = Demote» — ответ на недоверие */}
+          <div className="league-card__notes">
+            <span>{t("rankings.promoteNote")}</span>
+            <span className="league-card__label--demote">{t("rankings.demoteNote")}</span>
           </div>
         </div>
       </aside>

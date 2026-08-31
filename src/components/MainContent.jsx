@@ -19,13 +19,16 @@ function lessonJob(t) {
   };
 }
 
-function taskJob(t, index) {
+function taskJob(t, index, techId) {
   const item = t("tasks.items")[index];
+  // Файл редактора по треку задачи (K2-паттерн: имя/расширение соответствуют технологии)
+  const taskFile = { javascript: "index.js", python: "main.py", postgres: "queries.sql", html: "index.html", css: "styles.css" }[techId] || "index.js";
   return {
     kind: "task",
     title: item.title,
     desc: item.desc,
     backTab: "tasks",
+    file: taskFile,
   };
 }
 
@@ -52,7 +55,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
     }
     onNavigate("editor", lessonJob(t));
   };
-  const openTask = (index) => onNavigate("editor", taskJob(t, index));
+  const openTask = (index, techId) => onNavigate("editor", taskJob(t, index, techId));
 
   const renderLessonCard = () => (
     <section className="card lesson">
@@ -126,13 +129,14 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
       case "editor":
         return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
       case "tasks":
-        return <TasksView onSolve={openTask} />;
+        // key=activeTech: смена трека перемонтирует вьюху — tech-фильтр синхронен с выбранным треком
+        return <TasksView key={activeTech || "none"} activeTech={activeTech} onSelectTech={onSelectTech} onSolve={(i, techId) => openTask(i, techId)} />;
       case "documentation":
         return <DocsView />;
       case "rankings":
         return <RankingsView />;
       case "community":
-        return <CommunityView />;
+        return <CommunityView activeTech={activeTech} />;
       case "settings":
         return renderPlaceholder("settings");
       case "support":

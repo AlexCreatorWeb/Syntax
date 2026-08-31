@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/useLanguage';
 import { UI_LANGUAGES } from '../context/uiLanguages';
 import { useT } from '../i18n/useT';
-import { getTech } from '../lib/techs';
 
 // Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
-// Таб-специфичный контент (заголовки, поиски) живёт внутри вьюх.
-function Header({ activeTech, onToggleTheme, onNavigate, onSignup }) {
+// Лого всегда оригинальный Syntax (тех-лого живёт на странице технологии — UX-фидбек);
+// таб-специфичный контент (заголовки, поиски) — внутри вьюх.
+function Header({ onToggleTheme, onNavigate, onSignup }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
@@ -14,9 +14,6 @@ function Header({ activeTech, onToggleTheme, onNavigate, onSignup }) {
   const langRef = useRef(null);
   const notifRef = useRef(null);
   const accountRef = useRef(null);
-
-  const techData = getTech(activeTech);
-  const TechLogo = techData?.Logo;
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
@@ -70,28 +67,16 @@ function Header({ activeTech, onToggleTheme, onNavigate, onSignup }) {
   return (
     <header className="topbar">
       <div className="topbar__left">
-        {/* Лого-трек в состоянии выбранного трека ведёт на страницу трека (UX-аудит п.7);
-            обычный лого — домой. «Change track» на странице трека возвращает в каталог. */}
+        {/* Лого всегда оригинальное, клик — всегда на главную (тех-лого не дублируем) */}
         <button
           type="button"
           className="brand brand--link"
-          onClick={() => {
-            if (!onNavigate) return;
-            if (activeTech && getTech(activeTech)) onNavigate("technology", { techId: activeTech });
-            else onNavigate("home");
-          }}
+          onClick={() => onNavigate && onNavigate("home")}
           aria-label={t("header.home")}
         >
-          {techData ? (
-            <>
-              <TechLogo />
-              <span className="brand__tech-name">{t(techData.label)}</span>
-            </>
-          ) : (
-            <span className="brand__word">
-              Syn<span className="brand__accent">tax</span>
-            </span>
-          )}
+          <span className="brand__word">
+            Syn<span className="brand__accent">tax</span>
+          </span>
         </button>
       </div>
       <div className="topbar__right">

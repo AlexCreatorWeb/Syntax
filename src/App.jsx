@@ -110,7 +110,7 @@ function App() {
   return (
     <div className="app">
       <div className="ambient" aria-hidden="true" />
-      <Header activeTech={activeTech} onToggleTheme={toggleTheme} onNavigate={openTab} onSignup={openSignup} />
+      <Header onToggleTheme={toggleTheme} onNavigate={openTab} onSignup={openSignup} />
       <div className="shell">
         <Sidebar activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} onSelectTab={openTab} isAuthed={isAuthed} />
         <MainContent
@@ -122,7 +122,7 @@ function App() {
           onSelectTech={selectTech}
           onSignup={openSignup}
         />
-        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} job={job} activeTech={activeTech} />
+        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} job={job} activeTech={activeTech} isAuthed={isAuthed} />
       </div>
       <SignupModal open={signupOpen} onClose={closeSignup} onAuthed={handleAuthed} />
     </div>

@@ -28,11 +28,14 @@ function DailyChallenge({ t, onAccept }) {
           </svg>
           {t("tasks.daily.title")}
         </span>
-        <span className="timer-chip" role="timer" aria-label="Time remaining">
+        <span className="timer-chip" role="timer" aria-label={t("tasks.timerAria")}>
           {formatTime(seconds)}
         </span>
       </div>
-      <h3 className="daily-challenge__name">{t("tasks.daily.name")}</h3>
+      <h3 className="daily-challenge__name">
+        {t("tasks.daily.name")}
+        <span className="chip daily-challenge__general">{t("tasks.general")}</span>
+      </h3>
       <p className="daily-challenge__desc">{t("tasks.daily.desc")}</p>
       <div className="daily-challenge__reward">
         <span className="xp">{t("tasks.daily.xpReward")}</span>
@@ -45,10 +48,14 @@ function DailyChallenge({ t, onAccept }) {
   );
 }
 
-function TaskAnalytics({ t }) {
+function TaskAnalytics({ t, isAuthed }) {
   return (
     <section className="card analytics">
-      <span className="label-caps">{t("tasks.analytics.title")}</span>
+      <div className="analytics__head">
+        <span className="label-caps">{t("tasks.analytics.title")}</span>
+        {/* Гость видит демо-цифры — честно помечаем как Sample (как «Preview» на roadmap) */}
+        {!isAuthed && <span className="chip analytics__sample">{t("tasks.sample")}</span>}
+      </div>
       <div className="analytics__grid">
         <div className="stat-box">
           <div className="stat-box__value">24</div>
@@ -64,7 +71,7 @@ function TaskAnalytics({ t }) {
 }
 
 // Правый сайдбар вкладки Tasks (монтируется во внешнюю rail)
-function TasksAside({ onNavigate }) {
+function TasksAside({ onNavigate, isAuthed }) {
   const t = useT();
   const dailyJob = {
     kind: "task",
@@ -75,7 +82,7 @@ function TasksAside({ onNavigate }) {
   return (
     <>
       <DailyChallenge t={t} onAccept={() => onNavigate && onNavigate("editor", dailyJob)} />
-      <TaskAnalytics t={t} />
+      <TaskAnalytics t={t} isAuthed={isAuthed} />
     </>
   );
 }

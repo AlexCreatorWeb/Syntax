@@ -1,17 +1,34 @@
+import { useEffect, useState } from "react";
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
+import { getTech } from "../../lib/techs";
 
-const TRENDING_TAGS = ["React18", "AsyncJS", "TypeScriptBasics", "SystemDesign", "WebGL", "Rust"];
+const TRENDING_TAGS = ["Python", "React18", "Docker", "NodeJS", "AsyncJS", "TypeScriptBasics"];
 
 const CONTRIBUTORS = [
-  { name: "Alex Mercer", handle: "@amermer_dev", rep: "14.2k", hue: 158 },
-  { name: "Sarah Chen", handle: "@schen_codes", rep: "12.8k", hue: 330 },
-  { name: "DataBot_v2", handle: "@auto_reply", rep: "9.4k", hue: 210 },
+  { name: "Alex Mercer", handle: "@amermer_dev", rep: "14.2k", hue: 158, posts: 342, streak: 21 },
+  { name: "Sarah Chen", handle: "@schen_codes", rep: "12.8k", hue: 330, posts: 287, streak: 34 },
+  { name: "DataBot_v2", handle: "@auto_reply", rep: "9.4k", hue: 210, posts: 1204, streak: 12 },
 ];
 
-// Правый сайдбар вкладки Community (монтируется во внешнюю rail)
-function CommunityAside() {
+// Обсуждения по треку (демо-счётчики; те же треки, что у постов в CommunityView)
+const TRACK_COUNTS = { python: [1, 1], react: [1, 1], node: [1, 0] };
+
+// Правый сайдбар вкладки Community: статус → трек пользователя → тренды → топ
+function CommunityAside({ techId }) {
   const t = useT();
+  const [following, setFollowing] = useState({});
+  const [profile, setProfile] = useState(null);
+  const track = TRACK_COUNTS[techId];
+
+  useEffect(() => {
+    if (!profile) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setProfile(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [profile]);
 
   return (
     <>
@@ -31,6 +48,23 @@ function CommunityAside() {
           </div>
         </div>
       </aside>
+
+      {techId && track && (
+        <aside className="card community-trackcard">
+          <button
+            type="button"
+            className="community-trackcard__btn"
+            onClick={() => window.dispatchEvent(new CustomEvent("syntax-community-track"))}
+          >
+            <span className="label-caps community-trackcard__title">
+              {t("community.trackCardTitle", { tech: t(getTech(techId).label) })}
+            </span>
+            <strong className="community-trackcard__value">
+              {t("community.trackCardBody", { n: track[0], m: track[1] })}
+            </strong>
+          </button>
+        </aside>
+      )}
 
       <aside className="card community-trending">
         <span className="label-caps community-trending__title">
@@ -55,11 +89,7 @@ function CommunityAside() {
               key={tag}
               type="button"
               className="community-trending__tag"
-              onClick={() =>
-                window.dispatchEvent(
-                  new CustomEvent("syntax-community-tag", { detail: tag })
-                )
-              }
+              onClick={() => window.dispatchEvent(new CustomEvent("syntax-community-tag", { detail: tag }))}
             >
               #{tag}
             </button>
@@ -87,19 +117,71 @@ function CommunityAside() {
           {CONTRIBUTORS.map((user, i) => (
             <div key={user.handle} className="community-top__row">
               <span className="community-top__rank">{i + 1}</span>
-              <Avatar name={user.name} hue={user.hue} size="sm" />
-              <div className="community-top__user">
+              <button type="button" className="community-top__avatar" onClick={() => setProfile(user)} aria-label={user.name}>
+                <Avatar name={user.name} hue={user.hue} size="sm" />
+              </button>
+              <button type="button" className="community-top__user" onClick={() => setProfile(user)}>
                 <span className="community-top__name">{user.name}</span>
                 <span className="community-top__handle">{user.handle}</span>
-              </div>
+              </button>
               <div className="community-top__rep">
                 <strong>{user.rep}</strong>
                 <span>{t("community.rep")}</span>
               </div>
+              <button
+                type="button"
+                className={`community-top__follow ${following[user.handle] ? "community-top__follow--on" : ""}`}
+                aria-pressed={!!following[user.handle]}
+                onClick={() => setFollowing((prev) => ({ ...prev, [user.handle]: !prev[user.handle] }))}
+              >
+                {following[user.handle] ? t("community.following") : t("community.follow")}
+              </button>
             </div>
           ))}
         </div>
       </aside>
+
+      {profile && (
+        <div className="community-modal" role="dialog" aria-modal="true" aria-label={profile.name} onClick={() => setProfile(null)}>
+          <div className="community-modal__panel community-modal__panel--profile" onClick={(e) => e.stopPropagation()}>
+            <div className="profile">
+              <Avatar name={profile.name} hue={profile.hue} size="lg" />
+              <strong className="profile__name">{profile.name}</strong>
+              <span className="profile__handle">{profile.handle}</span>
+              <div className="profile__stats">
+                <div className="profile__stat">
+                  <strong>{profile.rep}</strong>
+                  <span>{t("community.rep")}</span>
+                </div>
+                <div className="profile__stat">
+                  <strong>{t("community.profilePosts", { n: profile.posts })}</strong>
+                </div>
+                <div className="profile__stat">
+                  <strong>{t("community.profileStreak", { n: profile.streak })}</strong>
+                </div>
+              </div>
+              <div className="profile__actions">
+                <button
+                  type="button"
+                  className={`btn ${following[profile.handle] ? "btn--secondary" : "btn--primary"}`}
+                  aria-pressed={!!following[profile.handle]}
+                  onClick={() => setFollowing((prev) => ({ ...prev, [profile.handle]: !prev[profile.handle] }))}
+                >
+                  {following[profile.handle] ? t("community.following") : t("community.follow")}
+                </button>
+                <button type="button" className="btn btn--ghost" onClick={() => setProfile(null)}>
+                  {t("editor.cancel")}
+                </button>
+              </div>
+            </div>
+            <button type="button" className="community-modal__close" onClick={() => setProfile(null)} aria-label="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -16,14 +16,14 @@ const TAB_ASIDES = {
   technology: TechAside,
 };
 
-function WidgetPanel({ activeTab, onNavigate, onSignup, job, activeTech }) {
+function WidgetPanel({ activeTab, onNavigate, onSignup, job, activeTech, isAuthed }) {
   const t = useT();
   const Aside = TAB_ASIDES[activeTab];
 
   return (
     <aside className="rail">
       {Aside ? (
-        <Aside onNavigate={onNavigate} techId={(job && job.techId) || activeTech} />
+        <Aside onNavigate={onNavigate} techId={(job && job.techId) || activeTech} isAuthed={isAuthed} />
       ) : (
         <>
           {/* Daily challenge */}
