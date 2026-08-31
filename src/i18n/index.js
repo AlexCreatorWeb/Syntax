@@ -214,7 +214,12 @@ export const LOCALES = {
       supportTitle: "Поддержка",
       supportDesc: "Нужна помощь? Напишите команде или посмотрите FAQ.",
     },
-    roadmap: { catalogDesc: "Выберите трек, чтобы увидеть его программу" },
+    roadmap: {
+      heading: "Твой трек курса",
+      trackDesc: "{tech} · от основ до продвинутых тем · 4 модуля",
+      statusLine: "Модуль {m} из {n}",
+      upNext: "Далее",
+    },
     tasks: {
       title: "Практические задания",
       desc: "Тренируйте навыки на подобранных задачах.",

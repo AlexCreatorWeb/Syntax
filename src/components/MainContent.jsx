@@ -113,7 +113,13 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
           />
         );
       case "roadmap":
-        return <RoadmapView activeTech={activeTech} onOpenTech={(id) => onNavigate("technology", { techId: id })} />;
+        return (
+          <RoadmapView
+            activeTech={activeTech}
+            onSelectTech={onSelectTech}
+            onResume={(id) => openLesson(id)}
+          />
+        );
       case "technology":
         // job.techId — при клике по карточке; activeTech — при deep-link/refresh (job сбрасывается)
         return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onNavigate={onNavigate} />;

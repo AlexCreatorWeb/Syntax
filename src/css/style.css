@@ -1143,6 +1143,144 @@ code {
   max-width: 70ch;
 }
 
+/* ---------- Roadmap: трек прохождения курса (UX-аудит раунд 3) ---------- */
+
+/* Переключатель треков: пилюли с лого */
+.roadmap-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.roadmap-switch__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-variant);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.roadmap-switch__item svg { width: 16px; height: 16px; flex: none; }
+.roadmap-switch__item:hover { border-color: var(--primary); color: var(--text); }
+.roadmap-switch__item--active {
+  border-color: var(--primary);
+  color: var(--text);
+  background: rgba(48, 224, 161, 0.08);
+}
+
+/* Статус прохождения */
+.roadmap__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.roadmap__status-text { display: flex; flex-direction: column; gap: 3px; }
+.roadmap__status-text strong { font-size: 15px; font-weight: 600; }
+.roadmap__status-text span { font-size: 13px; color: var(--muted); }
+
+/* Таймлайн: левая ось, узлы, карточки */
+.roadmap { position: relative; padding-left: 56px; }
+.roadmap__line {
+  position: absolute;
+  left: 15px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: var(--border-strong);
+}
+.roadmap__item { position: relative; margin-bottom: 16px; }
+.roadmap__node {
+  position: absolute;
+  left: -56px;
+  top: 16px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--muted);
+  z-index: 1;
+}
+.roadmap__node svg { width: 14px; height: 14px; }
+.roadmap__node--big { top: 20px; }
+.roadmap__node--big svg { width: 16px; height: 16px; }
+.roadmap__node--done { border-color: var(--primary); color: var(--primary); }
+.roadmap__node--current {
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: var(--glow);
+}
+.roadmap__group-label {
+  margin: 20px 0 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.roadmap__card {
+  padding: 16px 20px;
+  transition: transform 0.15s ease;
+}
+.roadmap__card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.roadmap__num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  flex: none;
+}
+.roadmap__title { font-size: 14.5px; font-weight: 600; }
+.roadmap__desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted);
+}
+.roadmap__chip {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  flex: none;
+}
+.roadmap__chip--done { color: var(--primary); }
+.roadmap__chip--current { color: var(--primary); }
+.roadmap__chip--locked { color: var(--muted); }
+
+/* Завершённые — компактнее */
+.roadmap__card--locked { border-style: dashed; opacity: 0.65; }
+.roadmap__card--locked .roadmap__title { color: var(--text-variant); }
+
+/* Текущий модуль — доминирующая кликабельная карточка */
+.roadmap__card--current {
+  border-color: var(--primary);
+  box-shadow: 0 0 28px rgba(48, 224, 161, 0.14);
+  cursor: pointer;
+}
+.roadmap__card--current:hover { transform: translateY(-2px); }
+.roadmap__card--current:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.roadmap__card--current .roadmap__title { color: var(--primary); }
+
+/* «Модули идут дальше» */
+.roadmap__ghost { border-style: dashed; opacity: 0.7; padding: 14px 20px; }
+.roadmap__ghost-text { margin: 0; font-size: 13px; color: var(--muted); }
+
 /* ============================================================
    Technology page (страница технологии; макет: technology-page)
    ============================================================ */
@@ -2451,6 +2589,13 @@ code {
   .home__final { padding: 36px 20px; }
   .home__final-title { font-size: 26px; line-height: 34px; }
   .home__footer { grid-template-columns: 1fr; gap: 20px; }
+  .roadmap { padding-left: 44px; }
+  .roadmap__node { left: -42px; width: 28px; height: 28px; top: 14px; }
+  .roadmap__node--big { top: 18px; }
+  .roadmap__status { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .roadmap__status .btn { width: 100%; justify-content: center; }
+  .roadmap__chip { display: none; }
+  .roadmap__card-head { flex-wrap: wrap; }
 }
 
 /* ============================================================

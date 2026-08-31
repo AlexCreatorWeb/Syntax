@@ -207,7 +207,12 @@ export default {
     supportTitle: "Support",
     supportDesc: "Need help? Reach out to the team or search the FAQ.",
   },
-  roadmap: { catalogDesc: "Choose a track to see its program" },
+  roadmap: {
+    heading: "Your course track",
+    trackDesc: "{tech} · from the basics to advanced topics · 4 modules",
+    statusLine: "Module {m} of {n}",
+    upNext: "Up next",
+  },
   tasks: {
     title: "Coding Tasks",
     desc: "Hone your skills with curated challenges.",

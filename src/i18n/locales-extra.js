@@ -75,7 +75,12 @@ export const LOCALES_EXTRA = {
       supportTitle: "Підтримка",
       supportDesc: "Потрібна допомога? Напишіть команді або подивіться FAQ.",
     },
-    roadmap: { catalogDesc: "Оберіть трек, щоб побачити його програму" },
+    roadmap: {
+      heading: "Твій трек курсу",
+      trackDesc: "{tech} · від основ до просунутого · 4 модулі",
+      statusLine: "Модуль {m} із {n}",
+      upNext: "Далі",
+    },
     tasks: {
       title: "Практичні завдання",
       desc: "Тренуйте навички на підібраних задачах.",
@@ -363,7 +368,12 @@ export const LOCALES_EXTRA = {
       supportTitle: "Soporte",
       supportDesc: "¿Necesitas ayuda? Contacta al equipo o consulta las preguntas frecuentes.",
     },
-    roadmap: { catalogDesc: "Elige un track para ver su programa" },
+    roadmap: {
+      heading: "Tu ruta del curso",
+      trackDesc: "{tech} · de las bases a lo avanzado · 4 módulos",
+      statusLine: "Módulo {m} de {n}",
+      upNext: "A continuación",
+    },
     tasks: {
       title: "Tareas de programación",
       desc: "Afina tus habilidades con desafíos seleccionados.",
@@ -652,7 +662,12 @@ export const LOCALES_EXTRA = {
       supportTitle: "Support",
       supportDesc: "Benötigst du Hilfe? Kontaktiere das Team oder suche in den FAQ.",
     },
-    roadmap: { catalogDesc: "Wähle einen Track, um sein Programm zu sehen" },
+    roadmap: {
+      heading: "Dein Lernpfad",
+      trackDesc: "{tech} · von den Grundlagen bis fortgeschritten · 4 Module",
+      statusLine: "Modul {m} von {n}",
+      upNext: "Als Nächstes",
+    },
     tasks: {
       title: "Programmieraufgaben",
       desc: "Trainiere deine Fähigkeiten mit kuratierten Aufgaben.",
