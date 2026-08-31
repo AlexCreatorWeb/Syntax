@@ -2,6 +2,7 @@ import { useState } from "react";
 import CodeEditor from "./CodeEditor";
 import MainView from "./views/MainView";
 import RoadmapView from "./views/RoadmapView";
+import TechnologyView from "./views/TechnologyView";
 import TasksView from "./views/TasksView";
 import DocsView from "./views/DocsView";
 import RankingsView from "./views/RankingsView";
@@ -32,7 +33,25 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
 
-  const openLesson = () => onNavigate("editor", lessonJob(t));
+  // К2: урок привязан к треку — имя, описание и файл соответствуют технологии.
+  // Без techId (демо-урок с главной) — исходный JavaScript-урок.
+  const openLesson = (techId) => {
+    if (techId) {
+      const lesson = t(`techs.${techId}.lesson`);
+      if (lesson && lesson.title) {
+        onNavigate("editor", {
+          kind: "lesson",
+          title: lesson.title,
+          desc: lesson.desc,
+          backTab: "technology",
+          techId,
+          file: lesson.file,
+        });
+        return;
+      }
+    }
+    onNavigate("editor", lessonJob(t));
+  };
   const openTask = (index) => onNavigate("editor", taskJob(t, index));
 
   const renderLessonCard = () => (
@@ -94,7 +113,10 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
           />
         );
       case "roadmap":
-        return <RoadmapView onNavigate={onNavigate} onResume={openLesson} />;
+        return <RoadmapView activeTech={activeTech} onOpenTech={(id) => onNavigate("technology", { techId: id })} />;
+      case "technology":
+        // job.techId — при клике по карточке; activeTech — при deep-link/refresh (job сбрасывается)
+        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onNavigate={onNavigate} />;
       case "editor":
         return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
       case "tasks":

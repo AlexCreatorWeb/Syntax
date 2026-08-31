@@ -3,6 +3,7 @@ import RankingsAside from "./panels/RankingsAside";
 import CommunityAside from "./panels/CommunityAside";
 import DocsAside from "./panels/DocsAside";
 import TasksAside from "./panels/TasksAside";
+import TechAside from "./panels/TechAside";
 import PromoCard from "./PromoCard";
 
 // Вкладки, у которых в дизайне есть собственный правый сайдбар:
@@ -12,19 +13,19 @@ const TAB_ASIDES = {
   community: CommunityAside,
   documentation: DocsAside,
   tasks: TasksAside,
+  technology: TechAside,
 };
 
-function WidgetPanel({ activeTab, onNavigate, onSignup }) {
+function WidgetPanel({ activeTab, onNavigate, onSignup, job, activeTech }) {
   const t = useT();
   const Aside = TAB_ASIDES[activeTab];
 
   return (
     <aside className="rail">
       {Aside ? (
-        <Aside onNavigate={onNavigate} />
+        <Aside onNavigate={onNavigate} techId={(job && job.techId) || activeTech} />
       ) : (
         <>
-          <span className="rail__label">{t("home.forYou")}</span>
           {/* Daily challenge */}
           <section className="card rail-card rail-card--challenge">
             <h2 className="rail-card__title">{t("widget.dailyTitle")}</h2>

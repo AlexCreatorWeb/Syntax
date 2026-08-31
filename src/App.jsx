@@ -4,9 +4,15 @@ import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
 import WidgetPanel from "./components/WidgetPanel";
 import SignupModal from "./components/SignupModal";
+import { getTech } from "./lib/techs";
 
-// URL-роутинг: #/<tab> — refresh не теряет вкладку, работают bookmarks и back-кнопка
-const tabFromHash = () => window.location.hash.replace(/^#\/?/, "");
+// URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
+// Единственный параметризованный маршрут: #/technology/<techId> (deep-link на трек).
+const parseHash = () => {
+  const raw = window.location.hash.replace(/^#\/?/, "");
+  const [tab, param] = raw.split("/");
+  return { tab: tab || "home", param };
+};
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -14,7 +20,7 @@ function App() {
   });
 
   const [activeTab, setActiveTab] = useState(() => {
-    const fromHash = tabFromHash();
+    const fromHash = parseHash().tab;
     if (fromHash) return fromHash;
     const tab = new URLSearchParams(window.location.search).get("tab");
     return tab || "home";
@@ -25,22 +31,40 @@ function App() {
   // job, который нужно применить при следующем hashchange (навигация через URL)
   const pendingJob = useRef(null);
 
+  // Выбранный трек: состояние пользователя (UX-аудит К4) — персистится в localStorage
+  // (паттерн темы/языка). Приоритет: deep-link #/technology/<id> → сохранённый → none.
+  const [activeTech, setActiveTech] = useState(() => {
+    const { tab, param } = parseHash();
+    if (tab === "technology" && param && getTech(param)) return param;
+    const saved = localStorage.getItem("syntax-tech");
+    return saved && getTech(saved) ? saved : "none";
+  });
+  const selectTech = useCallback((id) => {
+    setActiveTech(id);
+    if (id && id !== "none") localStorage.setItem("syntax-tech", id);
+  }, []);
+
   useEffect(() => {
     if (!window.location.hash) {
       history.replaceState(null, "", "#/home");
     }
     const onHash = () => {
-      const tab = tabFromHash() || "home";
-      setActiveTab(tab);
+      const { tab, param } = parseHash();
+      setActiveTab(tab || "home");
+      // Deep-link #/technology/<id>: трек из URL становится выбранным (переживает refresh)
+      if (tab === "technology" && param && getTech(param)) {
+        selectTech(param);
+      }
       setJob(pendingJob.current);
       pendingJob.current = null;
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
-  }, []);
+  }, [selectTech]);
 
   const openTab = useCallback((tab, newJob = null) => {
-    const wantHash = `#/${tab}`;
+    // Страница трека пишет трек в URL — bookmark/refresh ведут на тот же трек
+    const wantHash = tab === "technology" && newJob && newJob.techId ? `#/technology/${newJob.techId}` : `#/${tab}`;
     if (window.location.hash === wantHash) {
       setActiveTab(tab);
       setJob(newJob);
@@ -72,23 +96,23 @@ function App() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
-  // Выбранный язык обучения: только на время сессии (клик по карточке на главной
-  // подставляет лого+название языка в хедер). По умолчанию и после перезагрузки
-  // — оригинальный лого платформы.
-  const [activeTech, setActiveTech] = useState("none");
-  const selectTech = useCallback((id) => setActiveTech(id), []);
 
   // Гостевой sign-up: одна модалка на все гостевые действия (пока без бэкенда)
   const [signupOpen, setSignupOpen] = useState(false);
   const openSignup = useCallback(() => setSignupOpen(true), []);
   const closeSignup = useCallback(() => setSignupOpen(false), []);
 
+  // Демо-auth: submit формы sign-up «логинит» на время сессии.
+  // Пока без бэкенда — в-memory; с бэкендом станет реальная сессия.
+  const [isAuthed, setIsAuthed] = useState(false);
+  const handleAuthed = useCallback(() => setIsAuthed(true), []);
+
   return (
     <div className="app">
       <div className="ambient" aria-hidden="true" />
       <Header activeTech={activeTech} onToggleTheme={toggleTheme} onNavigate={openTab} onSignup={openSignup} />
       <div className="shell">
-        <Sidebar activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} onSelectTab={openTab} />
+        <Sidebar activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} onSelectTab={openTab} isAuthed={isAuthed} />
         <MainContent
           activeTab={activeTab}
           theme={theme}
@@ -98,9 +122,9 @@ function App() {
           onSelectTech={selectTech}
           onSignup={openSignup}
         />
-        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} />
+        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} job={job} activeTech={activeTech} />
       </div>
-      <SignupModal open={signupOpen} onClose={closeSignup} />
+      <SignupModal open={signupOpen} onClose={closeSignup} onAuthed={handleAuthed} />
     </div>
   );
 }

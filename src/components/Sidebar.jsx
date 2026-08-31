@@ -4,7 +4,15 @@ import { useT } from "../i18n/useT";
 // Выпадающее меню настроек (как в VS Code): пункты открываются здесь, без перехода на вкладку
 const SETTINGS_STUB_ITEMS = ["editor", "notifications", "shortcuts", "about"];
 
-function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab }) {
+// Смысловые группы навигации (UX-аудит Р1–Р4): учусь → общаюсь → справочники.
+// Порядок внутри Learn: Roadmap (с чего начать) → Tasks (действие) → Editor (инструмент).
+const NAV_GROUPS = [
+  { id: "learn", items: ["roadmap", "tasks", "editor"] },
+  { id: "community", items: ["rankings", "community"] },
+  { id: "resources", items: ["documentation"] },
+];
+
+function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab, isAuthed }) {
   const t = useT();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
@@ -149,39 +157,49 @@ function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab }) {
     </svg>
   );
 
+  const renderNavItem = (item) => (
+    <button
+      key={item.id}
+      type="button"
+      className={`nav__item ${activeTab === item.id ? "is-active" : ""}`}
+      onClick={() => onSelectTab(item.id)}
+    >
+      {item.icon}
+      <span>{t(`sidebar.${item.id}`)}</span>
+    </button>
+  );
+
   return (
     <aside className="sidebar">
-      <button
-        type="button"
-        className="streak card is-57 streak--link"
-        onClick={() => onSelectTab("roadmap")}
-        aria-label={t("sidebar.roadmap")}
-        title={t("sidebar.roadmap")}
-      >
-        <div className="streak__ring" aria-hidden="true">
-          <svg viewBox="0 0 44 44">
-            <circle className="ring-bg" cx="22" cy="22" r="19" />
-            <circle className="ring-fg" cx="22" cy="22" r="19" />
-          </svg>
-          <span className="streak__pct">57%</span>
-        </div>
-        <div className="streak__meta">
-          <strong>{t("sidebar.complete")}</strong>
-          <span>{t("sidebar.streak")}</span>
-        </div>
-      </button>
+      {/* Прогресс ученика — только для залогиненных (гость видит без него) */}
+      {isAuthed && (
+        <button
+          type="button"
+          className="streak card is-57 streak--link"
+          onClick={() => onSelectTab("roadmap")}
+          aria-label={t("sidebar.roadmap")}
+          title={t("sidebar.roadmap")}
+        >
+          <div className="streak__ring" aria-hidden="true">
+            <svg viewBox="0 0 44 44">
+              <circle className="ring-bg" cx="22" cy="22" r="19" />
+              <circle className="ring-fg" cx="22" cy="22" r="19" />
+            </svg>
+            <span className="streak__pct">57%</span>
+          </div>
+          <div className="streak__meta">
+            <strong>{t("sidebar.complete")}</strong>
+            <span>{t("sidebar.streak")}</span>
+          </div>
+        </button>
+      )}
 
       <nav className="nav" aria-label="Main">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`nav__item ${activeTab === item.id ? "is-active" : ""}`}
-            onClick={() => onSelectTab(item.id)}
-          >
-            {item.icon}
-            <span>{t(`sidebar.${item.id}`)}</span>
-          </button>
+        {NAV_GROUPS.map((group) => (
+          <div className="nav__group" key={group.id}>
+            <span className="nav__group-label">{t(`sidebar.group${group.id[0].toUpperCase()}${group.id.slice(1)}`)}</span>
+            {group.items.map((id) => renderNavItem(navItems.find((i) => i.id === id)))}
+          </div>
         ))}
       </nav>
 

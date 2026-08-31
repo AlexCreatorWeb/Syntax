@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useT } from "../../i18n/useT";
-import TECHS from "../../lib/techs";
+import TechCardsGrid from "../TechCardsGrid";
 
 // Значения статистики (мокап): число + суффикс для count-up
 const STATS = {
@@ -162,59 +162,20 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
         <HeroDemo t={t} />
       </section>
 
-      {/* 2. Live-preview дашборда (демо-состояние ученика) */}
-      <section className="card card--feature home__resume spotlight">
-        <span className="home__preview-note">{t("home.preview")}</span>
-        <div className="home__resume-head">
-          <div>
-            <span className="label-caps home__greeting">{t("home.greeting")}</span>
-            <h2 className="home__lesson-title">{t("home.lessonTitle")}</h2>
-          </div>
-          <span className="home__resume-pct">{t("home.lessonProgress")}</span>
-        </div>
-        <div className="home__resume-progress">
-          <div className="bar">
-            <div className="bar__fill bar__fill--shimmer" style={{ width: "45%" }} />
-          </div>
-        </div>
-        <div className="home__resume-actions">
-          <button type="button" className="btn btn--primary home__resume-cta" onClick={onSignup}>
-            {t("home.lesson.continue")}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={() => onNavigate("roadmap")}>
-            {t("sidebar.roadmap")}
-          </button>
-        </div>
-      </section>
-
-      {/* 3. Программа: какие языки (счётчики уроков → «чему научишься») */}
+      {/* 2. Программа: каталог треков — что учить (UX-аудит Р8: поднято на 2-е место) */}
       <section className="home__techs">
         <h3 className="home__section-title">{t("home.section.program")}</h3>
-        <div className="tech-row">
-          {TECHS.map((tech) => {
-            const Logo = tech.Logo;
-            return (
-              <button
-                key={tech.id}
-                type="button"
-                className={`tech-card ${activeTech === tech.id ? "tech-card--active" : ""}`}
-                onClick={() => onSelectTech(activeTech === tech.id ? "none" : tech.id)}
-              >
-                <Logo />
-                <span className="tech-card__body">
-                  <span className="tech-card__name">{t(tech.label)}</span>
-                  <span className="tech-card__meta">{t("home.lessons", { n: tech.lessons })}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <p className="home__section-sub">{t("home.section.programDesc")}</p>
+        <TechCardsGrid
+          activeTech={activeTech}
+          onOpenTech={(id) => {
+            onSelectTech(id); // выбор трека (лого в хедере) — К4: персистится
+            onNavigate("technology", { techId: id }); // сразу на страницу технологии
+          }}
+        />
       </section>
 
-      {/* 4. Bento-статистика: размер = важность; Success Rate — wide с ring */}
+      {/* 3. Bento-статистика: доказательство (UX-аудит Р9: личное обещание — на 2-й позиции) */}
       <section className="home__stats">
         <div className="stat-card stat-card--success spotlight">
           <div className="stat-card__main">
@@ -236,6 +197,16 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
                 strokeDashoffset={ringOffset}
               />
             </svg>
+          </div>
+        </div>
+        <div className="stat-card spotlight">
+          <span className="stat-card__label">{t("home.firstProject")}</span>
+          <span className="stat-card__value">{t("home.firstProjectValue")}</span>
+          <div className="stat-card__delta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M7 17 17 7M9 7h8v8" />
+            </svg>
+            {t("home.firstProjectDelta")}
           </div>
         </div>
         <div className="stat-card spotlight">
@@ -263,18 +234,18 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
           </svg>
         </div>
         <div className="stat-card spotlight">
-          <span className="stat-card__label">{t("home.firstProject")}</span>
-          <span className="stat-card__value">{t("home.firstProjectValue")}</span>
+          <span className="stat-card__label">{t("home.projects")}</span>
+          <span className="stat-card__value">{t("home.projectsValue")}</span>
           <div className="stat-card__delta">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M7 17 17 7M9 7h8v8" />
             </svg>
-            {t("home.firstProjectDelta")}
+            {t("home.projectsDelta")}
           </div>
         </div>
       </section>
 
-      {/* 5. Social proof: одна цитата-кейс */}
+      {/* 4. Social proof: одна цитата-кейс */}
       <section className="card home__quote">
         <span className="avatar-dot avatar-dot--lg home__quote-avatar" style={{ background: "linear-gradient(135deg, hsl(152 45% 32%), hsl(152 55% 18%))" }} aria-hidden="true">
           {t("home.quote.name").charAt(0).toUpperCase()}
@@ -284,6 +255,29 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
           <span className="home__quote-meta">
             {t("home.quote.name")} · {t("home.quote.role")}
           </span>
+        </div>
+      </section>
+
+      {/* 5. Live-preview дашборда: аргумент «что получите» (UX-аудит Р7: в конверсионной зоне перед CTA,
+          без дублирующего primary; единственный выход — «View the roadmap», Р13/Р14) */}
+      <section className="card card--feature home__resume spotlight">
+        <span className="home__preview-note">{t("home.preview")}</span>
+        <div className="home__resume-head">
+          <div>
+            <span className="label-caps home__greeting">{t("home.greeting")}</span>
+            <h2 className="home__lesson-title">{t("home.lessonTitle")}</h2>
+          </div>
+          <span className="home__resume-pct">{t("home.lessonProgress")}</span>
+        </div>
+        <div className="home__resume-progress">
+          <div className="bar">
+            <div className="bar__fill bar__fill--shimmer" style={{ width: "45%" }} />
+          </div>
+        </div>
+        <div className="home__resume-actions">
+          <button type="button" className="btn btn--ghost" onClick={() => onNavigate("roadmap")}>
+            {t("home.lesson.viewRoadmap")}
+          </button>
         </div>
       </section>
 
@@ -310,9 +304,10 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
         <div className="home__footer-cols">
           <div className="home__footer-col">
             <h5>{t("footer.product")}</h5>
+            {/* Порядок синхронен сайдбару (UX-аудит Р17) */}
             <button type="button" onClick={() => onNavigate("roadmap")}>{t("sidebar.roadmap")}</button>
-            <button type="button" onClick={() => onNavigate("editor")}>{t("sidebar.editor")}</button>
             <button type="button" onClick={() => onNavigate("tasks")}>{t("sidebar.tasks")}</button>
+            <button type="button" onClick={() => onNavigate("editor")}>{t("sidebar.editor")}</button>
             <button type="button" onClick={() => onNavigate("documentation")}>{t("sidebar.documentation")}</button>
           </div>
           <div className="home__footer-col">

@@ -474,6 +474,25 @@ code {
 }
 .nav--bottom { margin-top: auto; }
 
+/* Смысловые группы навигации (Learn / Community / Resources): «оглавление продукта» */
+.nav__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav__group + .nav__group { margin-top: 14px; }
+.nav__group-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.72;
+  padding: 0 12px;
+  margin-bottom: 3px;
+}
+
 .nav__item {
   display: flex;
   align-items: center;
@@ -1054,6 +1073,9 @@ code {
   :root { --sidebar-w: 76px; }
   .shell { padding: 16px; gap: 16px; }
   .sidebar { height: auto; }
+  /* Группы в горизонтальном bottom-nav прозрачны (display: contents), подписи скрыты */
+  .nav__group { display: contents; }
+  .nav__group-label { display: none; }
   .nav__item { justify-content: center; padding: 10px; }
   .nav__item span { display: none; }
   .streak {
@@ -1121,100 +1143,264 @@ code {
   max-width: 70ch;
 }
 
-/* ---------- Roadmap ---------- */
-.roadmap {
-  position: relative;
-  max-width: 920px;
-  margin: 8px auto 0;
-  padding: 8px 0 40px;
-}
-.roadmap__line {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  transform: translateX(-50%);
-  background: var(--border-strong);
-}
-.roadmap__item {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 96px;
-  margin-bottom: 28px;
-}
-.roadmap__node {
-  position: absolute;
-  left: 50%;
-  top: 28px;
-  transform: translateX(-50%);
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-full);
-  border: 2px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--muted);
-  z-index: 1;
-}
-.roadmap__node svg { width: 18px; height: 18px; }
-.roadmap__node--done { border-color: var(--primary); color: var(--primary); }
-.roadmap__node--current {
-  border-color: var(--primary);
-  box-shadow: var(--glow);
-}
-.roadmap__node--current::after {
-  content: "";
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-full);
-  background: var(--primary);
-}
-.roadmap__item--left .roadmap__card { grid-column: 1; }
-.roadmap__item--right .roadmap__card { grid-column: 2; }
-.roadmap__card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 20px 22px;
-}
-.roadmap__card-head {
+/* ============================================================
+   Technology page (страница технологии; макет: technology-page)
+   ============================================================ */
+.tech-page { display: flex; flex-direction: column; gap: 24px; }
+
+/* Hero: лого + название + Live-чип + описание */
+.tech-page__hero {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2px;
+  gap: 24px;
+  padding: 28px 28px;
 }
-.roadmap__module {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+.tech-page__logo {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 6px);
+}
+.tech-page__logo .tech-logo { width: 64px; height: 64px; }
+.tech-page__hero-body { min-width: 0; }
+.tech-page__hero-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tech-page__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--primary);
 }
-.roadmap__pct { font-size: 13px; font-weight: 600; color: var(--text-variant); }
-.roadmap__title {
-  font-size: 22px;
+.chip--live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-variant);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+}
+.chip--live::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+.tech-page__desc {
+  margin: 12px 0 0;
+  max-width: 640px;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--text-variant);
+}
+/* Объём трека рядом с названием: математика «N lessons» в каталоге сходится (п.2) */
+.tech-page__lessons {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Change track: выход из контекста трека в каталог (п.7) */
+.tech-page__change {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.tech-page__change svg { width: 14px; height: 14px; transition: transform 0.15s ease; }
+.tech-page__change:hover { color: var(--primary); }
+.tech-page__change:hover svg { transform: translateX(3px); }
+
+/* Course Progress */
+.tech-page__progress { padding: 22px 24px; display: flex; flex-direction: column; align-items: stretch; }
+.tech-page__progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tech-page__card-title {
+  margin: 0;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.roadmap__desc {
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-variant);
+.tech-page__pct { font-size: 24px; font-weight: 700; color: var(--primary); }
+.tech-page__progress-module { margin: 6px 0 14px; font-size: 14px; color: var(--muted); }
+.tech-page__progress .bar { margin-bottom: 16px; }
+.tech-page__cta { align-self: flex-start; }
+
+/* Curriculum */
+.tech-page__section-title {
+  margin: 0 0 14px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
-.roadmap__card .bar { height: 4px; margin-top: 10px; }
-.roadmap__cta { margin-top: 12px; }
-.roadmap__card--current {
+.techmod-list { display: flex; flex-direction: column; gap: 12px; }
+.techmod {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+}
+.techmod__icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-strong);
+  color: var(--muted);
+}
+.techmod__icon svg { width: 18px; height: 18px; }
+.techmod__icon--done { border-color: var(--primary); color: var(--primary); }
+.techmod__icon--current {
   border-color: var(--primary);
-  box-shadow: 0 0 28px rgba(48, 224, 161, 0.14);
+  color: var(--primary);
+  box-shadow: var(--glow);
 }
-.roadmap__card--locked {
-  opacity: 0.55;
-  border-style: dashed;
+.techmod__body { min-width: 0; flex: 1; }
+.techmod__title { margin: 2px 0 4px; font-size: 16px; font-weight: 700; }
+.techmod__desc { margin: 0; font-size: 14px; line-height: 20px; color: var(--muted); }
+.techmod__status {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  padding-top: 2px;
 }
-.roadmap__card--locked .roadmap__pct { display: none; }
+.techmod__status--done { color: var(--primary); }
+.techmod__status--current { color: var(--primary); }
+.techmod--current {
+  border-color: var(--primary);
+  box-shadow: 0 0 24px rgba(48, 224, 161, 0.12);
+}
+.techmod--current .techmod__title { color: var(--primary); }
+/* Текущий модуль кликабелен целиком (п.4, единое правило с roadmap-картой) */
+.techmod--current { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.2s ease; }
+.techmod--current:hover { transform: translateY(-2px); }
+.techmod--current:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.techmod--locked { border-style: dashed; opacity: 0.6; }
+/* Честный empty-state: «модули идут дальше» (п.3) */
+.techmod--soon { border-style: dashed; opacity: 0.7; }
+
+/* Правый rail: Resources + AI Assistant */
+.rail-card__title--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 6px;
+}
+.rail-card__title--icon svg { width: 18px; height: 18px; color: var(--primary); flex: none; }
+.tech-aside__resources {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tech-aside__resource {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 9px 8px;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-variant);
+  border-radius: var(--radius);
+  cursor: default;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.tech-aside__resource:hover { color: var(--text); background: var(--surface-2); }
+.tech-aside__resource svg { width: 15px; height: 15px; flex: none; color: var(--muted); }
+
+.tech-aside__ai { display: flex; flex-direction: column; }
+.tech-aside__ai-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tech-aside__ai-title { display: inline-flex; align-items: center; gap: 9px; }
+.dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  animation: pulse-dot 2s ease-in-out infinite;
+  flex: none;
+}
+.tech-aside__ai-dots { color: var(--muted); letter-spacing: 2px; font-size: 14px; }
+.tech-aside__chat { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; }
+.tech-aside__bubble {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 19px;
+  border-radius: 10px;
+}
+.tech-aside__bubble--ai {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-variant);
+  align-self: flex-start;
+}
+.tech-aside__bubble--user {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  color: var(--text);
+  align-self: flex-end;
+}
+.tech-aside__bubble--clipped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tech-aside__input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.tech-aside__field { flex: 1; font-size: 13px; padding: 8px 10px; }
+
+@media (max-width: 900px) {
+  .tech-page__hero { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .tech-page__name { font-size: 30px; line-height: 36px; }
+  .tech-page__logo { width: 72px; height: 72px; }
+  .tech-page__logo .tech-logo { width: 48px; height: 48px; }
+  .techmod { flex-wrap: wrap; }
+  .techmod__status { width: 100%; padding-top: 0; order: 3; }
+}
 
 /* ---------- Tasks ---------- */
 .tasks-head {
@@ -1611,15 +1797,6 @@ code {
 }
 
 @media (max-width: 900px) {
-  .roadmap__line { left: 21px; }
-  .roadmap__node { left: 21px; }
-  .roadmap__item {
-    grid-template-columns: 1fr;
-    column-gap: 0;
-    padding-left: 56px;
-  }
-  .roadmap__item--left .roadmap__card,
-  .roadmap__item--right .roadmap__card { grid-column: 1; }
   .page-head__title { font-size: 32px; line-height: 40px; }
 }
 
@@ -1882,20 +2059,25 @@ code {
   font-weight: 600;
   color: var(--text-variant);
 }
+.home__section-sub {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.tech-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Плитка без скролла: 3 колонки на десктопе (9 треков = 3×3) */
 .tech-row {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(184px, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  /* edge-fade: скролл не выглядит как обрезка */
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 32px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 32px), transparent);
+}
+@media (max-width: 1100px) {
+  .tech-row { grid-template-columns: repeat(2, 1fr); }
 }
 .tech-card {
   position: relative;
-  height: 84px;
+  min-height: 84px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1919,7 +2101,7 @@ code {
   background: color-mix(in srgb, var(--primary) 10%, var(--surface));
   border-color: color-mix(in srgb, var(--primary) 45%, transparent);
 }
-.tech-card__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tech-card__body { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-width: 0; }
 .tech-card__name {
   font-size: 15px;
   font-weight: 600;
@@ -1928,13 +2110,13 @@ code {
 }
 .tech-card:hover .tech-card__name,
 .tech-card--active .tech-card__name { color: var(--text); }
-.tech-card__meta {
+.tech-card__meta { /* мета читается целиком: перенос, а не обрезка (UX-аудит Р10) */
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: block;
+  white-space: normal;
+  line-height: 1.4;
 }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
@@ -2257,6 +2439,8 @@ code {
 /* --- Мобильная главная (после базовых правил, чтобы переопределяли) --- */
 @media (max-width: 640px) {
   .sidebar .streak { display: none; }
+  .tech-row { grid-template-columns: 1fr; }
+  .tech-card { height: auto; padding: 14px 16px; }
   .home__stats { grid-template-columns: 1fr; }
   .stat-card--success { grid-column: auto; }
   .home__hero { padding: 28px 20px; flex-direction: column; align-items: flex-start; }

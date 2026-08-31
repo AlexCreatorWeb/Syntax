@@ -70,10 +70,16 @@ function Header({ activeTech, onToggleTheme, onNavigate, onSignup }) {
   return (
     <header className="topbar">
       <div className="topbar__left">
+        {/* Лого-трек в состоянии выбранного трека ведёт на страницу трека (UX-аудит п.7);
+            обычный лого — домой. «Change track» на странице трека возвращает в каталог. */}
         <button
           type="button"
           className="brand brand--link"
-          onClick={() => onNavigate && onNavigate("home")}
+          onClick={() => {
+            if (!onNavigate) return;
+            if (activeTech && getTech(activeTech)) onNavigate("technology", { techId: activeTech });
+            else onNavigate("home");
+          }}
           aria-label={t("header.home")}
         >
           {techData ? (

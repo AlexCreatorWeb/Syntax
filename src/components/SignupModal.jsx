@@ -3,7 +3,7 @@ import { useT } from "../i18n/useT";
 
 // Sign-up модалка для всех гостевых действий (demo/preview → «создайте аккаунт»,
 // либо «continue as guest»). Пока без бэкенда: submit просто закрывает.
-function SignupModal({ open, onClose }) {
+function SignupModal({ open, onClose, onAuthed }) {
   const t = useT();
   const boxRef = useRef(null);
 
@@ -35,7 +35,14 @@ function SignupModal({ open, onClose }) {
         </button>
         <h2 className="signup__title">{t("signup.title")}</h2>
         <p className="signup__subtitle">{t("signup.subtitle")}</p>
-        <form className="signup__form" onSubmit={(e) => { e.preventDefault(); onClose(); }}>
+        <form
+          className="signup__form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onAuthed && onAuthed(); // демо-auth: submit «логинит» юзера
+            onClose();
+          }}
+        >
           <input className="field" type="text" placeholder={t("signup.name")} aria-label={t("signup.name")} />
           <input className="field" type="email" placeholder={t("signup.email")} aria-label={t("signup.email")} />
           <button type="submit" className="btn btn--primary signup__submit">

@@ -29,6 +29,16 @@ const fileNames = {
 
 const ADDABLE_LANGUAGES = ["javascript", "html", "css"];
 
+// К2: имя старт-файла из job-контекста урока → Monaco-язык по расширению
+const langFromFileName = (name) => {
+  const ext = (name || "").split(".").pop();
+  if (ext === "py") return "python";
+  if (ext === "sql") return "sql";
+  if (ext === "css") return "css";
+  if (ext === "html" || ext === "vue") return "html";
+  return "javascript"; // js / jsx / мjs и пр.
+};
+
 // Темы редактора, привязанные к токенам платформы (Protocol Neo)
 function definePlatformThemes(monaco) {
   monaco.editor.defineTheme("syntax-dark", {
@@ -139,11 +149,14 @@ function buildRunnerDoc(files, contents) {
 function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate }) {
   const t = useT();
 
-  // Стартовый файл — пример кода технологии, выбранной пользователем
+  // Стартовый файл: у урока с трека — файл урока (main.py, queries.sql, …),
+  // иначе — дефолтный для языка (K2: имя/расширение соответствуют треку)
+  const startFile = job && job.file ? job.file : fileNames[language] || `file.${language}`;
+  const startLang = langFromFileName(startFile);
   const [files, setFiles] = useState(() => [
-    { id: 1, name: fileNames[language] || `file.${language}`, language },
+    { id: 1, name: startFile, language: startLang },
   ]);
-  const [contents, setContents] = useState(() => ({ 1: codeTemplates[language] || "" }));
+  const [contents, setContents] = useState(() => ({ 1: codeTemplates[startLang] || "" }));
   const [activeId, setActiveId] = useState(1);
   const [copied, setCopied] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
