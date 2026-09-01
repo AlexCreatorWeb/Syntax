@@ -1623,8 +1623,12 @@ code {
 }
 .tech-aside__clear { width: 26px; height: 26px; color: var(--muted); }
 .tech-aside__clear svg { width: 14px; height: 14px; }
-/* Чат: стабильный скролл-регион — все сообщения читаются, карточка не растёт бесконечно */
-.tech-aside__chat { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; height: 420px; min-height: 420px; overflow-y: auto; overscroll-behavior: contain; }
+/* Чат: ТОЛЬКО вертикальный скролл (широкие куски кода не должны ронять горизонтальную ленту) */
+.tech-aside__chat { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; height: 420px; min-height: 420px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
+/* Пузыри не вылезают за ширину: длинные слова/код переносятся, code-block скроллится сам */
+.tech-aside__bubble { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.tech-aside__chat-toolbar { display: flex; justify-content: flex-end; padding: 2px 0 6px; }
+.tech-aside__bubble--md .md-p, .tech-aside__bubble--md .md-inline { overflow-wrap: anywhere; }
 .tech-aside__bubble {
   margin: 0;
   padding: 10px 12px;

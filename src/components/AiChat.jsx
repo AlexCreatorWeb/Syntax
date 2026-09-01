@@ -100,19 +100,21 @@ function AiChat({ techId }) {
             <span className="dot-pulse" aria-hidden="true"></span>
             {t("techPage.aiTitle")}
           </h2>
-          <span className="tech-aside__ai-head-actions">
-            {messages.length > 0 && (
-              <button type="button" className="icon-btn tech-aside__clear" title={t("ai.clear")} aria-label={t("ai.clear")} onClick={clear}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6" />
-                </svg>
-              </button>
-            )}
-          </span>
         </div>
         {/* Имя модели — под заголовком */}
         <span className="tech-aside__model-chip" title={AI_MODEL}>{AI_MODEL_SHORT}</span>
       </div>
+
+      {/* Кнопка очистки — вверху чата (не при заголовке), всегда на месте, не скроллится */}
+      {messages.length > 0 && (
+        <div className="tech-aside__chat-toolbar">
+          <button type="button" className="icon-btn tech-aside__clear" title={t("ai.clear")} aria-label={t("ai.clear")} onClick={clear}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <div className="tech-aside__chat" ref={boxRef}>
         {messages.length === 0 && (
