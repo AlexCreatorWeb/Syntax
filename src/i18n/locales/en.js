@@ -685,6 +685,7 @@ export default {
     resetYes: "Reset",
     cancel: "Cancel",
     consoleHint: "Press Run to see output here",
+    htmlResultHint: "Result — see the live preview",
     runnerSoon: "The {lang} runner is coming soon — check your code manually for now.",
     cssOnly: "CSS-only workspace — add an HTML file to see the live preview.",
     freeMode: "Free mode: edit, add files (JS/HTML/CSS) and press Run.",

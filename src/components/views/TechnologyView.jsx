@@ -105,6 +105,8 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
                   <h3 className="techmod__title">{i + 1}. {l.title}</h3>
                   <p className="techmod__desc">{t("techPage.dbLessonOpen")}</p>
                 </div>
+                {/* Красный NEW: три последних урока трека (материал про свежие обновления; пока по позиции — дальше колонка-флаг) */}
+                {i >= dbTechLessons.length - 3 && <span className="chip chip--new">NEW</span>}
               </article>
             ))}
           </div>

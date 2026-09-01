@@ -326,7 +326,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     } catch {
       logs = [];
     }
-    setConsoleLogs(logs);
+    setConsoleLogs(logs.length ? logs : (hasHtml ? [{ type: "info", text: t("editor.htmlResultHint") }] : []));
     setRanOnce(true);
     if (submitPendingRef.current) {
       submitPendingRef.current = false;

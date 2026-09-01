@@ -693,6 +693,7 @@ export const LOCALES = {
       resetYes: "Сбросить",
       cancel: "Отмена",
       consoleHint: "Нажмите Run, чтобы увидеть вывод здесь",
+      htmlResultHint: "Результат — в live-превью",
       runnerSoon: "Раннер {lang} скоро появится — пока проверяйте код вручную.",
       cssOnly: "Только CSS без HTML — добавьте HTML-файл, чтобы увидеть превью.",
       freeMode: "Свободный режим: редактируйте, добавляйте файлы (JS/HTML/CSS) и жмите Run.",
