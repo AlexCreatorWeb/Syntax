@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useT } from "../i18n/useT";
-import { isAiConfigured, askAssistant, AI_MODEL } from "../lib/ai";
+import { isAiConfigured, askAssistant, AI_MODEL, AI_MODEL_SHORT } from "../lib/ai";
 import { MdContent } from "../lib/markdown-view";
+
+// Модель иногда пишет открывающий fence в одной строке с кодом («```js function x(){»)
+// — наш парсер требует ```lang в отдельной строке. А ещё ответ может оборваться на
+// max_tokens с НЕЗАКРЫТЫМ блоком — тогда ``` остаётся на тексте; доклеиваем.
+const fixMd = (s) => {
+  let out = s.replace(/^```([\w-]*)[ \t]+(\S)/gm, "```$1\n$2");
+  if (((out.match(/```/g) || []).length) % 2 === 1) out += "\n```";
+  return out;
+};
 
 // Живой AI-чат (HuggingFace gemma-2-9b-it). techId задаёт контекст в сис-промпте.
 // Ответы модели — markdown-lite → рендерим MdContent (код-блоки с Copy, callout'ы).
@@ -86,20 +95,23 @@ function AiChat({ techId }) {
   return (
     <section className="card rail-card tech-aside__ai">
       <div className="tech-aside__ai-head">
-        <h2 className="rail-card__title tech-aside__ai-title">
-          <span className="dot-pulse" aria-hidden="true"></span>
-          {t("techPage.aiTitle")}
-        </h2>
-        <span className="tech-aside__ai-head-actions">
-          {messages.length > 0 && (
-            <button type="button" className="icon-btn tech-aside__clear" title={t("ai.clear")} aria-label={t("ai.clear")} onClick={clear}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6" />
-              </svg>
-            </button>
-          )}
-          <span className="tech-aside__model-chip" title={AI_MODEL}>gemma-2-9b</span>
-        </span>
+        <div className="tech-aside__ai-title-row">
+          <h2 className="rail-card__title tech-aside__ai-title">
+            <span className="dot-pulse" aria-hidden="true"></span>
+            {t("techPage.aiTitle")}
+          </h2>
+          <span className="tech-aside__ai-head-actions">
+            {messages.length > 0 && (
+              <button type="button" className="icon-btn tech-aside__clear" title={t("ai.clear")} aria-label={t("ai.clear")} onClick={clear}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6" />
+                </svg>
+              </button>
+            )}
+          </span>
+        </div>
+        {/* Имя модели — под заголовком */}
+        <span className="tech-aside__model-chip" title={AI_MODEL}>{AI_MODEL_SHORT}</span>
       </div>
 
       <div className="tech-aside__chat" ref={boxRef}>
@@ -111,7 +123,7 @@ function AiChat({ techId }) {
             <p key={m.id} className="tech-aside__bubble tech-aside__bubble--user">{m.content}</p>
           ) : m.content ? (
             <div key={m.id} className="tech-aside__bubble tech-aside__bubble--ai tech-aside__bubble--md">
-              <MdContent src={m.content} t={t} />
+              <MdContent src={fixMd(m.content)} t={t} />
             </div>
           ) : null
         )}

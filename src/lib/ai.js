@@ -1,4 +1,5 @@
-// AI Assistant — HuggingFace Inference API, модель google/gemma-2-9b-it.
+// AI Assistant — HuggingFace Inference API, модель google/gemma-3-12b-it.
+// (gemma-2-9b-it в каталоге Inference Providers больше нет — NXDOMAIN/404; 12b-3 = преемник)
 // Ключ — из VITE_HF_API_KEY (.env). Ключ — обычный HF token (hf_…),
 // в браузер попадает VITE_-префиксом, но учти: без бэкенда любой токен виден в сети.
 //
@@ -7,7 +8,8 @@
 // отключён — работает только router.huggingface.co. Холодный старт модели:
 // заголовок X-Wait-For-Model: true — роутер держит запрос в очереди вместо 503.
 const HF_BASE = "https://router.huggingface.co/v1";
-export const AI_MODEL = "google/gemma-2-9b-it";
+export const AI_MODEL = "google/gemma-3-12b-it";
+export const AI_MODEL_SHORT = AI_MODEL.split("/").pop();
 const HF_KEY = import.meta.env.VITE_HF_API_KEY || "";
 
 export const isAiConfigured = () => Boolean(HF_KEY);
@@ -50,7 +52,7 @@ async function streamChatCompletion({ messages, signal, onToken }) {
       messages,
       stream: true,
       temperature: 0.4,
-      max_tokens: 600,
+      max_tokens: 900,
     }),
   });
 

@@ -1587,14 +1587,17 @@ code {
 .tech-aside__resource svg { width: 15px; height: 15px; flex: none; color: var(--muted); }
 
 .tech-aside__ai { display: flex; flex-direction: column; }
+/* Шапка ассистента: заголовок сверху, имя модели ПОД заголовком (не в одной строке — иначе «разъезжается») */
 .tech-aside__ai-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
-.tech-aside__ai-title { display: inline-flex; align-items: center; gap: 9px; }
+.tech-aside__ai-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tech-aside__ai-title { display: inline-flex; align-items: center; gap: 9px; margin: 0; }
 .dot-pulse {
   width: 8px;
   height: 8px;
@@ -1606,6 +1609,7 @@ code {
 .tech-aside__ai-dots { color: var(--muted); letter-spacing: 2px; font-size: 14px; }
 .tech-aside__ai-head-actions { display: inline-flex; align-items: center; gap: 6px; }
 .tech-aside__model-chip {
+  align-self: flex-start;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.4px;
@@ -1615,10 +1619,12 @@ code {
   border-radius: var(--radius-full);
   padding: 2px 8px;
   font-family: var(--font-mono, ui-monospace, monospace);
+  white-space: nowrap;
 }
 .tech-aside__clear { width: 26px; height: 26px; color: var(--muted); }
 .tech-aside__clear svg { width: 14px; height: 14px; }
-.tech-aside__chat { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; max-height: 340px; min-height: 88px; overflow-y: auto; }
+/* Чат: стабильный скролл-регион — все сообщения читаются, карточка не растёт бесконечно */
+.tech-aside__chat { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; height: 420px; min-height: 420px; overflow-y: auto; overscroll-behavior: contain; }
 .tech-aside__bubble {
   margin: 0;
   padding: 10px 12px;
