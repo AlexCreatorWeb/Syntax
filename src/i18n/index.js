@@ -159,6 +159,7 @@ export const LOCALES = {
         lesson: { title: "Запросы и агрегация", desc: "Опиши коллекцию, напиши фильтрующие запросы и двухступенчатый пайплайн агрегации.", file: "models.js" },
       },
     },    lessonView: { tabMaterial: "Материал", tabTask: "Задание", goToTask: "Перейти к заданию" },
+  ai: { thinking: "Думаю…", send: "Отправить", clear: "Новый разговор", noKey: "AI прогревается — ключ модели ещё не задан", errGeneric: "Что-то пошло не так — попробуйте ещё раз", errBadKey: "Ключ модели недействителен или истёк", errRateLimit: "Слишком много запросов — попробуйте через минуту", errModel: "Модель проогревается — повторите через несколько секунд" },
   techPage: {
       live: "Активно",
       progress: "Прогресс курса",
@@ -196,7 +197,7 @@ export const LOCALES = {
     news: {
       empty: "Новых публикаций пока нет",
       source: "Medium · {feed}",
-      translating: "Переводим…",
+      translatingProgress: "Переводим… {done} / {total}",
       loading: "Загружаем статью…",
       learnMore: "Читать далее",
       showLess: "Свернуть",

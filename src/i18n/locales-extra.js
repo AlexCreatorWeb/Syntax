@@ -20,6 +20,7 @@ export const LOCALES_EXTRA = {
     },
     promo: { book: { title: "Mastering Syntax", desc: "Глибоке занурення в сучасне програмування", cta: "Купити" }, studio: { title: "NeoStudio", desc: "Преміальний веб-дизайн", cta: "Зв’яжіться з нами" } },
     lessonView: { tabMaterial: "Матеріал", tabTask: "Завдання", goToTask: "Перейти до завдання" },
+    ai: { thinking: "Думаю…", send: "Надіслати", clear: "Нова розмова", noKey: "AI прогрівається — ключ моделі ще не задано", errGeneric: "Щось пішло не так — спробуйте ще раз", errBadKey: "Ключ моделі недієвий або минув", errRateLimit: "Забагато запитів — спробуйте через хвилину", errModel: "Модель прогрівається — повторіть через кілька секунд" },
     techPage: {
       live: "Активний",
       progress: "Прогрес курсу",
@@ -57,7 +58,7 @@ export const LOCALES_EXTRA = {
     news: {
       empty: "Нових публікацій поки немає",
       source: "Medium · {feed}",
-      translating: "Перекладаємо…",
+      translatingProgress: "Перекладаємо… {done} / {total}",
       loading: "Завантажуємо статтю…",
       learnMore: "Читати далі",
       showLess: "Згорнути",
@@ -581,6 +582,7 @@ export const LOCALES_EXTRA = {
     },
     promo: { book: { title: "Mastering Syntax", desc: "Inmersión en la programación moderna", cta: "Comprar" }, studio: { title: "NeoStudio", desc: "Diseño web de gama alta", cta: "Contáctanos" } },
     lessonView: { tabMaterial: "Material", tabTask: "Tarea", goToTask: "Ir a la tarea" },
+    ai: { thinking: "Pensando…", send: "Enviar", clear: "Nueva conversación", noKey: "AI se está preparando — la clave del modelo aún no está configurada", errGeneric: "Algo salió mal — inténtalo de nuevo", errBadKey: "La clave del modelo no es válida o ha expirado", errRateLimit: "Demasiadas peticiones — prueba en un minuto", errModel: "El modelo se está preparando — prueba en unos segundos" },
     techPage: {
       live: "Activo",
       progress: "Progreso del curso",
@@ -618,7 +620,7 @@ export const LOCALES_EXTRA = {
     news: {
       empty: "Aún no hay publicaciones nuevas",
       source: "Medium · {feed}",
-      translating: "Traduciendo…",
+      translatingProgress: "Traduciendo… {done} / {total}",
       loading: "Cargando artículo…",
       learnMore: "Leer más",
       showLess: "Mostrar menos",
@@ -1143,6 +1145,7 @@ export const LOCALES_EXTRA = {
     },
     promo: { book: { title: "Mastering Syntax", desc: "Tiefer Einblick in modernes Programmieren", cta: "Jetzt kaufen" }, studio: { title: "NeoStudio", desc: "High-End-Webdesign", cta: "Kontaktieren Sie uns" } },
     lessonView: { tabMaterial: "Material", tabTask: "Aufgabe", goToTask: "Zur Aufgabe" },
+    ai: { thinking: "Denke nach…", send: "Senden", clear: "Neue Unterhaltung", noKey: "KI wird gestartet — Modell-Key noch nicht gesetzt", errGeneric: "Etwas ist schiefgelaufen — bitte erneut versuchen", errBadKey: "Modell-Key ungültig oder abgelaufen", errRateLimit: "Zu viele Anfragen — versuchen Sie es in einer Minute erneut", errModel: "Modell wird gestartet — versuchen Sie es in wenigen Sekunden erneut" },
     techPage: {
       live: "Aktiv",
       progress: "Fortschritt des Kurses",
@@ -1180,7 +1183,7 @@ export const LOCALES_EXTRA = {
     news: {
       empty: "Noch keine neuen Beiträge",
       source: "Medium · {feed}",
-      translating: "Übersetze…",
+      translatingProgress: "Übersetze… {done} / {total}",
       loading: "Artikel wird geladen…",
       learnMore: "Weiterlesen",
       showLess: "Einklappen",

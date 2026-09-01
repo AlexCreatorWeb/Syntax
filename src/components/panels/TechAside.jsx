@@ -1,8 +1,9 @@
 import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
+import AiChat from "../AiChat";
 
 // Правый rail страницы технологии (макет: technology-page):
-// Resources (ссылки-заглушки) + Syntax AI Assistant (статичный демо-чат, без бэкенда).
+// Resources (ссылки-заглушки) + Syntax AI Assistant (gemma-2-9b-it через HuggingFace).
 function TechAside({ techId }) {
   const t = useT();
   const tech = getTech(techId) || getTech("javascript");
@@ -32,28 +33,7 @@ function TechAside({ techId }) {
         </ul>
       </section>
 
-      <section className="card rail-card tech-aside__ai">
-        <div className="tech-aside__ai-head">
-          <h2 className="rail-card__title tech-aside__ai-title">
-            <span className="dot-pulse" aria-hidden="true"></span>
-            {t("techPage.aiTitle")}
-          </h2>
-          <span className="tech-aside__ai-dots" aria-hidden="true">···</span>
-        </div>
-        <div className="tech-aside__chat" aria-hidden="true">
-          <p className="tech-aside__bubble tech-aside__bubble--ai">{t("techPage.aiHint")}</p>
-          <p className="tech-aside__bubble tech-aside__bubble--user">{content.aiQ}</p>
-          <p className="tech-aside__bubble tech-aside__bubble--ai tech-aside__bubble--clipped">{content.aiA}</p>
-        </div>
-        <div className="tech-aside__input">
-          <input className="field tech-aside__field" type="text" placeholder={t("techPage.aiInput")} aria-label={t("techPage.aiInput")} />
-          <button type="button" className="icon-btn tech-aside__send" title={t("home.soon")} aria-disabled="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
-              <path d="M5 12 20 4l-4 16-4-6-7-2Z" />
-            </svg>
-          </button>
-        </div>
-      </section>
+      <AiChat techId={tech.id} />
     </>
   );
 }

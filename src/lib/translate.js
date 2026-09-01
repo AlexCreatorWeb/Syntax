@@ -17,6 +17,9 @@ let quotaExhausted = false;
 let googleFails = 0;
 const GOOGLE_MAX_FAILS = 3;
 let googleBlocked = false;
+// Кто из провайдеров реально работает — он первым в цепочке следующих запросов
+// (иначе каждый блок зря тратит время на обход мёртвых).
+let lastGood = null; // 'mymemory' | 'google' | 'jina'
 
 /**
  * Переводит текст с английского в targetLang ("ru" | "uk" | "es" | "de" | …).
@@ -30,14 +33,26 @@ export async function translateText(text, targetLang, timeoutMs = 9000) {
   if (cache.has(key)) return cache.get(key);
   if (pending.has(key)) return pending.get(key);
   const job = (async () => {
-// Цепочка: MyMemory (de= ~50K зн./день) → Google gtx → MyMemory через Jina Reader
-// (Jina ходит на API со своего IP — локальная квота не исчерпана даже когда наша
-// «лежит» на сутки) → null (оригинал).
-    let value = null;
-    if (!quotaExhausted) value = await myMemory(text, lang, timeoutMs);
-    if (value === null && !googleBlocked) value = await googleGtx(text, lang, timeoutMs);
-    if (value === null) value = await myMemoryViaJina(text, lang, timeoutMs);
-    return value;
+    // Цепочка: MyMemory (де= ~50K зн./день) → Google gtx → MyMemory через Jina Reader
+    // (Jina ходит на API со своего IP — живёт, даже когда наша IP-квота «лежит»)
+    // → null (оригинал). Рабочий провайдер (lastGood) — первым: без обхода мёртвых.
+    const providers = [
+      { id: "mymemory", run: myMemory, ok: () => !quotaExhausted },
+      { id: "google", run: googleGtx, ok: () => !googleBlocked },
+      { id: "jina", run: myMemoryViaJina, ok: () => true },
+    ];
+    const order = providers
+      .slice()
+      .sort((a) => (a.id === lastGood ? -1 : 0)); // стабильная сортировка
+    for (const p of order) {
+      if (!p.ok()) continue;
+      const value = await p.run(text, lang, timeoutMs);
+      if (value !== null) {
+        lastGood = p.id;
+        return value;
+      }
+    }
+    return null;
   })();
   pending.set(key, job);
   try {
@@ -153,24 +168,42 @@ async function myMemoryViaJina(text, lang, timeoutMs) {
  * в нём остаётся оригинал. Принимает и возвращает блоки parseMdBlocks —
  * структура статьи никогда не собирается из переведённого текста.
  */
-export async function translateArticleBlocks(blocks, targetLang) {
+export const isTranslatableBlock = (b) =>
+  b.type === "p" || b.type === "h2" || b.type === "h3" || b.type === "callout";
+
+export const translatableIndexes = (blocks) =>
+  blocks.map((b, i) => (isTranslatableBlock(b) ? i : -1)).filter((i) => i >= 0);
+
+/**
+ * Перевод статьи ПО БЛОКАМ (код/картинки не через MT — ломает синтаксис),
+ * ПРОГРЕССИВНО: после каждого батча opts.onBatch(updates, done) — UI подменяет
+ * готовые блоки на лету (пользователь видит русский по мере готовности, а не
+ * после всей статьи). opts.priorityIdx — сначала видное превью (первые блоки
+ * до PREVIEW_LIMIT), остальное — фоном. BATCH 10 — Jina держит параллелизм.
+ */
+export async function translateArticleBlocks(blocks, targetLang, opts = {}) {
   const lang = String(targetLang || "en").toLowerCase();
-  if (lang === "en" || !blocks.length) return blocks;
-  const out = blocks.slice();
-  const textIdx = blocks
-    .map((b, i) => (b.type === "p" || b.type === "h2" || b.type === "h3" || b.type === "callout" ? i : -1))
-    .filter((i) => i >= 0);
-  const BATCH = 6;
-  for (let i = 0; i < textIdx.length; i += BATCH) {
-    const part = textIdx.slice(i, i + BATCH);
+  if (lang === "en" || !blocks.length) return {};
+  const textIdx = translatableIndexes(blocks);
+  const prio = new Set((opts.priorityIdx || []).filter((i) => textIdx.includes(i)));
+  const ordered = [
+    ...textIdx.filter((i) => prio.has(i)),
+    ...textIdx.filter((i) => !prio.has(i)),
+  ];
+  const updates = {};
+  let done = 0;
+  const BATCH = 10;
+  for (let i = 0; i < ordered.length; i += BATCH) {
+    const part = ordered.slice(i, i + BATCH);
     const results = await Promise.allSettled(
       part.map((bi) => translateText(blocks[bi].text, lang))
     );
     results.forEach((r, k) => {
-      const bi = part[k];
-      if (r.status === "fulfilled" && r.value) out[bi] = { ...blocks[bi], text: r.value };
+      if (r.status === "fulfilled" && r.value) updates[part[k]] = r.value;
     });
+    done += part.length;
+    if (opts.onBatch) opts.onBatch(updates, done);
   }
-  return out;
+  return updates;
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useT } from "../i18n/useT";
 import { useLanguage } from "../context/useLanguage";
-import { translateText, translateArticleBlocks } from "../lib/translate";
+import { translateText, translateArticleBlocks, translatableIndexes } from "../lib/translate";
 import { fetchMediumArticle } from "../lib/medium";
 import { parseMdBlocks } from "../lib/markdown";
 import { MdContent } from "../lib/markdown-view";
@@ -23,7 +23,8 @@ function NewsModal({ item, onClose }) {
   const [translatedTitle, setTranslatedTitle] = useState(null); // string | null
   const [article, setArticle] = useState(null); // { md, avatar } | null
   const [articleFailed, setArticleFailed] = useState(false);
-  const [translatedBlocks, setTranslatedBlocks] = useState(null); // блоки | null
+  // Прогрессивный перевод: { done, texts: { [blockIdx]: переведённый текст } }
+  const [progress, setProgress] = useState(null);
   const [expanded, setExpanded] = useState(false);
 
   // Esc + body-scroll-lock (паттерн SignupModal)
@@ -61,25 +62,54 @@ function NewsModal({ item, onClose }) {
     return () => { alive = false; };
   }, [item.link]);
 
-  // Перевод статьи по блокам (картинки/код не трогаем). Оригинал показываем
-  // сразу; готовый перевод подменяет (спиннер «Переводим…» в конце).
+  // Перевод статьи по блокам (картинки/код не трогаем). ПРОГРЕССИВНО: готовые
+  // батчи подменяются на лету (спиннер-прогресс с счётчиком), превью-блоки —
+  // приоритетом, остальная статья — фоном. Оригинал виден сразу.
   const articleBlocks = useMemo(
     () => (article ? parseMdBlocks(article.md) : null),
     [article]
   );
+  const totalBlocks = useMemo(
+    () => (articleBlocks ? translatableIndexes(articleBlocks).length : 0),
+    [articleBlocks]
+  );
+  // Блоки видного превью (первые ~PREVIEW_LIMIT знаков) — переводим первыми
+  const priorityIdx = useMemo(() => {
+    if (!articleBlocks) return [];
+    const out = [];
+    let len = 0;
+    articleBlocks.forEach((b, i) => {
+      len += (b.text || b.code || b.src || "").length;
+      if ((b.type === "p" || b.type === "h2" || b.type === "h3" || b.type === "callout") && len <= PREVIEW_LIMIT) out.push(i);
+      if (len > PREVIEW_LIMIT) return; // break
+    });
+    return out;
+  }, [articleBlocks]);
   useEffect(() => {
     if (!articleBlocks || langCode === "en") return;
     let alive = true;
-    translateArticleBlocks(articleBlocks, langCode).then((tr) => {
-      if (alive && tr) setTranslatedBlocks(tr);
+    translateArticleBlocks(articleBlocks, langCode, {
+      priorityIdx,
+      onBatch: (updates, done) => {
+        if (!alive) return;
+        // setState только в async-колбэке (react-hooks/set-state-in-effect)
+        setProgress((p) => ({ done, texts: { ...(p ? p.texts : {}), ...updates } }));
+      },
     });
     return () => { alive = false; };
-  }, [articleBlocks, langCode]);
+  }, [articleBlocks, langCode, priorityIdx]);
 
   const isEn = langCode === "en";
   const shownTitle = !isEn && translatedTitle ? translatedTitle : item.title;
-  const shownBlocks = !isEn && translatedBlocks ? translatedBlocks : articleBlocks;
-  const translatingArticle = !isEn && articleBlocks && !translatedBlocks;
+  // Мерж: переведённые блоки подменяют оригинальные по мере готовности
+  const shownBlocks = useMemo(() => {
+    if (!articleBlocks) return null;
+    if (isEn || !progress) return articleBlocks;
+    return articleBlocks.map((b, i) =>
+      progress.texts[i] !== undefined ? { ...b, text: progress.texts[i] } : b
+    );
+  }, [articleBlocks, progress, isEn]);
+  const translating = !isEn && !!progress && progress.done < totalBlocks;
 
   // «Learn more» показываем, только если статья реально длиннее превью
   const totalLen = useMemo(() => {
@@ -155,13 +185,20 @@ function NewsModal({ item, onClose }) {
               <p className="news-modal__summary">{item.summary || item.title}</p>
             ) : (
               <>
-                <MdContent blocks={shownBlocks} t={t} limit={expanded ? undefined : PREVIEW_LIMIT} />
-                {translatingArticle && (
-                  <p className="news-modal__loading news-modal__loading--inline">
-                    <span className="news-modal__spinner" aria-hidden="true" />
-                    {t("news.translating")}
-                  </p>
+                {translating && (
+                  <div className="news-modal__progress-wrap" role="status">
+                    <div className="news-modal__progress">
+                      <div
+                        className="news-modal__progress-fill"
+                        style={{ width: `${Math.max(4, Math.round((progress.done / Math.max(totalBlocks, 1)) * 100))}%` }}
+                      />
+                    </div>
+                    <span className="news-modal__progress-label">
+                      🌐 {t("news.translatingProgress", { done: progress.done, total: totalBlocks })}
+                    </span>
+                  </div>
                 )}
+                <MdContent blocks={shownBlocks} t={t} limit={expanded ? undefined : PREVIEW_LIMIT} />
                 {hasMore && (
                   <button
                     type="button"
