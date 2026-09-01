@@ -151,7 +151,7 @@ export default {
       aiA: "Embed when the data is always read together and bounded in size — it keeps queries to a single round trip. Reference when it grows independently or is shared.",
       lesson: { title: "Queries & Aggregation", desc: "Model a collection, write filtered queries, and build a two-stage aggregation pipeline.", file: "models.js" },
     },
-  },  lessonView: { material: "Lesson material", task: "Your task", noMaterial: "Material for this lesson is being prepared." },
+  },  lessonView: { tabMaterial: "Material", tabTask: "Task", goToTask: "Go to the task" },
   techPage: {
     live: "Open track",
     progress: "Course Progress",
@@ -159,6 +159,8 @@ export default {
     curriculum: "Curriculum",
     dbLessons: "Lessons",
     dbLessonOpen: "Open in the editor",
+    lessonOf: "Lesson {n} of {m}",
+    done: "Course completed",
     inProgress: "In Progress",
     completed: "Completed",
     locked: "Locked",
@@ -183,11 +185,23 @@ export default {
   notifications: {
     title: "Notifications",
     none: "No new notifications",
+    news: "Frontend news · Medium",
     items: [
       { text: "New comment on your task", important: true },
       { text: "Daily challenge available", important: true },
       { text: "Weekly leaderboard updated", important: false },
     ],
+  },
+  news: {
+    empty: "No new posts yet",
+    read: "Read on Medium",
+    byAuthor: "By {author}",
+    source: "Medium · {feed}",
+    published: "Published {date}",
+    translated: "Translated",
+    translating: "Translating…",
+    original: "Original",
+    close: "Close",
   },
   account: {
     profile: "Profile",

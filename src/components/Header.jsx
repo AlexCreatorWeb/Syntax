@@ -6,7 +6,7 @@ import { useT } from '../i18n/useT';
 // Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
 // Лого всегда оригинальный Syntax (тех-лого живёт на странице технологии — UX-фидбек);
 // таб-специфичный контент (заголовки, поиски) — внутри вьюх.
-function Header({ onToggleTheme, onNavigate, onSignup }) {
+function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNewsLinks, onOpenNews }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
@@ -183,10 +183,43 @@ function Header({ onToggleTheme, onNavigate, onSignup }) {
               <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.7 21a2 2 0 0 1-3.4 0" />
             </svg>
-            <span className="tb-menu-badge" aria-hidden="true"></span>
+            {/* Активная метка = непрочитанные публикации Medium */}
+            <span
+              className="tb-menu-badge"
+              aria-hidden="true"
+              hidden={!mediumNews.some((n) => seenNewsLinks && !seenNewsLinks.has(n.link))}
+            />
           </button>
-          <div className="tb-menu" role="menu" hidden={openMenu !== "notif"}>
+          <div className="tb-menu tb-menu--notif" role="menu" hidden={openMenu !== "notif"}>
             <span className="tb-menu__title">{t("notifications.title")}</span>
+            <span className="tb-menu__title tb-menu__title--section">{t("notifications.news")}</span>
+            {mediumNews.length === 0 ? (
+              <span className="tb-menu__empty">{t("news.empty")}</span>
+            ) : (
+              mediumNews.slice(0, 5).map((item) => (
+                <button
+                  key={item.link}
+                  type="button"
+                  role="menuitem"
+                  className="tb-menu__item tb-menu__item--news"
+                  onClick={() => {
+                    setOpenMenu(null);
+                    onOpenNews && onOpenNews(item);
+                  }}
+                >
+                  <span
+                    className={`tb-menu__notif-dot ${seenNewsLinks && !seenNewsLinks.has(item.link) ? "is-important" : ""}`}
+                    aria-hidden="true"
+                  />
+                  <span className="tb-menu__news-body">
+                    <span className="tb-menu__news-title">{item.title}</span>
+                    <span className="tb-menu__news-meta">
+                      {item.feedName} · {item.author}
+                    </span>
+                  </span>
+                </button>
+              ))
+            )}
             {(t("notifications.items") || []).map((item, i) => (
               <button
                 key={i}

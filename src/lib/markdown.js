@@ -20,6 +20,13 @@ export function inlineMdTokens(s) {
   return out;
 }
 
+// Первый абзац раздела «## Цель» — для описания урока в шапке
+export function goalFrom(src) {
+  const m = String(src || "").match(/##\s*Цель\s*\n+([\s\S]*?)(?=\n## |\nTIP\s*:|\nNOTE\s*:|\nWARN\s*:$|$)/im);
+  if (!m) return "";
+  return m[1].split("\n").map((l) => l.trim()).find(Boolean) || "";
+}
+
 // Парсинг в блоки: {type:'p'|'h2'|'h3'|'code'|'callout', ...}
 export function parseMdBlocks(src) {
   const blocks = [];

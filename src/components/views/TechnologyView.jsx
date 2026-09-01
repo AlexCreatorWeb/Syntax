@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
+import { getCompleted } from "../../lib/progress";
 
 // Страница технологии (макет: technology-page).
 // Контент (описание, модули, ресурсы, AI-пример, урок) — в i18n: `techs.{id}`
@@ -14,6 +15,19 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
   const locked = modules.filter((m) => m.status === "locked");
   // Уроки трека из Supabase (таблица lessons, tech = id трека): нумерация с 1
   const dbTechLessons = (dbLessons || []).filter((l) => l.tech === tech.id);
+
+  // Прогресс курса: реальный, по отметкам выполнения (localStorage, успешный Submit).
+  // Без уроков в БД (другие треки) — демо-значение из i18n.
+  const completed = getCompleted(tech.id);
+  const hasDb = dbTechLessons.length > 0;
+  const dbDone = dbTechLessons.filter((l) => completed.includes(l.id)).length;
+  const pct = hasDb ? Math.round((dbDone / dbTechLessons.length) * 100) : content.pct;
+  const firstOpen = hasDb ? dbTechLessons.find((l) => !completed.includes(l.id)) : null;
+  const progressLine = hasDb
+    ? firstOpen
+      ? t("techPage.lessonOf", { n: dbTechLessons.indexOf(firstOpen) + 1, m: dbTechLessons.length })
+      : t("techPage.done")
+    : content.progressModule;
 
   // K3: вход на страницу трека — всегда с верха (hero + CTA в первом кадре)
   useEffect(() => {
@@ -88,17 +102,17 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
       <section className="card tech-page__progress spotlight">
         <div className="tech-page__progress-head">
           <h2 className="tech-page__card-title">{t("techPage.progress")}</h2>
-          <span className="tech-page__pct">{content.pct}%</span>
+          <span className="tech-page__pct">{pct}%</span>
         </div>
-        <p className="tech-page__progress-module">{content.progressModule}</p>
+        <p className="tech-page__progress-module">{progressLine}</p>
         <div
           className="bar"
           role="progressbar"
-          aria-valuenow={content.pct}
+          aria-valuenow={pct}
           aria-valuemin={0}
           aria-valuemax={100}
         >
-          <div className="bar__fill" style={{ width: `${content.pct}%` }}></div>
+          <div className="bar__fill" style={{ width: `${pct}%` }}></div>
         </div>
         <button type="button" className="btn btn--primary tech-page__cta" onClick={() => onResume(tech.id)}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
@@ -134,7 +148,6 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
                   <h3 className="techmod__title">{i + 1}. {l.title}</h3>
                   <p className="techmod__desc">{t("techPage.dbLessonOpen")}</p>
                 </div>
-                <span className="chip chip--db">{t("editor.dbSource")}</span>
               </article>
             ))}
           </div>

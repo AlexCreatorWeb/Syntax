@@ -9,6 +9,7 @@ import DocsView from "./views/DocsView";
 import RankingsView from "./views/RankingsView";
 import CommunityView from "./views/CommunityView";
 import { useT } from "../i18n/useT";
+import { getCompleted, markComplete } from "../lib/progress";
 
 // Учебный контекст «урока» (демо-данные; дальше — с бэкенда)
 function lessonJob(t) {
@@ -54,12 +55,18 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
       techId: techId || undefined,
       file: (techId && taskFileMap[techId]) || "index.js",
       code: typeof lesson.code === "string" ? lesson.code : undefined,
+      lessonId: lesson.id,
+      onComplete: techId ? () => markComplete(techId, lesson.id) : undefined,
       fromDb: true,
     });
   };
   const openLesson = (techId) => {
-    // Урок трека из БД (первая строка с tech = трек); демо-урок без трека — первая строка
-    const match = techId ? dbLessonsArr.find((l) => l.tech === techId) : dbLessonsArr[0];
+    // Урок трека из БД: первый НЕВЫПОЛНЕННЫЙ (иначе — первый); демо-урок без трека — первая строка
+    const completed = getCompleted(techId);
+    const techLessons = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
+    const match = techId
+      ? techLessons.find((l) => !completed.includes(l.id)) || techLessons[0]
+      : dbLessonsArr[0];
     if (match) {
       openDbLesson(match, techId);
       return;

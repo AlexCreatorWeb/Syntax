@@ -176,7 +176,7 @@ function buildRunnerDoc(files, contents) {
   return fixJsOffsets(doc, blocks, js);
 }
 
-function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate }) {
+function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate, defaultShowPreview = true }) {
   const t = useT();
 
   // Стартовый файл: у урока с трека — файл урока (main.py, queries.sql, …),
@@ -193,7 +193,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const [contents, setContents] = useState(() => ({ 1: jobCode ?? (codeTemplates[startLang] || "") }));
   const [activeId, setActiveId] = useState(1);
   const [copied, setCopied] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
+  const [showPreview, setShowPreview] = useState(defaultShowPreview);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
@@ -332,6 +332,8 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       submitPendingRef.current = false;
       const failed = logs.some((l) => l.type === "error");
       setSubmitStatus(failed ? "fail" : "ok");
+      // Урок из БД: успешный Submit = отметка выполнения (прогресс курса)
+      if (!failed && job && job.onComplete) job.onComplete();
       // «check the console» должен сопровождаться видимой консолью (аудит #1)
       scrollConsoleToView(failed);
     } else {
@@ -796,17 +798,19 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
             </div>
           </div>
         </div>
-        {hasHtml && showPreview && (
+        {hasHtml && (
           <>
-            <div className="editor-split-handle" onMouseDown={startSplitDrag} aria-hidden="true"></div>
+            {showPreview && <div className="editor-split-handle" onMouseDown={startSplitDrag} aria-hidden="true"></div>}
+            {/* iframe для HTML всегда смонтирован (даже при скрытом превью):
+                именно его onLoad собирает логи — иначе Run/Submit молчат без превью */}
             <iframe
-              className="editor-preview"
+              className={`editor-preview ${showPreview ? "" : "editor-preview--hidden"}`}
               title={t("editor.preview")}
               srcDoc={previewDoc}
               key={runToken}
               ref={previewFrameRef}
               sandbox="allow-scripts allow-same-origin"
-              style={{ flex: `${(1 - split).toFixed(4)} 1 0px` }}
+              style={showPreview ? { flex: `${(1 - split).toFixed(4)} 1 0px` } : undefined}
               onLoad={() => {
                 if (willCollectRef.current) {
                   willCollectRef.current = false;

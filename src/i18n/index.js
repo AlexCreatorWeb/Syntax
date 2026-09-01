@@ -158,7 +158,7 @@ export const LOCALES = {
         aiA: "Встраивайте, когда данные всегда читаются вместе и ограничены по размеру — запрос остаётся в один раунд-трип. Ссылайтесь, когда они растут независимо или общие.",
         lesson: { title: "Запросы и агрегация", desc: "Опиши коллекцию, напиши фильтрующие запросы и двухступенчатый пайплайн агрегации.", file: "models.js" },
       },
-    },    lessonView: { material: "Материал урока", task: "Ваше задание", noMaterial: "Материал урока готовится." },
+    },    lessonView: { tabMaterial: "Материал", tabTask: "Задание", goToTask: "Перейти к заданию" },
   techPage: {
       live: "Активно",
       progress: "Прогресс курса",
@@ -166,6 +166,8 @@ export const LOCALES = {
       curriculum: "Программа",
       dbLessons: "Уроки",
       dbLessonOpen: "Открыть в редакторе",
+      lessonOf: "Урок {n} из {m}",
+      done: "Курс пройден",
       inProgress: "В процессе",
       completed: "Завершено",
       locked: "Заблокировано",
@@ -190,11 +192,23 @@ export const LOCALES = {
     notifications: {
       title: "Уведомления",
       none: "Новых уведомлений нет",
+      news: "Фронтенд-новости · Medium",
       items: [
         { text: "Новый комментарий к вашей задаче", important: true },
         { text: "Ежедневный челлендж доступен", important: true },
         { text: "Еженедельный рейтинг обновлён", important: false },
       ],
+    },
+    news: {
+      empty: "Новых публикаций пока нет",
+      read: "Читать на Medium",
+      byAuthor: "Автор: {author}",
+      source: "Medium · {feed}",
+      published: "Опубликовано {date}",
+      translated: "Перевод",
+      translating: "Переводим…",
+      original: "Оригинал",
+      close: "Закрыть",
     },
     account: {
       profile: "Профиль",

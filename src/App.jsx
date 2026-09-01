@@ -4,8 +4,10 @@ import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
 import WidgetPanel from "./components/WidgetPanel";
 import SignupModal from "./components/SignupModal";
+import NewsModal from "./components/NewsModal";
 import { getTech } from "./lib/techs";
 import { fetchDbLessons } from "./lib/supabase";
+import { fetchMediumNews, getSeenLinks, markLinkSeen } from "./lib/medium";
 
 // URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
 // Единственный параметризованный маршрут: #/technology/<techId> (deep-link на трек).
@@ -42,6 +44,32 @@ function App() {
       alive = false;
     };
   }, []);
+
+  // Новости Medium (фронтенд-теги): список в уведомлениях хедера + активная
+  // метка на колокольчике у непрочитанных. Поллинг раз в 10 минут — новые
+  // публикации появляются без перезагрузки.
+  const [mediumNews, setMediumNews] = useState([]);
+  const [seenNewsLinks, setSeenNewsLinks] = useState(() => getSeenLinks());
+  const [newsItem, setNewsItem] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    const load = (refresh) =>
+      fetchMediumNews({ refresh }).then((rows) => {
+        if (alive) setMediumNews(rows);
+      });
+    load(false);
+    const timer = setInterval(() => load(true), 10 * 60 * 1000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, []);
+  const openNews = useCallback((item) => {
+    setNewsItem(item);
+    markLinkSeen(item.link); // просмотр = прочитано: метка гаснет
+    setSeenNewsLinks(getSeenLinks());
+  }, []);
+  const closeNews = useCallback(() => setNewsItem(null), []);
 
   const [job, setJob] = useState(null);
   // job, который нужно применить при следующем hashchange (навигация через URL)
@@ -127,7 +155,14 @@ function App() {
   return (
     <div className="app">
       <div className="ambient" aria-hidden="true" />
-      <Header onToggleTheme={toggleTheme} onNavigate={openTab} onSignup={openSignup} />
+      <Header
+        onToggleTheme={toggleTheme}
+        onNavigate={openTab}
+        onSignup={openSignup}
+        mediumNews={mediumNews}
+        seenNewsLinks={seenNewsLinks}
+        onOpenNews={openNews}
+      />
       <div className="shell">
         <Sidebar activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} onSelectTab={openTab} isAuthed={isAuthed} />
         <MainContent
@@ -144,6 +179,7 @@ function App() {
         <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} job={job} activeTech={activeTech} isAuthed={isAuthed} />
       </div>
       <SignupModal open={signupOpen} onClose={closeSignup} onAuthed={handleAuthed} />
+      {newsItem && <NewsModal item={newsItem} onClose={closeNews} />}
     </div>
   );
 }
