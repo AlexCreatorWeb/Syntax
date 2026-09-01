@@ -666,6 +666,7 @@ export default {
     submitFail: "Run has errors — check the console",
     back: "Back",
     lessonLabel: "Lesson",
+    dbSource: "From database",
     taskLabel: "Task",
     submitShort: "Submit",
     reset: "Reset",

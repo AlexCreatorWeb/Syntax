@@ -550,6 +550,7 @@ code {
   background: var(--surface-2);
 }
 .chip--module { color: var(--primary); background: var(--primary-soft); }
+.chip--db { color: var(--primary); background: var(--primary-soft); border-color: var(--primary); }
 
 .lesson__title {
   font-size: 32px;

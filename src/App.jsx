@@ -5,6 +5,7 @@ import MainContent from "./components/MainContent";
 import WidgetPanel from "./components/WidgetPanel";
 import SignupModal from "./components/SignupModal";
 import { getTech } from "./lib/techs";
+import { fetchDbLessons } from "./lib/supabase";
 
 // URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
 // Единственный параметризованный маршрут: #/technology/<techId> (deep-link на трек).
@@ -29,6 +30,18 @@ function App() {
   // Учебный контекст для редактора: { type: "lesson" | "task", title, desc }
   // URL-параметр вкладки (#/documentation/<slug> — статья; #/technology/<id> — трек)
   const [routeParam, setRouteParam] = useState(() => parseHash().param);
+
+  // Уроки из Supabase (таблица lessons): null = ещё не загрузили, [] = пусто (fallback на i18n)
+  const [dbLessons, setDbLessons] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    fetchDbLessons().then((rows) => {
+      if (alive) setDbLessons(rows);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const [job, setJob] = useState(null);
   // job, который нужно применить при следующем hashchange (навигация через URL)
@@ -126,6 +139,7 @@ function App() {
           onSelectTech={selectTech}
           onSignup={openSignup}
           routeParam={routeParam}
+          dbLessons={dbLessons}
         />
         <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} job={job} activeTech={activeTech} isAuthed={isAuthed} />
       </div>

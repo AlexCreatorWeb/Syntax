@@ -183,12 +183,14 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   // иначе — дефолтный для языка (K2: имя/расширение соответствуют треку)
   const startFile = job && job.file ? job.file : fileNames[language] || `file.${language}`;
   const startLang = langFromFileName(startFile);
+  // Код урока из базы (Supabase): строка `lessons` приходит в job.code и перебивает шаблон
+  const jobCode = job && typeof job.code === "string" ? job.code : null;
   const [files, setFiles] = useState(() => [
     { id: 1, name: startFile, language: startLang },
   ]);
-  // Исходный контент файлов (для Reset, аудит #5): старт-шаблон, новые — пустые
-  const initialContentsRef = useRef({ 1: codeTemplates[startLang] || "" });
-  const [contents, setContents] = useState(() => ({ 1: codeTemplates[startLang] || "" }));
+  // Исходный контент файлов (для Reset, аудит #5): код урока из БД / старт-шаблон, новые — пустые
+  const initialContentsRef = useRef({ 1: jobCode ?? (codeTemplates[startLang] || "") });
+  const [contents, setContents] = useState(() => ({ 1: jobCode ?? (codeTemplates[startLang] || "") }));
   const [activeId, setActiveId] = useState(1);
   const [copied, setCopied] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
@@ -577,6 +579,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
               {jobTech ? `${t(jobTech.label)} · ` : ""}
               {job.kind === "lesson" ? t("editor.lessonLabel") : t("editor.taskLabel")}
             </span>
+            {job.fromDb && <span className="chip chip--db">{t("editor.dbSource")}</span>}
             <button
               type="button"
               className="editor-job__back"

@@ -674,6 +674,7 @@ export const LOCALES = {
       submitFail: "В выполнении есть ошибки — посмотрите консоль",
       back: "Назад",
       lessonLabel: "Урок",
+      dbSource: "Из базы данных",
       taskLabel: "Задание",
       submitShort: "Сдать",
       reset: "Сбросить",

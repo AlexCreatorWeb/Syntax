@@ -32,28 +32,40 @@ function taskJob(t, index, techId) {
   };
 }
 
-function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam }) {
+function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons }) {
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
 
   // К2: урок привязан к треку — имя, описание и файл соответствуют технологии.
   // Без techId (демо-урок с главной) — исходный JavaScript-урок.
+  // Приоритет: таблица `lessons` в Supabase (первая строка) → i18n-статика (fallback).
+  const dbLesson = dbLessons && dbLessons.length ? dbLessons[0] : null;
   const openLesson = (techId) => {
+    let staticJob;
     if (techId) {
       const lesson = t(`techs.${techId}.lesson`);
       if (lesson && lesson.title) {
-        onNavigate("editor", {
+        staticJob = {
           kind: "lesson",
           title: lesson.title,
           desc: lesson.desc,
           backTab: "technology",
           techId,
           file: lesson.file,
-        });
-        return;
+        };
       }
     }
-    onNavigate("editor", lessonJob(t));
+    if (!staticJob) staticJob = lessonJob(t);
+    if (dbLesson) {
+      onNavigate("editor", {
+        ...staticJob,
+        title: dbLesson.title || staticJob.title,
+        code: typeof dbLesson.content === "string" ? dbLesson.content : undefined,
+        fromDb: true,
+      });
+      return;
+    }
+    onNavigate("editor", staticJob);
   };
   const openTask = (index, techId) => onNavigate("editor", taskJob(t, index, techId));
 
