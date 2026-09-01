@@ -326,7 +326,16 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     } catch {
       logs = [];
     }
-    setConsoleLogs(logs.length ? logs : (hasHtml ? [{ type: "info", text: t("editor.htmlResultHint") }] : []));
+    // HTML: в консоль — и разметка страницы (что реально собрал браузер), и логи страницы
+    let markup = "";
+    try {
+      if (hasHtml) markup = frame?.contentDocument?.documentElement?.outerHTML || "";
+    } catch {
+      /* iframe недоступен — без разметки */
+    }
+    const entries = [...(logs.length ? logs : hasHtml ? [{ type: "info", text: t("editor.htmlResultHint") }] : [])];
+    if (hasHtml && markup) entries.push({ type: "markup", text: markup });
+    setConsoleLogs(entries);
     setRanOnce(true);
     if (submitPendingRef.current) {
       submitPendingRef.current = false;
@@ -754,26 +763,37 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                   {ranOnce ? "—" : t("editor.consoleHint")}
                 </span>
               ) : (
-                consoleLogs.map((log, i) => (
-                  <div
-                    key={i}
-                    className={`log-line log-line--${log.type} ${log.line ? "log-line--link" : ""}`}
-                    title={log.line ? t("editor.jumpToLine") : undefined}
-                    onClick={
-                      log.line
-                        ? () => {
-                            const ed = editorRef.current;
-                            if (!ed) return;
-                            ed.revealLineInCenter(log.line);
-                            ed.setPosition({ lineNumber: log.line, column: 1 });
-                            ed.focus();
-                          }
-                        : undefined
-                    }
-                  >
-                    {log.text}
-                  </div>
-                ))
+                consoleLogs.map((log, i) => {
+                  // HTML-разметка страницы — отдельный блок с подписью (pre, без переносов строк)
+                  if (log.type === "markup") {
+                    return (
+                      <div key={i} className="log-markup">
+                        <span className="log-markup__label">{t("editor.markupLabel")}</span>
+                        <pre className="log-markup__pre">{log.text}</pre>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={i}
+                      className={`log-line log-line--${log.type} ${log.line ? "log-line--link" : ""}`}
+                      title={log.line ? t("editor.jumpToLine") : undefined}
+                      onClick={
+                        log.line
+                          ? () => {
+                              const ed = editorRef.current;
+                              if (!ed) return;
+                              ed.revealLineInCenter(log.line);
+                              ed.setPosition({ lineNumber: log.line, column: 1 });
+                              ed.focus();
+                            }
+                          : undefined
+                      }
+                    >
+                      {log.text}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>

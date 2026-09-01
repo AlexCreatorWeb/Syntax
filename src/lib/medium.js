@@ -137,6 +137,74 @@ export async function fetchMediumNews({ timeoutMs = 12000, refresh = false } = {
 const SEEN_KEY = "syntax-medium-seen";
 const SEEN_LIMIT = 60;
 
+// Полный текст статьи. Medium не отдаёт CORS ни на фиды, ни на статьи, поэтому
+// читаем через Jina Reader (r.jina.ai, CORS: *, бесплатно ~20 req/min):
+// отдаёт статью чистым markdown. target_selector режет навигационный мусор.
+const JINA = "https://r.jina.ai/";
+const JUNK_LINES = [
+  /^press enter or click to view image in full size$/i,
+  /^\d+\s*min read$/i,
+  /^\d+\s*(second|minute|hour|day|week|month)s?\s+(ago|later)$/i,
+  /^(follow|help|respond|share)$/i,
+  // карточка sign-in в теле статьи (Jina её подхватывает)
+  /^join medium for free/i,
+  /^remember me for faster sign in$/i,
+];
+
+// Markdown Jina → чистый markdown-lite: без служебных строк, списки → «• »
+// (контракт lessons без списков), парный контроль ```-фенсов (Jina иногда
+// ломает кодовые блоки — нечётное число фенсов съело бы остаток статьи).
+function cleanArticleMarkdown(md) {
+  const src = String(md || "");
+  const marker = "Markdown Content:";
+  const body = src.includes(marker) ? src.slice(src.indexOf(marker) + marker.length) : src;
+  const out = [];
+  body.split("\n").forEach((raw, idx) => {
+    let line = raw.trim();
+    // blockquote-маркер Jina — просто убираем
+    line = line.replace(/^>\s?/, "");
+    if (!line) {
+      if (out[out.length - 1] !== "") out.push("");
+      return;
+    }
+    // первая строка — аватар автора: [![alt](img)](profile)
+    if (idx === 0 && /^\[!\[.*\]\(.*\)\]\(.*\)$/.test(line)) return;
+    if (JUNK_LINES.some((re) => re.test(line))) return;
+    const bullet = line.match(/^[*-]\s+(.*)$/);
+    if (bullet) {
+      if (out[out.length - 1] !== "") out.push("");
+      out.push(`• ${bullet[1]}`);
+      out.push("");
+      return;
+    }
+    out.push(line);
+  });
+  const fences = (out.join("\n").match(/```/g) || []).length;
+  if (fences % 2 === 1) out.push("```");
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+const articleCache = new Map(); // link → { md } (на сессию)
+
+/** Полный текст статьи Medium как markdown. Сбой → null (модалка покажет анонс). */
+export async function fetchMediumArticle(link, timeoutMs = 25000) {
+  if (articleCache.has(link)) return articleCache.get(link);
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${JINA}${link}?target_selector=.postArticle-content`, { signal: ctrl.signal });
+    if (!res.ok) throw new Error(`http ${res.status}`);
+    const value = { md: cleanArticleMarkdown(await res.text()) };
+    if (!value.md) throw new Error("empty article");
+    articleCache.set(link, value);
+    return value;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function getSeenLinks() {
   try {
     const arr = JSON.parse(localStorage.getItem(SEEN_KEY)) || [];

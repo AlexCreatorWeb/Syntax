@@ -37,20 +37,33 @@ function Callout({ kind, text }) {
   );
 }
 
-export function MdContent({ src, t }) {
-  const blocks = parseMdBlocks(src).map((b) => (b.type === "p" ? { ...b, tokens: inlineMdTokens(b.text) } : b));
+export function MdContent({ src, t, limit }) {
+  let blocks = parseMdBlocks(src).map((b) => (b.type === "p" ? { ...b, tokens: inlineMdTokens(b.text) } : b));
+  // limit: показать блоки пока суммарный объём ≤ N знаков (свёрнутый вид статьи)
+  if (limit != null) {
+    const visible = [];
+    let len = 0;
+    for (const b of blocks) {
+      visible.push(b);
+      len += (b.text || b.code || b.src || "").length;
+      if (len >= limit) break;
+    }
+    blocks = visible;
+  }
   if (!blocks.length) return <p className="md-p">—</p>;
   return (
     <div className="md md-content">
       {blocks.map((b, i) => {
         if (b.type === "h2") return <h2 key={i} className="md-h2">{b.text}</h2>;
         if (b.type === "h3") return <h3 key={i} className="md-h3">{b.text}</h3>;
+        if (b.type === "image") return <img key={i} className="md-img" src={b.src} alt={b.alt} loading="lazy" />;
         if (b.type === "code") return <CodeBlock key={i} lang={b.lang} code={b.code} t={t} />;
         if (b.type === "callout") return <Callout key={i} kind={b.kind} text={b.text} />;
         return <p key={i} className="md-p">{b.tokens.map((tok, j) => {
           if (tok.t === "code") return <code key={j} className="md-inline">{tok.v}</code>;
           if (tok.t === "b") return <strong key={j}>{tok.v}</strong>;
           if (tok.t === "i") return <em key={j}>{tok.v}</em>;
+          if (tok.t === "a") return <a key={j} className="md-link" href={tok.href} target="_blank" rel="noopener noreferrer">{tok.v}</a>;
           return tok.v;
         })}</p>;
       })}

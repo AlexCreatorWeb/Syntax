@@ -1,19 +1,24 @@
 // Markdown-lite для материала уроков. Поддерживает: ## / ### заголовки, **жирный**, *курсив*, `код`,
 // блоки ```lang ... ``` (с кнопкой Copy), строки TIP: / NOTE: / WARN: → callout'ы.
 // Формат фиксируется как контракт для агента, наполняющего таблицу lessons.
+// Также (для статей Medium, не используется в lessons): ссылки [text](url) и
+// картинки ![alt](url) / [![alt](img)](link).
 // Чистый парсер (без JSX): токены + блоки; рендер — в markdown-view.jsx.
 
-// Инлайн: `код`, **жирный**, *курсив* → токены [{t: text|code|b|i, v}] (чистый парсер, без JSX)
+// Инлайн: `код`, **жирный**, *курсив*, [ссылка](url) → токены [{t: text|code|b|i|a, v}] (чистый парсер, без JSX)
 export function inlineMdTokens(s) {
   const out = [];
-  const re = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*)/g;
+  const re = /(\[[^\]\n]*\]\([^)\s]+\))|(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*)/g;
   let last = 0;
   let m;
   while ((m = re.exec(s))) {
     if (m.index > last) out.push({ t: "text", v: s.slice(last, m.index) });
-    if (m[1]) out.push({ t: "code", v: m[1].slice(1, -1) });
-    else if (m[2]) out.push({ t: "b", v: m[2].slice(2, -2) });
-    else out.push({ t: "i", v: m[3].slice(1, -1) });
+    if (m[1]) {
+      const lm = m[1].match(/^\[([^\]\n]*)\]\(([^)\s]+)\)$/);
+      out.push({ t: "a", v: lm[1] || m[1], href: lm[2] });
+    } else if (m[2]) out.push({ t: "code", v: m[2].slice(1, -1) });
+    else if (m[3]) out.push({ t: "b", v: m[3].slice(2, -2) });
+    else out.push({ t: "i", v: m[4].slice(1, -1) });
     last = m.index + m[0].length;
   }
   if (last < s.length) out.push({ t: "text", v: s.slice(last) });
@@ -27,7 +32,7 @@ export function goalFrom(src) {
   return m[1].split("\n").map((l) => l.trim()).find(Boolean) || "";
 }
 
-// Парсинг в блоки: {type:'p'|'h2'|'h3'|'code'|'callout', ...}
+// Парсинг в блоки: {type:'p'|'h2'|'h3'|'code'|'callout'|'image', ...}
 export function parseMdBlocks(src) {
   const blocks = [];
   const parts = String(src || "").split(/```(\w*)\n?([\s\S]*?)```/g);
@@ -40,6 +45,14 @@ export function parseMdBlocks(src) {
   };
   const pushLine = (line) => {
     if (!line.trim()) { flush(); return; }
+    // Картинки (статьи Medium): ![alt](url) и обёрнутая в ссылку [![alt](img)](link)
+    const imgWrapped = line.match(/^\[!\[([^\]]*)\]\(([^)\s]+)\)\]\(([^)\s]+)\)$/);
+    const img = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+    if (imgWrapped || img) {
+      flush();
+      blocks.push({ type: "image", src: (imgWrapped || img)[2], alt: (imgWrapped || img)[1] || "" });
+      return;
+    }
     const callout = line.match(/^(TIP|NOTE|WARN)\s*:\s*(.+)$/i);
     if (callout) {
       flush();

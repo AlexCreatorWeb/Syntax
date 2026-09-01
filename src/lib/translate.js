@@ -5,6 +5,33 @@
 
 const cache = new Map(); // текст+язык → перевод (на сессию)
 
+function splitBig(text, max) {
+  const out = [];
+  for (let i = 0; i < text.length; i += max) out.push(text.slice(i, i + max));
+  return out;
+}
+
+// Разбиваем на чанки по границам абзацев (лимит MyMemory ~5000 зн., берём 1200
+// с запасом под URL-энкодинг); слишком большой абзац — кусками по строчкам.
+function chunkForTranslation(text, max = 1200) {
+  const chunks = [];
+  let cur = "";
+  const flush = () => { if (cur) { chunks.push(cur); cur = ""; } };
+  for (const p of text.split(/\n\n+/)) {
+    if (p.length > max) {
+      flush();
+      chunks.push(...splitBig(p, max));
+    } else if (cur && cur.length + p.length + 2 > max) {
+      flush();
+      cur = p;
+    } else {
+      cur = cur ? `${cur}\n\n${p}` : p;
+    }
+  }
+  flush();
+  return chunks.length ? chunks : [text];
+}
+
 /**
  * Переводит текст с английского в targetLang ("ru" | "uk" | "es" | "de" | …).
  * Для "en" или пустого текста — сразу оригинал. null — «покажите оригинал».
@@ -38,4 +65,20 @@ export async function translateText(text, targetLang, timeoutMs = 7000) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Перевод длинного текста (полная статья): чанки по абзацам, параллельно,
+ * сборка в исходном порядке. Сбой отдельного чанка → в нём остаётся оригинал,
+ * поэтому результат всегда строка (null только для пустого входа).
+ */
+export async function translateLong(text, targetLang) {
+  if (!text) return null;
+  const lang = String(targetLang || "en").toLowerCase();
+  if (lang === "en") return text;
+  const chunks = chunkForTranslation(text);
+  const results = await Promise.allSettled(chunks.map((c) => translateText(c, targetLang)));
+  return results
+    .map((r, i) => (r.status === "fulfilled" && r.value ? r.value : chunks[i]))
+    .join("\n\n");
 }
