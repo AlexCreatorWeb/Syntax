@@ -126,9 +126,8 @@ function AiChat({ techId }) {
       )}
 
       <div className="tech-aside__chat" ref={boxRef} onScroll={onChatScroll}>
-        {messages.length === 0 && (
-          <p className="tech-aside__bubble tech-aside__bubble--ai">{t("techPage.aiHint")}</p>
-        )}
+        {/* Приветственная строка — вверху чата */}
+        <p className="tech-aside__chat-greet">{t("techPage.aiGreet")}</p>
         {messages.map((m) =>
           m.role === "user" ? (
             <p key={m.id} className="tech-aside__bubble tech-aside__bubble--user">{m.content}</p>
