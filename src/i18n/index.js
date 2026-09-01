@@ -163,6 +163,8 @@ export const LOCALES = {
       progress: "Прогресс курса",
       continue: "Продолжить обучение",
       curriculum: "Программа",
+      dbLessons: "Уроки",
+      dbLessonOpen: "Открыть в редакторе",
       inProgress: "В процессе",
       completed: "Завершено",
       locked: "Заблокировано",

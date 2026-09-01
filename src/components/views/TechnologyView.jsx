@@ -5,13 +5,15 @@ import { getTech } from "../../lib/techs";
 // Страница технологии (макет: technology-page).
 // Контент (описание, модули, ресурсы, AI-пример, урок) — в i18n: `techs.{id}`
 // (EN base + RU; uk/es/de откатываются на EN). UI-строки — `techPage.*` (5 языков).
-function TechnologyView({ techId, onResume, onNavigate }) {
+function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigate }) {
   const t = useT();
   const tech = getTech(techId) || getTech("javascript");
   const Logo = tech.Logo;
   const content = t(`techs.${tech.id}`);
   const modules = content.modules;
   const locked = modules.filter((m) => m.status === "locked");
+  // Уроки трека из Supabase (таблица lessons, tech = id трека): нумерация с 1
+  const dbTechLessons = (dbLessons || []).filter((l) => l.tech === tech.id);
 
   // K3: вход на страницу трека — всегда с верха (hero + CTA в первом кадре)
   useEffect(() => {
@@ -105,6 +107,39 @@ function TechnologyView({ techId, onResume, onNavigate }) {
           {t("techPage.continue")}
         </button>
       </section>
+
+      {/* Lessons: уроки трека из базы (Supabase), кликабельны — открываются в редакторе */}
+      {dbTechLessons.length > 0 && (
+        <section className="tech-page__dblessons">
+          <h2 className="tech-page__section-title">{t("techPage.dbLessons")}</h2>
+          <div className="techmod-list">
+            {dbTechLessons.map((l, i) => (
+              <article
+                key={l.id}
+                className="card techmod techmod--db"
+                role="button"
+                tabIndex={0}
+                aria-current={i === 0 ? "step" : undefined}
+                onClick={() => onOpenDbLesson(l, tech.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpenDbLesson(l, tech.id); }
+                }}
+              >
+                <span className="techmod__icon techmod__icon--current" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m8 6 8 6-8 6V6Z" />
+                  </svg>
+                </span>
+                <div className="techmod__body">
+                  <h3 className="techmod__title">{i + 1}. {l.title}</h3>
+                  <p className="techmod__desc">{t("techPage.dbLessonOpen")}</p>
+                </div>
+                <span className="chip chip--db">{t("editor.dbSource")}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Curriculum: модули со статусами */}
       <section className="tech-page__curriculum">

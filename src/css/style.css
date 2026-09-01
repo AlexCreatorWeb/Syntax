@@ -1494,6 +1494,11 @@ code {
 .techmod--current { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.2s ease; }
 .techmod--current:hover { transform: translateY(-2px); }
 .techmod--current:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* Строка урока из базы (Supabase): кликабельна, акцент + чип «From database» */
+.techmod--db { border-color: var(--primary); cursor: pointer; transition: transform 0.15s ease, box-shadow 0.2s ease; }
+.techmod--db .techmod__title { color: var(--primary); }
+.techmod--db:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(48, 224, 161, 0.12); }
+.techmod--db:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .techmod--locked { border-style: dashed; opacity: 0.6; }
 /* Честный empty-state: «модули идут дальше» (п.3) */
 .techmod--soon { border-style: dashed; opacity: 0.7; }

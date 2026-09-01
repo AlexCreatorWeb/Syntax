@@ -15,7 +15,8 @@ export const supabase = supabaseConfigured ? createClient(URL, KEY) : null;
 let lessonsCache = null;
 
 /**
- * Читает таблицу `lessons` (id, title, content).
+ * Читает таблицу `lessons` (id, title, content, tech).
+ * tech — привязка к треку ('html', 'javascript', …); строки без tech — общие.
  * Возвращает массив строк или null (нет БД / нет сети / таймаут) —
  * вызывающий код при null откатывается на статичный i18n-контент.
  */
@@ -27,7 +28,7 @@ export async function fetchDbLessons(timeoutMs = 4000) {
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     const { data, error } = await supabase
       .from("lessons")
-      .select("id, title, content")
+      .select("id, title, content, tech")
       .order("id", { ascending: true })
       .abortSignal(ctrl.signal);
     clearTimeout(timer);

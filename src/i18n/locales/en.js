@@ -156,6 +156,8 @@ export default {
     progress: "Course Progress",
     continue: "Continue Learning",
     curriculum: "Curriculum",
+    dbLessons: "Lessons",
+    dbLessonOpen: "Open in the editor",
     inProgress: "In Progress",
     completed: "Completed",
     locked: "Locked",

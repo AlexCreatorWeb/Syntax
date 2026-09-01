@@ -37,35 +37,45 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
 
   // К2: урок привязан к треку — имя, описание и файл соответствуют технологии.
-  // Без techId (демо-урок с главной) — исходный JavaScript-урок.
-  // Приоритет: таблица `lessons` в Supabase (первая строка) → i18n-статика (fallback).
-  const dbLesson = dbLessons && dbLessons.length ? dbLessons[0] : null;
+  // Без techId (демо-урок с главной) — первая строка БД целиком / исходный JavaScript-урок.
+  // Приоритет: таблица `lessons` в Supabase (строка с tech = трек) → i18n-статика (fallback).
+  const dbLessonsArr = dbLessons || [];
+  const taskFileMap = { javascript: "index.js", python: "main.py", postgres: "queries.sql", html: "index.html", css: "styles.css", node: "server.js", react: "App.jsx", vue: "App.vue", mongo: "models.js" };
+  const openDbLesson = (lesson, techId) => {
+    const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
+    onNavigate("editor", {
+      kind: "lesson",
+      title: lesson.title,
+      desc: (staticFor && staticFor.desc) || "",
+      backTab: "technology",
+      techId: techId || undefined,
+      file: (techId && taskFileMap[techId]) || "index.js",
+      code: typeof lesson.content === "string" ? lesson.content : undefined,
+      fromDb: true,
+    });
+  };
   const openLesson = (techId) => {
-    let staticJob;
+    // Урок трека из БД (первая строка с tech = трек); демо-урок без трека — первая строка
+    const match = techId ? dbLessonsArr.find((l) => l.tech === techId) : dbLessonsArr[0];
+    if (match) {
+      openDbLesson(match, techId);
+      return;
+    }
     if (techId) {
       const lesson = t(`techs.${techId}.lesson`);
       if (lesson && lesson.title) {
-        staticJob = {
+        onNavigate("editor", {
           kind: "lesson",
           title: lesson.title,
           desc: lesson.desc,
           backTab: "technology",
           techId,
           file: lesson.file,
-        };
+        });
+        return;
       }
     }
-    if (!staticJob) staticJob = lessonJob(t);
-    if (dbLesson) {
-      onNavigate("editor", {
-        ...staticJob,
-        title: dbLesson.title || staticJob.title,
-        code: typeof dbLesson.content === "string" ? dbLesson.content : undefined,
-        fromDb: true,
-      });
-      return;
-    }
-    onNavigate("editor", staticJob);
+    onNavigate("editor", lessonJob(t));
   };
   const openTask = (index, techId) => onNavigate("editor", taskJob(t, index, techId));
 
@@ -137,7 +147,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
         );
       case "technology":
         // job.techId — при клике по карточке; activeTech — при deep-link/refresh (job сбрасывается)
-        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onNavigate={onNavigate} />;
+        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} />;
       case "editor":
         return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
       case "tasks":
