@@ -1,19 +1,44 @@
 // Vercel serverless — прокси к HuggingFace Inference (router.huggingface.co).
-// Зачем: HF-токен НЕ обязан лежать в публичном репо/бандле (GitHub secret-scanning
-// ревайдит токены, уплывшие в публичный код). Токен — в Vercel env: HF_API_KEY
-// (Production, БЕЗ префикса VITE_ — читается только здесь, на сервере).
+// Токен — в Vercel env: HF_API_KEY (Production, БЕЗ префикса VITE_ — только сервер).
+// Клиент: POST { techName, history, question } → ответ — SSE-поток HF как есть (passthrough).
 //
-// Клиент шлёт: { techName, history, question } (POST /api/ai).
-// Ответ — SSE-поток HuggingFace КАК ЕСТЬ (passthrough) — парсер на клиенте
-// (src/lib/ai.js) одинаковый для прямого и проксированного режима.
-import { buildSystemPrompt } from "../src/lib/ai-prompt";
-
+// ВАЖНО: без import'ов из ../src (кросс-папный импорт ломал функцию — FUNCTION_INVOCATION_FAILED);
+// сис-промпт продублирован здесь (единый исходник — src/lib/ai-prompt.js, при правке синхронизируй).
 export const maxDuration = 60; // стриминг ответа
 
 const HF_URL = "https://router.huggingface.co/v1/chat/completions";
 const MODEL = "google/gemma-3-12b-it";
 
+function buildSystemPrompt(techName) {
+  return [
+    "You are Syntax AI, the friendly coding tutor of the Syntax learning platform (people learn programming right in the browser).",
+    techName ? `The student is currently on the "${techName}" track — prefer examples in that technology when relevant.` : "",
+    "Rules: answer in the student's own language; be concise (under 200 words) and practical; show code in fenced blocks with a language tag.",
+    "Formatting: use **bold**, `inline code` and ``` fenced code blocks. Do NOT use markdown tables, links with images, or ordered/unordered list syntax (no leading - or 1.) — write plain paragraphs instead; separate items with blank lines.",
+    "If the question is not about coding, still keep the answer short and helpful.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export default async function handler(req, res) {
+  // Диагностика: GET возвращает окружение (пока функция падает)
+  if (req.method === "GET") {
+    res.status(200).json({ ok: true, node: process.version, fetch: typeof fetch, hasKey: Boolean(process.env.HF_API_KEY) });
+    return;
+  }
+  try {
+    await handle(req, res);
+  } catch (e) {
+    try {
+      res.status(500).json({ error: String((e && e.stack) || e) });
+    } catch {
+      res.status(500).end();
+    }
+  }
+}
+
+async function handle(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "POST only" });
     return;
@@ -55,7 +80,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Маппим статусы HF на то, что клиент умеет перевести в человекочитаемую ошибку
   if (!upstream.ok && !upstream.body) {
     let message = `HTTP ${upstream.status}`;
     try {
@@ -68,7 +92,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Passthrough SSE: заголовки стриминга + сырые чанки
+  // Passthrough SSE
   res.status(upstream.status || 200);
   res.setHeader("Content-Type", upstream.headers.get("content-type") || "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -81,7 +105,7 @@ export default async function handler(req, res) {
       res.write(Buffer.from(value));
     }
   } catch {
-    /* клиент отменил запрос — просто закрываем */
+    /* клиент отменил запрос */
   } finally {
     res.end();
   }
