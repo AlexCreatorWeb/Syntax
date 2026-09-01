@@ -1,12 +1,14 @@
 // Перевод англоязычного контента Medium в UI-язык. Цепочка провайдеров:
-// 1) MyMemory (бесплатно, без ключа, CORS: *; `de=`-параметр даёт ~50K зн./день
-//    вместо 5K анонимных) → 2) Google gtx (фолбэк) → null = «оригинал».
-// Запросы короткие — ПО БЛОКАМ (не весь текст одной строкой: MT ломает
-// markdown-синтаксис картинок/ссылок внутри чанков). Кэш на сессию; исчерпанная
-// квота MyMemory — флаг quotaExhausted, мёртвый Google — googleBlocked;
+// MyMemory (де= ~50K зн./день) → Google gtx → MyMemory через Jina Reader
+// (Jina ходит на API со своего IP — живёт, даже когда наша IP-квота «лежит»)
+// → null = «оригинал». Запросы короткие — ПО БЛОКАМ (не весь текст одной строкой:
+// MT ломает markdown-синтаксис картинок/ссылок внутри чанков). Кэш на сессию;
 // тихий фолбэк на оригинал, перевод никогда не ломает UI.
 
 const cache = new Map(); // текст+язык → перевод (на сессию)
+// In-flight дедупликация: повторный запрос на тот же текст (StrictMode дублирует
+// эффекты, повторяющиеся блоки) ждёт тот же промис, а не шлёт второй fetch.
+const pending = new Map(); // текст+язык → Promise
 // Анонимная квота MyMemory исчерпана → дальше не шлём запросы (сервер отвечает
 // WARNING на каждый; флаг сбрасывается новой сессией/перегрузкой страницы).
 let quotaExhausted = false;
@@ -26,13 +28,25 @@ export async function translateText(text, targetLang, timeoutMs = 9000) {
   if (lang === "en") return text;
   const key = `${lang}::${text}`;
   if (cache.has(key)) return cache.get(key);
-  // Цепочка провайдеров: MyMemory (de= ~50K зн./день) → Google gtx (бесплатно,
-  // без ключа) → null (оригинал). Квота одного исчерпана — второй может работать.
-  let value = null;
-  if (!quotaExhausted) value = await myMemory(text, lang, timeoutMs);
-  if (value === null && !googleBlocked) value = await googleGtx(text, lang, timeoutMs);
-  cache.set(key, value);
-  return value;
+  if (pending.has(key)) return pending.get(key);
+  const job = (async () => {
+// Цепочка: MyMemory (de= ~50K зн./день) → Google gtx → MyMemory через Jina Reader
+// (Jina ходит на API со своего IP — локальная квота не исчерпана даже когда наша
+// «лежит» на сутки) → null (оригинал).
+    let value = null;
+    if (!quotaExhausted) value = await myMemory(text, lang, timeoutMs);
+    if (value === null && !googleBlocked) value = await googleGtx(text, lang, timeoutMs);
+    if (value === null) value = await myMemoryViaJina(text, lang, timeoutMs);
+    return value;
+  })();
+  pending.set(key, job);
+  try {
+    const value = await job;
+    cache.set(key, value);
+    return value;
+  } finally {
+    pending.delete(key);
+  }
 }
 
 async function myMemory(text, lang, timeoutMs) {
@@ -87,6 +101,44 @@ async function googleGtx(text, lang, timeoutMs) {
   } catch {
     googleFails += 1;
     if (googleFails >= GOOGLE_MAX_FAILS) googleBlocked = true;
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// MyMemory через Jina Reader: Jina ходит на API со СВОЕГО IP, поэтому переводит,
+// даже когда наша IP-квота исчерпана (MyMemory считает квоты по IP вызывающего).
+// Jina оборачивает тело: «Markdown Content:\n{json…}» — парсим JSON от первой «{».
+const JINA_READER = "https://r.jina.ai/";
+async function myMemoryViaJina(text, lang, timeoutMs) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), Math.min(timeoutMs, 15000));
+  const attempt = async () => {
+    const api = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+      text.slice(0, 480)
+    )}&langpair=en|${lang}&de=frontend@syntax.dev`;
+    const res = await fetch(`${JINA_READER}${api}`, { signal: ctrl.signal });
+    if (!res.ok) throw new Error(`http ${res.status}`);
+    const md = await res.text();
+    const start = md.indexOf("{");
+    if (start === -1) throw new Error("no json in jina body");
+    const json = JSON.parse(md.slice(start));
+    const raw =
+      json && json.responseStatus === 200 && json.responseData
+        ? json.responseData.translatedText
+        : null;
+    return raw && !/INVALID|MYMEMORY WARNING/i.test(raw) ? raw.trim() : null;
+  };
+  try {
+    // один повтор: Jina без ключа иногда отдаёт 429 под нагрузкой (20 RPM)
+    let value = await attempt();
+    if (value === null) {
+      await new Promise((r) => setTimeout(r, 1500));
+      value = await attempt();
+    }
+    return value;
+  } catch {
     return null;
   } finally {
     clearTimeout(timer);
