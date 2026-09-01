@@ -56,10 +56,7 @@ export const LOCALES_EXTRA = {
     },
     news: {
       empty: "Нових публікацій поки немає",
-      byAuthor: "Автор: {author}",
       source: "Medium · {feed}",
-      published: "Опубліковано {date}",
-      translated: "Переклад",
       translating: "Перекладаємо…",
       loading: "Завантажуємо статтю…",
       learnMore: "Читати далі",
@@ -620,10 +617,7 @@ export const LOCALES_EXTRA = {
     },
     news: {
       empty: "Aún no hay publicaciones nuevas",
-      byAuthor: "Por {author}",
       source: "Medium · {feed}",
-      published: "Publicado el {date}",
-      translated: "Traducido",
       translating: "Traduciendo…",
       loading: "Cargando artículo…",
       learnMore: "Leer más",
@@ -1185,10 +1179,7 @@ export const LOCALES_EXTRA = {
     },
     news: {
       empty: "Noch keine neuen Beiträge",
-      byAuthor: "Von {author}",
       source: "Medium · {feed}",
-      published: "Veröffentlicht am {date}",
-      translated: "Übersetzt",
       translating: "Übersetze…",
       loading: "Artikel wird geladen…",
       learnMore: "Weiterlesen",

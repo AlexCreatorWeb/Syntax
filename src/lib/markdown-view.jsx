@@ -37,23 +37,27 @@ function Callout({ kind, text }) {
   );
 }
 
-export function MdContent({ src, t, limit }) {
-  let blocks = parseMdBlocks(src).map((b) => (b.type === "p" ? { ...b, tokens: inlineMdTokens(b.text) } : b));
+export function MdContent({ src, t, limit, blocks }) {
+  // blocks: готовые блоки parseMdBlocks (например, уже переведённые) — src не нужен
+  const base = blocks || parseMdBlocks(src);
+  let blocksOut = base.map((b) =>
+    b.type === "p" && !b.tokens ? { ...b, tokens: inlineMdTokens(b.text) } : b
+  );
   // limit: показать блоки пока суммарный объём ≤ N знаков (свёрнутый вид статьи)
   if (limit != null) {
     const visible = [];
     let len = 0;
-    for (const b of blocks) {
+    for (const b of blocksOut) {
       visible.push(b);
       len += (b.text || b.code || b.src || "").length;
       if (len >= limit) break;
     }
-    blocks = visible;
+    blocksOut = visible;
   }
-  if (!blocks.length) return <p className="md-p">—</p>;
+  if (!blocksOut.length) return <p className="md-p">—</p>;
   return (
     <div className="md md-content">
-      {blocks.map((b, i) => {
+      {blocksOut.map((b, i) => {
         if (b.type === "h2") return <h2 key={i} className="md-h2">{b.text}</h2>;
         if (b.type === "h3") return <h3 key={i} className="md-h3">{b.text}</h3>;
         if (b.type === "image") return <img key={i} className="md-img" src={b.src} alt={b.alt} loading="lazy" />;

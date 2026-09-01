@@ -1,45 +1,24 @@
 // Перевод англоязычного контента Medium в UI-язык через MyMemory:
-// бесплатно, без ключа, CORS: *. Лимит запроса ~5000 знаков — заголовки
-// и анонсы влезают с запасом. Сбой/лимит/неподдерживаемый язык → null
-// (вызывающий показывает оригинал), поэтому перевод никогда не ломает UI.
+// бесплатно, без ключа, CORS: *. ВАЖНО: анонимный лимит ~5000 зн./день и 429
+// на бёрсты запросов — поэтому короткие запросы ПО БЛОКАМ (не весь текст
+// одной строкой: MT ломает markdown-синтаксис картинок/ссылок внутри чанков),
+// кэш на сессию, тихий фолбэк на оригинал. Сбой/лимит/неподдерживаемый язык →
+// null (вызывающий показывает оригинал), поэтому перевод никогда не ломает UI.
 
 const cache = new Map(); // текст+язык → перевод (на сессию)
-
-function splitBig(text, max) {
-  const out = [];
-  for (let i = 0; i < text.length; i += max) out.push(text.slice(i, i + max));
-  return out;
-}
-
-// Разбиваем на чанки по границам абзацев (лимит MyMemory ~5000 зн., берём 1200
-// с запасом под URL-энкодинг); слишком большой абзац — кусками по строчкам.
-function chunkForTranslation(text, max = 1200) {
-  const chunks = [];
-  let cur = "";
-  const flush = () => { if (cur) { chunks.push(cur); cur = ""; } };
-  for (const p of text.split(/\n\n+/)) {
-    if (p.length > max) {
-      flush();
-      chunks.push(...splitBig(p, max));
-    } else if (cur && cur.length + p.length + 2 > max) {
-      flush();
-      cur = p;
-    } else {
-      cur = cur ? `${cur}\n\n${p}` : p;
-    }
-  }
-  flush();
-  return chunks.length ? chunks : [text];
-}
+// Анонимная квота MyMemory исчерпана → дальше не шлём запросы (сервер отвечает
+// WARNING на каждый; флаг сбрасывается новой сессией/перегрузкой страницы).
+let quotaExhausted = false;
 
 /**
  * Переводит текст с английского в targetLang ("ru" | "uk" | "es" | "de" | …).
  * Для "en" или пустого текста — сразу оригинал. null — «покажите оригинал».
  */
-export async function translateText(text, targetLang, timeoutMs = 7000) {
+export async function translateText(text, targetLang, timeoutMs = 9000) {
   if (!text) return null;
   const lang = String(targetLang || "en").toLowerCase();
   if (lang === "en") return text;
+  if (quotaExhausted) return null;
   const key = `${lang}::${text}`;
   if (cache.has(key)) return cache.get(key);
 
@@ -52,11 +31,14 @@ export async function translateText(text, targetLang, timeoutMs = 7000) {
     const res = await fetch(url, { signal: ctrl.signal });
     if (!res.ok) throw new Error(`http ${res.status}`);
     const json = await res.json();
+    const details = json && json.responseDetails ? String(json.responseDetails) : "";
     const raw =
       json && json.responseStatus === 200 && json.responseData
         ? json.responseData.translatedText
         : null;
-    // MyMemory отвечает 200, но с «INVALID»/«MYMEMORY WARNING» при ошибке.
+    // MyMemory отвечает 200, но с «INVALID»/«MYMEMORY WARNING» при ошибке/квоте.
+    if (raw && /MYMEMORY WARNING/i.test(raw)) quotaExhausted = true;
+    else if (/MYMEMORY WARNING/i.test(details)) quotaExhausted = true;
     const value = raw && !/INVALID|MYMEMORY WARNING/i.test(raw) ? raw.trim() : null;
     cache.set(key, value);
     return value;
@@ -68,17 +50,31 @@ export async function translateText(text, targetLang, timeoutMs = 7000) {
 }
 
 /**
- * Перевод длинного текста (полная статья): чанки по абзацам, параллельно,
- * сборка в исходном порядке. Сбой отдельного чанка → в нём остаётся оригинал,
- * поэтому результат всегда строка (null только для пустого входа).
+ * Перевод статьи (markdown-lite) ПО БЛОКАМ: переводятся только текстовые
+ * блоки (p/h2/h3/callout), код и картинки проходят как есть — иначе
+ * MT-сервис «ломает» ![...](url) и [t](url) внутри длинных чанков.
+ * Партиями по 6 — MyMemory отвечает 429 на бёрсты. Сбой отдельного блока →
+ * в нём остаётся оригинал. Принимает и возвращает блоки parseMdBlocks —
+ * структура статьи никогда не собирается из переведённого текста.
  */
-export async function translateLong(text, targetLang) {
-  if (!text) return null;
+export async function translateArticleBlocks(blocks, targetLang) {
   const lang = String(targetLang || "en").toLowerCase();
-  if (lang === "en") return text;
-  const chunks = chunkForTranslation(text);
-  const results = await Promise.allSettled(chunks.map((c) => translateText(c, targetLang)));
-  return results
-    .map((r, i) => (r.status === "fulfilled" && r.value ? r.value : chunks[i]))
-    .join("\n\n");
+  if (lang === "en" || !blocks.length) return blocks;
+  const out = blocks.slice();
+  const textIdx = blocks
+    .map((b, i) => (b.type === "p" || b.type === "h2" || b.type === "h3" || b.type === "callout" ? i : -1))
+    .filter((i) => i >= 0);
+  const BATCH = 6;
+  for (let i = 0; i < textIdx.length; i += BATCH) {
+    const part = textIdx.slice(i, i + BATCH);
+    const results = await Promise.allSettled(
+      part.map((bi) => translateText(blocks[bi].text, lang))
+    );
+    results.forEach((r, k) => {
+      const bi = part[k];
+      if (r.status === "fulfilled" && r.value) out[bi] = { ...blocks[bi], text: r.value };
+    });
+  }
+  return out;
 }
+

@@ -1,26 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useT } from "../i18n/useT";
 import { useLanguage } from "../context/useLanguage";
-import { translateText, translateLong } from "../lib/translate";
+import { translateText, translateArticleBlocks } from "../lib/translate";
 import { fetchMediumArticle } from "../lib/medium";
 import { parseMdBlocks } from "../lib/markdown";
 import { MdContent } from "../lib/markdown-view";
+import Avatar from "./Avatar";
 
 const UI_LOCALES = { en: "en", ru: "ru", uk: "uk", es: "es", de: "de" };
 // Свёрнутый вид: сколько знаков статьи показывать до «Learn more»
 const PREVIEW_LIMIT = 700;
 
 // Модалка «прочитать новость Medium»: ПОЛНАЯ статья (Jina Reader → markdown-lite)
-// в широкой модалке (70vw). Заголовок и текст переводятся в UI-язык
-// (translateText/translateLong → MyMemory), по сбое — оригинал.
-// Статья свёрнута: превью + кнопка «Learn more» / «Show less».
+// в широкой модалке (70vw). Шапка: источник · аватар автора · автор · дата.
+// Перевод: заголовок и текстовые блоки статьи в UI-язык (по блокам — код и
+// картинки через MT не проходят, поэтому всегда рендерятся).
+// Статья свёрнута: превью + кнопка «Learn more» / «Show less»;
+// кнопка закрытия sticky — доступна внизу статьи без скролла вверх.
 function NewsModal({ item, onClose }) {
   const t = useT();
   const { langCode } = useLanguage();
-  const [translated, setTranslated] = useState(null); // заголовок: { lang, title } | null
-  const [article, setArticle] = useState(null); // полный markdown | null
+  const [translatedTitle, setTranslatedTitle] = useState(null); // string | null
+  const [article, setArticle] = useState(null); // { md, avatar } | null
   const [articleFailed, setArticleFailed] = useState(false);
-  const [articleTranslated, setArticleTranslated] = useState(null); // string | null
+  const [translatedBlocks, setTranslatedBlocks] = useState(null); // блоки | null
   const [expanded, setExpanded] = useState(false);
 
   // Esc + body-scroll-lock (паттерн SignupModal)
@@ -34,49 +37,55 @@ function NewsModal({ item, onClose }) {
     };
   }, [onClose]);
 
-  // Перевод заголовка (setState только в async-колбэке — react-hooks/set-state-in-effect)
+  // setState только в async-колбэках (react-hooks/set-state-in-effect).
+  // Модалка монтируется на каждую новость заново, сбросов state не нужно.
+
+  // Перевод заголовка
   useEffect(() => {
     if (langCode === "en") return;
     let alive = true;
     translateText(item.title, langCode).then((title) => {
-      if (!alive) return;
-      setTranslated({ lang: langCode, title: title || item.title });
+      if (alive && title) setTranslatedTitle(title);
     });
     return () => { alive = false; };
   }, [item, langCode]);
 
-  // Загрузка полной статьи (модалка монтируется на каждую новость заново)
+  // Загрузка полной статьи (+ аватар автора)
   useEffect(() => {
     let alive = true;
     fetchMediumArticle(item.link).then((a) => {
       if (!alive) return;
-      if (a) setArticle(a.md);
+      if (a) setArticle(a);
       else setArticleFailed(true);
     });
     return () => { alive = false; };
   }, [item.link]);
 
-  // Перевод полной статьи (чанками); оригинал показываем сразу, когда будет готов —
-  // подменяем (читатель не ждёт на пустой модалке)
+  // Перевод статьи по блокам (картинки/код не трогаем). Оригинал показываем
+  // сразу; готовый перевод подменяет (спиннер «Переводим…» в конце).
+  const articleBlocks = useMemo(
+    () => (article ? parseMdBlocks(article.md) : null),
+    [article]
+  );
   useEffect(() => {
-    if (!article || langCode === "en") return;
+    if (!articleBlocks || langCode === "en") return;
     let alive = true;
-    translateLong(article, langCode).then((tr) => {
-      if (alive && tr) setArticleTranslated(tr);
+    translateArticleBlocks(articleBlocks, langCode).then((tr) => {
+      if (alive && tr) setTranslatedBlocks(tr);
     });
     return () => { alive = false; };
-  }, [article, langCode]);
+  }, [articleBlocks, langCode]);
 
   const isEn = langCode === "en";
-  const shownTitle = !isEn && translated && translated.lang === langCode ? translated.title : item.title;
-  const shownArticle = !isEn && articleTranslated ? articleTranslated : article;
-  const translatingArticle = !isEn && article && !articleTranslated;
+  const shownTitle = !isEn && translatedTitle ? translatedTitle : item.title;
+  const shownBlocks = !isEn && translatedBlocks ? translatedBlocks : articleBlocks;
+  const translatingArticle = !isEn && articleBlocks && !translatedBlocks;
 
   // «Learn more» показываем, только если статья реально длиннее превью
   const totalLen = useMemo(() => {
-    if (!shownArticle) return 0;
-    return parseMdBlocks(shownArticle).reduce((sum, b) => sum + (b.text || b.code || b.src || "").length, 0);
-  }, [shownArticle]);
+    if (!shownBlocks) return 0;
+    return shownBlocks.reduce((sum, b) => sum + (b.text || b.code || b.src || "").length, 0);
+  }, [shownBlocks]);
   const hasMore = totalLen > PREVIEW_LIMIT;
 
   const date = new Date(item.pubDate);
@@ -87,6 +96,10 @@ function NewsModal({ item, onClose }) {
         month: "long",
         year: "numeric",
       });
+  const authorHue = useMemo(
+    () => [...item.author].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 360,
+    [item.author]
+  );
 
   return (
     <div
@@ -97,6 +110,7 @@ function NewsModal({ item, onClose }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="news-modal__panel">
+        {/* sticky: кнопка закрытия доступна и в конце длинной статьи */}
         <button type="button" className="news-modal__close" onClick={onClose} aria-label={t("news.close")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <path d="M18 6 6 18M6 6l12 12" />
@@ -106,17 +120,22 @@ function NewsModal({ item, onClose }) {
         <div className="news-modal__inner">
           <div className="news-modal__meta">
             <span className="chip chip--medium">{t("news.source", { feed: t(`home.tech.${item.techId}`) })}</span>
-            <span className="news-modal__meta-date">{t("news.published", { date: dateStr })}</span>
-            <span className="news-modal__meta-author">{t("news.byAuthor", { author: item.author })}</span>
+            <span className="news-modal__byline">
+              {article && article.avatar ? (
+                <img className="news-modal__avatar" src={article.avatar} alt="" loading="lazy" />
+              ) : (
+                <Avatar name={item.author} hue={authorHue} size="xs" />
+              )}
+              <span className="news-modal__meta-author">{item.author}</span>
+              <span className="news-modal__dot">·</span>
+              <span className="news-modal__meta-date">{dateStr}</span>
+            </span>
           </div>
 
           <h2 className="news-modal__title">{shownTitle}</h2>
-          {!isEn && translated && (
-            <span className="chip chip--medium news-modal__trans-chip">{t("news.translated")}</span>
-          )}
 
           <div className="news-modal__body">
-            {!article && !articleFailed ? (
+            {!articleBlocks && !articleFailed ? (
               <p className="news-modal__loading">
                 <span className="news-modal__spinner" aria-hidden="true" />
                 {t("news.loading")}
@@ -125,7 +144,7 @@ function NewsModal({ item, onClose }) {
               <p className="news-modal__summary">{item.summary || item.title}</p>
             ) : (
               <>
-                <MdContent src={shownArticle} t={t} limit={expanded ? undefined : PREVIEW_LIMIT} />
+                <MdContent blocks={shownBlocks} t={t} limit={expanded ? undefined : PREVIEW_LIMIT} />
                 {translatingArticle && (
                   <p className="news-modal__loading news-modal__loading--inline">
                     <span className="news-modal__spinner" aria-hidden="true" />

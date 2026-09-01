@@ -1499,8 +1499,9 @@ code {
 .techmod--db .techmod__title { color: var(--primary); }
 .techmod--db:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(48, 224, 161, 0.12); }
 .techmod--db:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-/* NEW-метка: точка как важная точка на колокольчике уведомлений (--danger-strong + кольцо) */
-.lesson-new-dot { flex: none; align-self: center; margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--danger-strong); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18); }
+/* NEW-лейбл: акцентный красный фон, белый шрифт (три последних урока трека) */
+.chip--new { color: #fff; background: var(--danger-strong); border-color: var(--danger-strong); animation: new-pulse 2s ease-in-out infinite; }
+@keyframes new-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(197, 2, 11, 0.35); } 50% { box-shadow: 0 0 10px 3px rgba(197, 2, 11, 0.25); } }
 
 /* ————— LessonView: урок из БД (Supabase) — крошки, заголовок, табы Материал/Задание ————— */
 .lesson-view { display: flex; flex-direction: column; gap: 12px; }
@@ -4449,18 +4450,22 @@ code {
 }
 /* Читабельная колонка внутри широкой модалки */
 .news-modal__inner { max-width: 860px; margin: 0 auto; padding: 30px 40px 32px; width: 100%; }
+/* sticky: кнопка закрытия видна и в конце длинной статьи (без скролла вверх) */
 .news-modal__close {
-  position: absolute;
+  position: sticky;
   top: 16px;
-  right: 16px;
+  align-self: flex-end;
+  margin: 14px 16px -46px 0;
+  z-index: 3;
   width: 34px;
   height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  background: none;
+  background: var(--surface);
+  box-shadow: var(--shadow-float, 0 4px 14px rgba(0, 0, 0, 0.25));
   color: var(--muted);
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
@@ -4469,9 +4474,19 @@ code {
 .news-modal__close svg { width: 15px; height: 15px; }
 .news-modal__meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .news-modal__meta-date { font-size: 12px; color: var(--muted); }
-.news-modal__meta-author { font-size: 12px; color: var(--muted); }
-.news-modal__title { font-size: 21px; font-weight: 700; line-height: 28px; margin: 0 0 10px; padding-right: 16px; }
-.news-modal__trans-chip { align-self: flex-start; margin-bottom: 4px; }
+/* byline: аватар автора + имя + дата — одной строкой */
+.news-modal__byline { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.news-modal__avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+}
+.news-modal__byline .avatar-dot { flex: none; }
+.news-modal__meta-author { font-size: 12px; color: var(--text-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.news-modal__dot { color: var(--muted); font-size: 12px; }
+.news-modal__title { font-size: 21px; font-weight: 700; line-height: 28px; margin: 0 0 16px; padding-right: 16px; }
 .news-modal__body { min-height: 72px; }
 .news-modal__summary {
   font-size: 14.5px;

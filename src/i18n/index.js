@@ -195,10 +195,7 @@ export const LOCALES = {
     },
     news: {
       empty: "Новых публикаций пока нет",
-      byAuthor: "Автор: {author}",
       source: "Medium · {feed}",
-      published: "Опубликовано {date}",
-      translated: "Перевод",
       translating: "Переводим…",
       loading: "Загружаем статью…",
       learnMore: "Читать далее",

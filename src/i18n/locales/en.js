@@ -188,10 +188,7 @@ export default {
   },
   news: {
     empty: "No new posts yet",
-    byAuthor: "By {author}",
     source: "Medium · {feed}",
-    published: "Published {date}",
-    translated: "Translated",
     translating: "Translating…",
     loading: "Loading article…",
     learnMore: "Learn more",

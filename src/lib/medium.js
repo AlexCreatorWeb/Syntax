@@ -146,9 +146,11 @@ const JUNK_LINES = [
   /^\d+\s*min read$/i,
   /^\d+\s*(second|minute|hour|day|week|month)s?\s+(ago|later)$/i,
   /^(follow|help|respond|share)$/i,
-  // карточка sign-in в теле статьи (Jina её подхватывает)
+  // карточка sign-in / пейволл в теле статьи (Jina их подхватывает)
   /^join medium for free/i,
   /^remember me for faster sign in$/i,
+  /^\*{0,2}not a medium member/i,
+  /^\*{0,2}read this article here\*{0,2}$/i,
 ];
 
 // Markdown Jina → чистый markdown-lite: без служебных строк, списки → «• »
@@ -159,7 +161,9 @@ function cleanArticleMarkdown(md) {
   const marker = "Markdown Content:";
   const body = src.includes(marker) ? src.slice(src.indexOf(marker) + marker.length) : src;
   const out = [];
-  body.split("\n").forEach((raw, idx) => {
+  let avatar = null;
+  let first = true; // первый НЕПУСТОЙ ряд (body начинается с \n)
+  body.split("\n").forEach((raw) => {
     let line = raw.trim();
     // blockquote-маркер Jina — просто убираем
     line = line.replace(/^>\s?/, "");
@@ -167,8 +171,13 @@ function cleanArticleMarkdown(md) {
       if (out[out.length - 1] !== "") out.push("");
       return;
     }
-    // первая строка — аватар автора: [![alt](img)](profile)
-    if (idx === 0 && /^\[!\[.*\]\(.*\)\]\(.*\)$/.test(line)) return;
+    // первый непустой ряд — аватар автора: [![alt](img)](profile)
+    if (first) {
+      first = false;
+      const av = line.match(/^\[!\[[^\]]*\]\(([^)\s]+)\)\]\(([^)\s]+)\)$/);
+      if (av) avatar = av[1];
+      return;
+    }
     if (JUNK_LINES.some((re) => re.test(line))) return;
     const bullet = line.match(/^[*-]\s+(.*)$/);
     if (bullet) {
@@ -181,12 +190,15 @@ function cleanArticleMarkdown(md) {
   });
   const fences = (out.join("\n").match(/```/g) || []).length;
   if (fences % 2 === 1) out.push("```");
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return {
+    md: out.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
+    avatar,
+  };
 }
 
-const articleCache = new Map(); // link → { md } (на сессию)
+const articleCache = new Map(); // link → { md, avatar } (на сессию)
 
-/** Полный текст статьи Medium как markdown. Сбой → null (модалка покажет анонс). */
+/** Полный текст статьи Medium как markdown (+ аватар автора). Сбой → null (модалка покажет анонс). */
 export async function fetchMediumArticle(link, timeoutMs = 25000) {
   if (articleCache.has(link)) return articleCache.get(link);
   const ctrl = new AbortController();
@@ -194,7 +206,7 @@ export async function fetchMediumArticle(link, timeoutMs = 25000) {
   try {
     const res = await fetch(`${JINA}${link}?target_selector=.postArticle-content`, { signal: ctrl.signal });
     if (!res.ok) throw new Error(`http ${res.status}`);
-    const value = { md: cleanArticleMarkdown(await res.text()) };
+    const value = cleanArticleMarkdown(await res.text());
     if (!value.md) throw new Error("empty article");
     articleCache.set(link, value);
     return value;
