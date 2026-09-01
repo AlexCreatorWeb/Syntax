@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Урок 13: a11y</title>
+</head>
+<body>
+  <header>
+    <!-- TODO 1: кнопка-иконка: <button aria-label="Поиск"> с <svg aria-hidden="true"> -->
+    <button type="button"><svg width="20" height="20"></svg></button>
+  </header>
+  <main>
+    <!-- TODO 2: декоративный символ в абзаце, обёрнутый в <span aria-hidden="true"> -->
+    <p>Всё отлично!</p>
+    <!-- TODO 3: секция с aria-labelledby (id на h2) -->
+    <section>
+      <h2>Вопросы и ответы</h2>
+      <p>Ответы на частые вопросы.</p>
+    </section>
+    <!-- TODO 4: «Сохранено»-блок: <p role="status" aria-live="polite"> -->
+    <p>Статус</p>
+    <!-- TODO 5: бургер: <button aria-expanded="false" aria-controls="menu"> + <nav id="menu" hidden> -->
+    <!-- TODO 6: меню: добавьте aria-current="page" на текущий пункт -->
+    <nav aria-label="Разделы">
+      <a href="/">Главная</a>
+      <a href="/blog">Блог</a>
+    </nav>
+  </main>
+</body>
+</html>
