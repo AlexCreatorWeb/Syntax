@@ -175,7 +175,7 @@ export const LOCALES = {
       resources: "Ресурсы",
       aiTitle: "AI-ассистент Syntax",
       aiHint: "Нужна помощь с замыканиями или async? Спроси что угодно.",
-      aiInput: "Введите вопрос...",
+      aiInput: "Нужна помощь в обучении?",
       lessons: "{n} уроков",
       changeTrack: "Это не ваш трек? Выбрать другой",
       soon: "Больше модулей скоро",

@@ -51,7 +51,11 @@ export function mediumDayKey(date = new Date()) {
 // pubDate из rss2json — «YYYY-MM-DD HH:MM:SS» без таймзоны (GMT у Medium),
 // поэтому парсим как UTC и сравниваем локальные календарные дни.
 function isPublishedToday(pubDate) {
-  const d = new Date(String(pubDate).replace(" ", "T") + "Z");
+  const s = String(pubDate).trim();
+  // RFC2822 ("Tue, 01 Sep 2026 12:36:26 GMT" — Jina/XML) парсится нативно;
+  // ISO без Z ("2026-09-01 12:36:26" — rss2json) — хак T+Z.
+  let d = new Date(s);
+  if (isNaN(d)) d = new Date(s.replace(" ", "T") + "Z");
   if (isNaN(d)) return false;
   const n = new Date();
   return (

@@ -168,7 +168,7 @@ export default {
     resources: "Resources",
     aiTitle: "Syntax AI Assistant",
     aiHint: "Need help understanding closures or async logic? Ask me anything.",
-    aiInput: "Type a question...",
+    aiInput: "Need help with learning?",
     lessons: "{n} lessons",
     changeTrack: "Not your track? Choose another",
     soon: "More modules coming soon",
