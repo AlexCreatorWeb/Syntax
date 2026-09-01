@@ -149,8 +149,8 @@ const JUNK_LINES = [
   // карточка sign-in / пейволл в теле статьи (Jina их подхватывает)
   /^join medium for free/i,
   /^remember me for faster sign in$/i,
-  /^\*{0,2}not a medium member/i,
-  /^\*{0,2}read this article here\*{0,2}$/i,
+  /^\[?\*{0,2}not a medium member/i,
+  /^\[?\*{0,2}read this article here\*{0,2}\]?\(?[^)]*\)?$/i,
 ];
 
 // Markdown Jina → чистый markdown-lite: без служебных строк, списки → «• »

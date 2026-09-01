@@ -1500,7 +1500,7 @@ code {
 .techmod--db:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(48, 224, 161, 0.12); }
 .techmod--db:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 /* NEW-лейбл: акцентный красный фон, белый шрифт (три последних урока трека) */
-.chip--new { color: #fff; background: var(--danger-strong); border-color: var(--danger-strong); animation: new-pulse 2s ease-in-out infinite; }
+.chip--new { color: #fff; font-size: 10px; line-height: 12px; padding: 3px 9px; border-radius: 6px; background: var(--danger-strong); border-color: var(--danger-strong); animation: new-pulse 2s ease-in-out infinite; }
 @keyframes new-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(197, 2, 11, 0.35); } 50% { box-shadow: 0 0 10px 3px rgba(197, 2, 11, 0.25); } }
 
 /* ————— LessonView: урок из БД (Supabase) — крошки, заголовок, табы Материал/Задание ————— */
