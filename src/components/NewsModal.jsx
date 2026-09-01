@@ -74,7 +74,7 @@ function NewsModal({ item, onClose }) {
         </button>
 
         <div className="news-modal__meta">
-          <span className="chip chip--medium">{t("news.source", { feed: item.feedName })}</span>
+          <span className="chip chip--medium">{t("news.source", { feed: t(`home.tech.${item.techId}`) })}</span>
           <span className="news-modal__meta-date">{t("news.published", { date: dateStr })}</span>
         </div>
 

@@ -214,7 +214,7 @@ function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNews
                   <span className="tb-menu__news-body">
                     <span className="tb-menu__news-title">{item.title}</span>
                     <span className="tb-menu__news-meta">
-                      {item.feedName} · {item.author}
+                      {t(`home.tech.${item.techId}`)} · {item.author}
                     </span>
                   </span>
                 </button>

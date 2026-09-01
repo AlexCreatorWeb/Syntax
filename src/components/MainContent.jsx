@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CodeEditor from "./CodeEditor";
 import LessonView from "./views/LessonView";
 import MainView from "./views/MainView";
@@ -37,6 +37,12 @@ function taskJob(t, index, techId) {
 function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons }) {
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
+
+  // #/lesson без job-контекста (refresh/bookmark): урок живёт в состоянии App,
+  // после перезагрузки job=null — вместо белого экрана мягкий редирект на roadmap
+  useEffect(() => {
+    if (activeTab === "lesson" && !job) onNavigate("roadmap");
+  }, [activeTab, job, onNavigate]);
 
   // К2: урок привязан к треку — имя, описание и файл соответствуют технологии.
   // Без techId (демо-урок с главной) — первая строка БД целиком / исходный JavaScript-урок.
@@ -161,8 +167,8 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
       case "editor":
         return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
       case "lesson":
-        // Урок из базы: материал + редактор (job = строка lessons)
-        return <LessonView job={job} theme={theme} onNavigate={onNavigate} />;
+        // Урок из базы: материал + редактор (job = строка lessons); без job — редирект в effect
+        return job ? <LessonView job={job} theme={theme} onNavigate={onNavigate} /> : null;
       case "tasks":
         // key=activeTech: смена трека перемонтирует вьюху — tech-фильтр синхронен с выбранным треком
         return <TasksView key={activeTech || "none"} activeTech={activeTech} onSelectTech={onSelectTech} onSolve={(i, techId) => openTask(i, techId)} />;

@@ -1,22 +1,38 @@
-// Подключение Medium: RSS-ленты фронтенд-тегов → JSON.
+// Подключение Medium: RSS-теги по технологиям платформы → JSON.
 // Medium не отдаёт CORS-заголовки, поэтому ленты читаем через публичный
 // шлюз rss2json.com (CORS: *, без ключа). Формат: /v1/api.json?rss_url=…
 // При сбое сети/шлюза возвращаем [] — фича не ломает UI (паттерн fetchDbLessons).
+//
+// Источник правды — TECHS (src/lib/techs.js): тот же список технологий,
+// что показывается на вкладке «Дорожная карта». Активные фиды вычисляются
+// из TECHS в рантайме: убрали технологию из TECHS → её лента перестала
+// тянуться в уведомления, маппинг-таблицу трогать не нужно.
+import TECHS from "./techs";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 
-// Избранные фронтенд-теги Medium, которые считаем «нашими» новостями.
-export const MEDIUM_FEEDS = [
-  { id: "frontend", name: "Frontend", url: "https://medium.com/feed/tag/frontend" },
-  { id: "javascript", name: "JavaScript", url: "https://medium.com/feed/tag/javascript" },
-  { id: "react", name: "React", url: "https://medium.com/feed/tag/react" },
-];
+// Технология платформы → тег Medium + фильтр релевантности.
+// Ключевые слова нужны: теги Medium неточные (например, «node» подмешивает
+// Kubernetes-«nodes», а «postgres» — соседние СУБД).
+const TECH_MEDIUM = {
+  html: { tag: "html", keywords: /\bhtml\b/i },
+  css: { tag: "css", keywords: /\bcss\b/i },
+  javascript: { tag: "javascript", keywords: /javascript|ecmascript|\bjs\b|\bes6\b|\bes20\d\d\b/i },
+  react: { tag: "react", keywords: /\breact\b/i },
+  vue: { tag: "vue", keywords: /\bvue\b/i },
+  node: { tag: "node", keywords: /node\.js|\bnode\b(?!s)/i },
+  mongo: { tag: "mongodb", keywords: /\bmongo(db)?\b|\bbson\b/i },
+  python: { tag: "python", keywords: /\bpython\b/i },
+  postgres: { tag: "postgres", keywords: /postgres|psql|\bpg\b/i },
+};
 
-// Лёгкий фильтр релевантности: теги JavaScript/React шире чистого фронтенда,
-// поэтому отбрасываем явно бэкенд/не-веб-статьи.
-const OFF_TOPIC = /\b(python|django|flask|kubernetes|k8s|devops|terraform|rust|golang|\bgo\b|php|ruby|rails|android|flutter|ios\b)\b/i;
-const FRONTEND_HINTS =
-  /\b(html|css|javascript|typescript|js|react|vue|angular|svelte|next\.?js|nuxt|astro|vite|webpack|frontend|front-?end|web\s?dev|dom|browser|node(\.js)?|es6|es20\d\d|ui|component|hook|state|api|http|fetch|async|promise|webpack|tailwind)\b/i;
+// Активные фиды = только те, чья технология есть на платформе (TECHS).
+const activeFeeds = () =>
+  TECHS.filter((tech) => TECH_MEDIUM[tech.id]).map((tech) => ({
+    techId: tech.id,
+    tag: TECH_MEDIUM[tech.id].tag,
+    keywords: TECH_MEDIUM[tech.id].keywords,
+  }));
 
 function htmlToText(html) {
   if (!html) return "";
@@ -40,22 +56,22 @@ function normalizeItem(raw, feed) {
     summary,
     author: raw.author || "Medium",
     pubDate: raw.pubDate || "",
-    feedId: feed.id,
-    feedName: feed.name,
+    techId: feed.techId,
   };
 }
 
-function isFrontendRelated(item) {
-  const text = `${item.title} ${item.summary}`;
-  if (OFF_TOPIC.test(text) && !FRONTEND_HINTS.test(text)) return false;
-  return true;
+// Статья относится к технологии, только если в заголовке/анонсе есть
+// её ключевые слова (теги Medium широкие — см. TECH_MEDIUM).
+function isTechRelated(item, feed) {
+  return feed.keywords.test(`${item.title} ${item.summary}`);
 }
 
 // Кэш на сессию: первый fetch записывает, дальше — из памяти (как lessons).
 let newsCache = null;
 
 /**
- * Возвращает свежие фронтенд-публикации Medium (сортировка по дате desc).
+ * Возвращает свежие публикации Medium по технологиям платформы
+ * (сортировка по дате desc, дедупликация по ссылке).
  * refresh: true — перечитать ленты (поллинг раз в 10 минут в App).
  * Сбой/пусто → [] (хедер просто не покажет новости).
  */
@@ -65,12 +81,17 @@ export async function fetchMediumNews({ timeoutMs = 12000, refresh = false } = {
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const results = await Promise.allSettled(
-      MEDIUM_FEEDS.map(async (feed) => {
-        const res = await fetch(`${RSS2JSON}?rss_url=${encodeURIComponent(feed.url)}`, { signal: ctrl.signal });
+      activeFeeds().map(async (feed) => {
+        const url = `${RSS2JSON}?rss_url=${encodeURIComponent(
+          `https://medium.com/feed/tag/${feed.tag}`
+        )}`;
+        const res = await fetch(url, { signal: ctrl.signal });
         if (!res.ok) throw new Error(`http ${res.status}`);
         const json = await res.json();
         if (json.status !== "ok" || !Array.isArray(json.items)) throw new Error("bad feed");
-        return json.items.map((it) => normalizeItem(it, feed)).filter(Boolean);
+        return json.items
+          .map((it) => normalizeItem(it, feed))
+          .filter((it) => it && isTechRelated(it, feed));
       })
     );
     const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
@@ -78,7 +99,7 @@ export async function fetchMediumNews({ timeoutMs = 12000, refresh = false } = {
     const items = all.filter((it) => {
       if (seen.has(it.link)) return false;
       seen.add(it.link);
-      return isFrontendRelated(it);
+      return true;
     });
     items.sort((a, b) => String(b.pubDate).localeCompare(String(a.pubDate)));
     newsCache = items.slice(0, 8);

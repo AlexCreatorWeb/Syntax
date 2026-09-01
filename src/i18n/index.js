@@ -192,7 +192,7 @@ export const LOCALES = {
     notifications: {
       title: "Уведомления",
       none: "Новых уведомлений нет",
-      news: "Фронтенд-новости · Medium",
+      news: "Свежие статьи · Medium",
       items: [
         { text: "Новый комментарий к вашей задаче", important: true },
         { text: "Ежедневный челлендж доступен", important: true },

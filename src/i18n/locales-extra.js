@@ -53,7 +53,7 @@ export const LOCALES_EXTRA = {
     notifications: {
       title: "Сповіщення",
       none: "Нових сповіщень немає",
-      news: "Новини фронтенду · Medium",
+      news: "Свіжі статті · Medium",
       items: [
         { text: "Новий коментар до вашого завдання", important: true },
         { text: "Щоденний челлендж доступний", important: true },
@@ -620,7 +620,7 @@ export const LOCALES_EXTRA = {
     notifications: {
       title: "Notificaciones",
       none: "Sin nuevas notificaciones",
-      news: "Noticias de frontend · Medium",
+      news: "Artículos nuevos · Medium",
       items: [
         { text: "Nuevo comentario en tu tarea", important: true },
         { text: "Desafío diario disponible", important: true },
@@ -1188,7 +1188,7 @@ export const LOCALES_EXTRA = {
     notifications: {
       title: "Benachrichtigungen",
       none: "Keine neuen Benachrichtigungen",
-      news: "Frontend-News · Medium",
+      news: "Neue Artikel · Medium",
       items: [
         { text: "Neuer Kommentar zu deiner Aufgabe", important: true },
         { text: "Tägliche Herausforderung verfügbar", important: true },
