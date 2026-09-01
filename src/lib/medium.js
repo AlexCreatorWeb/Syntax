@@ -191,9 +191,35 @@ function cleanArticleMarkdown(md) {
   const fences = (out.join("\n").match(/```/g) || []).length;
   if (fences % 2 === 1) out.push("```");
   return {
-    md: out.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
+    md: wrapCodeLines(out).join("\n").replace(/\n{3,}/g, "\n\n").trim(),
     avatar,
   };
+}
+
+// Jina Reader часто «ломает» кодовые блоки: статья получает сырые строки кода
+// (<img, src=…, />), которые «плывут» в тексте. Хэвистик: последовательные
+// «кодовые» строки сворачиваем в ```-блок → рендерится фреймом .code-block.
+const CODE_START = /^(<[a-zA-Z/!?]|function\b|return\b|import\b|export\b|const\b|let\b|var\b|\S+\(.*\)\s*\{\s*$)/;
+const CODE_CONT = /^(\s+\S|\s*[{}();,]|\/>|<>|<\/?[a-zA-Z])|\s*=\s*\S.*$/;
+function wrapCodeLines(lines) {
+  const res = [];
+  let buf = [];
+  const flush = () => {
+    if (!buf.length) return;
+    if (buf.length === 1) res.push(buf[0]); // одиночная строка — не убеждаем себя
+    else res.push("```", ...buf, "```");
+    buf = [];
+  };
+  for (const line of lines) {
+    if (buf.length) {
+      if (CODE_CONT.test(line)) { buf.push(line); continue; }
+      flush();
+    }
+    if (CODE_START.test(line)) { buf.push(line); continue; }
+    res.push(line);
+  }
+  flush();
+  return res;
 }
 
 const articleCache = new Map(); // link → { md, avatar } (на сессию)

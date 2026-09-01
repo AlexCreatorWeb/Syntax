@@ -136,10 +136,21 @@ function NewsModal({ item, onClose }) {
 
           <div className="news-modal__body">
             {!articleBlocks && !articleFailed ? (
-              <p className="news-modal__loading">
-                <span className="news-modal__spinner" aria-hidden="true" />
-                {t("news.loading")}
-              </p>
+              <>
+                {/* Skeleton (ванильный CSS shimmer) — Jina Reader отдаёт статью не мгновенно */}
+                <div className="news-skeleton" aria-hidden="true">
+                  <div className="news-skeleton__hero" />
+                  <div className="news-skeleton__line news-skeleton__line--w70" />
+                  <div className="news-skeleton__line" />
+                  <div className="news-skeleton__line news-skeleton__line--w90" />
+                  <div className="news-skeleton__line" />
+                  <div className="news-skeleton__line news-skeleton__line--w60" />
+                </div>
+                <p className="news-modal__loading">
+                  <span className="news-modal__spinner" aria-hidden="true" />
+                  {t("news.loading")}
+                </p>
+              </>
             ) : articleFailed ? (
               <p className="news-modal__summary">{item.summary || item.title}</p>
             ) : (
