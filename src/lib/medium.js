@@ -146,6 +146,8 @@ const JUNK_LINES = [
   /^\d+\s*min read$/i,
   /^\d+\s*(second|minute|hour|day|week|month)s?\s+(ago|later)$/i,
   /^(follow|help|respond|share)$/i,
+  /^just now$/i,
+  /^-{2,}$/i,
   // карточка sign-in / пейволл в теле статьи (Jina их подхватывает)
   /^join medium for free/i,
   /^remember me for faster sign in$/i,

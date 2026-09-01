@@ -1,16 +1,19 @@
-// Перевод англоязычного контента Medium в UI-язык через MyMemory:
-// бесплатно, без ключа, CORS: *. Квота: `de=`-параметр (e-mail) даёт ~50K зн./день
-// вместо 5K анонимных — поэтому он в каждом запросе. Запросы короткие — ПО БЛОКАМ
-// (не весь текст одной строкой: MT ломает markdown-синтаксис картинок/ссылок
-// внутри чанков). Кэш на сессию; если квота всё же исчерпана — флаг
-// quotaExhausted, дальнейшие запросы не шлём, тихий фолбэк на оригинал.
+// Перевод англоязычного контента Medium в UI-язык. Цепочка провайдеров:
+// 1) MyMemory (бесплатно, без ключа, CORS: *; `de=`-параметр даёт ~50K зн./день
+//    вместо 5K анонимных) → 2) Google gtx (фолбэк) → null = «оригинал».
+// Запросы короткие — ПО БЛОКАМ (не весь текст одной строкой: MT ломает
+// markdown-синтаксис картинок/ссылок внутри чанков). Кэш на сессию; исчерпанная
+// квота MyMemory — флаг quotaExhausted, мёртвый Google — googleBlocked;
+// тихий фолбэк на оригинал, перевод никогда не ломает UI.
 
 const cache = new Map(); // текст+язык → перевод (на сессию)
 // Анонимная квота MyMemory исчерпана → дальше не шлём запросы (сервер отвечает
 // WARNING на каждый; флаг сбрасывается новой сессией/перегрузкой страницы).
 let quotaExhausted = false;
-// Google (фолбэк-провайдер) отвечает 429 на datacenter-IP и бёрсты — если пришёл один 429,
-// на сессию больше не пробуем.
+// Google (фолбэк-провайдер) отвечает 429 на datacenter-IP и бёрсты — 429 приходит
+// БЕЗ CORS-заголовков, то есть как fetch-rejection; после 3 провалов не пробуем.
+let googleFails = 0;
+const GOOGLE_MAX_FAILS = 3;
 let googleBlocked = false;
 
 /**
@@ -40,16 +43,18 @@ async function myMemory(text, lang, timeoutMs) {
       text.slice(0, 480)
     )}&langpair=en|${lang}&de=frontend@syntax.dev`;
     const res = await fetch(url, { signal: ctrl.signal });
+    // Тело парсим ДО проверки status: при 429 (квота) ответ JSON с WARNING.
+    const json = await res.json().catch(() => null);
+    // Квота/ошибка: WARNING приходит в responseDetails или translatedText
+    // (при responseStatus 429, а не 200!) — флаг ставим в обоих случаях.
+    const blob = [json && json.responseDetails, json && json.responseData && json.responseData.translatedText]
+      .filter(Boolean).join(" ");
+    if (/MYMEMORY WARNING/i.test(blob)) quotaExhausted = true;
     if (!res.ok) throw new Error(`http ${res.status}`);
-    const json = await res.json();
-    const details = json && json.responseDetails ? String(json.responseDetails) : "";
     const raw =
       json && json.responseStatus === 200 && json.responseData
         ? json.responseData.translatedText
         : null;
-    // MyMemory отвечает 200, но с «INVALID»/«MYMEMORY WARNING» при ошибке/квоте.
-    if (raw && /MYMEMORY WARNING/i.test(raw)) quotaExhausted = true;
-    else if (/MYMEMORY WARNING/i.test(details)) quotaExhausted = true;
     return raw && !/INVALID|MYMEMORY WARNING/i.test(raw) ? raw.trim() : null;
   } catch {
     return null;
@@ -59,24 +64,29 @@ async function myMemory(text, lang, timeoutMs) {
 }
 
 // Google Translate (gtx-эндпоинт веб-версии): JSON [[seg...], ...], перевод =
-// конкатенация seg[0]. 429 на datacenter-IP → googleBlocked на сессию.
+// конкатенация seg[0]. 429 на datacenter-IP приходит без CORS → reject; после
+// GOOGLE_MAX_FAILS провалов provider считается мёртвым на сессию.
 async function googleGtx(text, lang, timeoutMs) {
+  if (googleBlocked) return null;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  const timer = setTimeout(() => ctrl.abort(), Math.min(timeoutMs, 6000));
   try {
     const url = `https://translate.google.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(
       text.slice(0, 480)
     )}`;
     const res = await fetch(url, { signal: ctrl.signal });
-    if (res.status === 429) googleBlocked = true;
+    if (res.status === 429) googleFails += 1;
     if (!res.ok) throw new Error(`http ${res.status}`);
     const data = await res.json();
     const segs =
       Array.isArray(data) && Array.isArray(data[0])
         ? data[0].map((s) => (s && s[0]) || "").join("")
         : null;
+    if (segs) googleFails = 0;
     return segs ? segs.trim() : null;
   } catch {
+    googleFails += 1;
+    if (googleFails >= GOOGLE_MAX_FAILS) googleBlocked = true;
     return null;
   } finally {
     clearTimeout(timer);
