@@ -204,15 +204,17 @@ const CODE_CONT = /^(\s+\S|\s*[{}();,]|\/>|<>|<\/?[a-zA-Z])|\s*=\s*\S.*$/;
 function wrapCodeLines(lines) {
   const res = [];
   let buf = [];
+  const hadCode = () => buf.some((l) => l !== "");
   const flush = () => {
     if (!buf.length) return;
-    if (buf.length === 1) res.push(buf[0]); // одиночная строка — не убеждаем себя
-    else res.push("```", ...buf, "```");
+    if (hadCode()) res.push("```", ...buf, "```");
+    else res.push(...buf);
     buf = [];
   };
   for (const line of lines) {
     if (buf.length) {
-      if (CODE_CONT.test(line)) { buf.push(line); continue; }
+      // пустые строки допустимы ВНУТРИ группы (Jina разводит кодовые строки пустотами)
+      if (line === "" || CODE_CONT.test(line)) { buf.push(line); continue; }
       flush();
     }
     if (CODE_START.test(line)) { buf.push(line); continue; }
