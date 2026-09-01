@@ -4395,7 +4395,7 @@ code {
 }
 
 /* --- Новости Medium в списке уведомлений (RSS → RSS2JSON) --- */
-.tb-menu--notif { min-width: 340px; max-width: min(92vw, 400px); }
+.tb-menu--notif { min-width: 340px; max-width: min(92vw, 400px); max-height: min(72vh, 600px); overflow-y: auto; }
 .tb-menu__item--news { display: flex; align-items: flex-start; gap: 10px; }
 .tb-menu__news-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .tb-menu__news-title {

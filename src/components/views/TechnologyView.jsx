@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
 import { getCompleted } from "../../lib/progress";
+import { hasRecentFeature } from "../../lib/web-features";
 
 // Страница технологии (макет: technology-page).
 // Контент (описание, модули, ресурсы, AI-пример, урок) — в i18n: `techs.{id}`
@@ -84,23 +85,9 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
         <section className="tech-page__dblessons">
           <h2 className="tech-page__section-title">{t("techPage.dbLessons")}</h2>
           <div className="techmod-list">
-            {/* NEW-лейбл вешаем только на НОВЫЙ материал (≤ 3 лет):
-                1) дата в БД (published_at/created_at), если появится;
-                2) годы в тексте урока: свежие (≥ cutoff) — да, только старые — нет;
-                3) без дат — фолбэк «три последних урока» (агент пишет свежие обновления в конец). */}
-            {(() => {
-              const cutoffYear = new Date().getFullYear() - 3;
-              const threeYearsMs = 3 * 365.25 * 24 * 3600 * 1000;
-              const isNewLesson = (l, i) => {                const ts = l.published_at || l.created_at;
-                if (ts) {
-                  const d = new Date(ts);
-                  if (!Number.isNaN(d.getTime())) return Date.now() - d.getTime() <= threeYearsMs;
-                }
-                const years = (l.content || "").match(/\b(20\d\d)\b/g)?.map((y) => parseInt(y, 10)) || [];
-                if (years.length > 0) return years.some((y) => y >= cutoffYear);
-                return i >= dbTechLessons.length - 3;
-              };
-              return dbTechLessons.map((l, i) => (
+            {/* NEW-лейбл: только если урок про НОВУЮ технологию (фича ≤ 3 лет — словарь web-features.js),
+                а не про добавление урока в базу: popover в HTML — NEW, <table> с 2005 года — нет. */}
+            {dbTechLessons.map((l, i) => (
             
               <article
                 key={l.id}
@@ -122,11 +109,10 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
                   <h3 className="techmod__title">{i + 1}. {l.title}</h3>
                   <p className="techmod__desc">{t("techPage.dbLessonOpen")}</p>
                 </div>
-                {/* NEW: только новый материал (см. isNewLesson) */}
-                {isNewLesson(l, i) && <span className="chip chip--new">NEW</span>}
+                {/* NEW: урок про свежую технологию (см. web-features.js) */}
+                {hasRecentFeature(`${l.title} ${l.content || ""}`) && <span className="chip chip--new">NEW</span>}
               </article>
-              ));
-            })()}
+            ))}
           </div>
         </section>
       )}

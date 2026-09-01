@@ -9,6 +9,9 @@ const cache = new Map(); // текст+язык → перевод (на сес�
 // Анонимная квота MyMemory исчерпана → дальше не шлём запросы (сервер отвечает
 // WARNING на каждый; флаг сбрасывается новой сессией/перегрузкой страницы).
 let quotaExhausted = false;
+// Google (фолбэк-провайдер) отвечает 429 на datacenter-IP и бёрсты — если пришёл один 429,
+// на сессию больше не пробуем.
+let googleBlocked = false;
 
 /**
  * Переводит текст с английского в targetLang ("ru" | "uk" | "es" | "de" | …).
@@ -18,10 +21,18 @@ export async function translateText(text, targetLang, timeoutMs = 9000) {
   if (!text) return null;
   const lang = String(targetLang || "en").toLowerCase();
   if (lang === "en") return text;
-  if (quotaExhausted) return null;
   const key = `${lang}::${text}`;
   if (cache.has(key)) return cache.get(key);
+  // Цепочка провайдеров: MyMemory (de= ~50K зн./день) → Google gtx (бесплатно,
+  // без ключа) → null (оригинал). Квота одного исчерпана — второй может работать.
+  let value = null;
+  if (!quotaExhausted) value = await myMemory(text, lang, timeoutMs);
+  if (value === null && !googleBlocked) value = await googleGtx(text, lang, timeoutMs);
+  cache.set(key, value);
+  return value;
+}
 
+async function myMemory(text, lang, timeoutMs) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
@@ -39,9 +50,32 @@ export async function translateText(text, targetLang, timeoutMs = 9000) {
     // MyMemory отвечает 200, но с «INVALID»/«MYMEMORY WARNING» при ошибке/квоте.
     if (raw && /MYMEMORY WARNING/i.test(raw)) quotaExhausted = true;
     else if (/MYMEMORY WARNING/i.test(details)) quotaExhausted = true;
-    const value = raw && !/INVALID|MYMEMORY WARNING/i.test(raw) ? raw.trim() : null;
-    cache.set(key, value);
-    return value;
+    return raw && !/INVALID|MYMEMORY WARNING/i.test(raw) ? raw.trim() : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Google Translate (gtx-эндпоинт веб-версии): JSON [[seg...], ...], перевод =
+// конкатенация seg[0]. 429 на datacenter-IP → googleBlocked на сессию.
+async function googleGtx(text, lang, timeoutMs) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const url = `https://translate.google.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(
+      text.slice(0, 480)
+    )}`;
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (res.status === 429) googleBlocked = true;
+    if (!res.ok) throw new Error(`http ${res.status}`);
+    const data = await res.json();
+    const segs =
+      Array.isArray(data) && Array.isArray(data[0])
+        ? data[0].map((s) => (s && s[0]) || "").join("")
+        : null;
+    return segs ? segs.trim() : null;
   } catch {
     return null;
   } finally {

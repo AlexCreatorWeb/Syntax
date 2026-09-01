@@ -195,7 +195,9 @@ function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNews
             {mediumNews.length === 0 ? (
               <span className="tb-menu__empty">{t("news.empty")}</span>
             ) : (
-              mediumNews.slice(0, 5).map((item) => (
+              // ВСЕ новости (не только 5): бейдж считается по всем unread,
+              // скрытые строки держали бы точку «горящей» вечно
+              mediumNews.map((item) => (
                 <button
                   key={item.link}
                   type="button"
