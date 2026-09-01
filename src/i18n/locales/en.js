@@ -151,7 +151,8 @@ export default {
       aiA: "Embed when the data is always read together and bounded in size — it keeps queries to a single round trip. Reference when it grows independently or is shared.",
       lesson: { title: "Queries & Aggregation", desc: "Model a collection, write filtered queries, and build a two-stage aggregation pipeline.", file: "models.js" },
     },
-  },  techPage: {
+  },  lessonView: { material: "Lesson material", task: "Your task", noMaterial: "Material for this lesson is being prepared." },
+  techPage: {
     live: "Open track",
     progress: "Course Progress",
     continue: "Continue Learning",

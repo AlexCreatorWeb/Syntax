@@ -19,6 +19,7 @@ export const LOCALES_EXTRA = {
       groupResources: "Ресурси",
     },
     promo: { book: { title: "Mastering Syntax", desc: "Глибоке занурення в сучасне програмування", cta: "Купити" }, studio: { title: "NeoStudio", desc: "Преміальний веб-дизайн", cta: "Зв’яжіться з нами" } },
+    lessonView: { material: "Матеріал уроку", task: "Ваше завдання", noMaterial: "Матеріал уроку готується." },
     techPage: {
       live: "Активний",
       progress: "Прогрес курсу",
@@ -571,6 +572,7 @@ export const LOCALES_EXTRA = {
       groupResources: "Recursos",
     },
     promo: { book: { title: "Mastering Syntax", desc: "Inmersión en la programación moderna", cta: "Comprar" }, studio: { title: "NeoStudio", desc: "Diseño web de gama alta", cta: "Contáctanos" } },
+    lessonView: { material: "Material de la lección", task: "Tu tarea", noMaterial: "El material de esta lección está en preparación." },
     techPage: {
       live: "Activo",
       progress: "Progreso del curso",
@@ -1124,6 +1126,7 @@ export const LOCALES_EXTRA = {
       groupResources: "Ressourcen",
     },
     promo: { book: { title: "Mastering Syntax", desc: "Tiefer Einblick in modernes Programmieren", cta: "Jetzt kaufen" }, studio: { title: "NeoStudio", desc: "High-End-Webdesign", cta: "Kontaktieren Sie uns" } },
+    lessonView: { material: "Lektionsmaterial", task: "Deine Aufgabe", noMaterial: "Das Material für diese Lektion wird vorbereitet." },
     techPage: {
       live: "Aktiv",
       progress: "Fortschritt des Kurses",

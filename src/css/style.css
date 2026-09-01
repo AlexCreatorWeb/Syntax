@@ -1499,6 +1499,31 @@ code {
 .techmod--db .techmod__title { color: var(--primary); }
 .techmod--db:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(48, 224, 161, 0.12); }
 .techmod--db:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ————— LessonView: урок из БД (Supabase) — материал + редактор с заданием ————— */
+.lesson-view { display: flex; flex-direction: column; gap: 14px; }
+.lesson-view__row { display: flex; align-items: center; gap: 10px; }
+.lesson-view__row .editor-job__back { margin-left: auto; }
+.lesson-view__title { display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 700; margin: 10px 0 4px; }
+.lesson-view__logo { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); flex: none; }
+.lesson-view__logo svg { width: 22px; height: 22px; }
+.lesson-view__desc { margin: 0; color: var(--text-variant); }
+.lesson-view__section { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-variant); margin: 0 0 12px; }
+.lesson-view__grid { display: grid; grid-template-columns: minmax(320px, 5fr) minmax(420px, 7fr); gap: 16px; align-items: start; }
+.lesson-view__material { padding: 20px 22px; }
+.lesson-view__material .md-h2 { font-size: 18px; font-weight: 700; margin: 18px 0 8px; }
+.lesson-view__material .md-h2:first-child { margin-top: 0; }
+.lesson-view__material .md-h3 { font-size: 15.5px; font-weight: 700; margin: 14px 0 6px; }
+.lesson-view__material .callout { margin: 12px 0; }
+.lesson-view__material .code-block { margin: 12px 0; }
+.lesson-view__code { min-width: 0; }
+.lesson-view__code > .editor { border-radius: var(--radius-md); }
+/* Заголовок урока (chips/Back/заголовок) уже в шапке LessonView — свой job-блок редактора не дублируем */
+.lesson-view .editor-job { display: none; }
+@media (max-width: 1080px) {
+  .lesson-view__grid { grid-template-columns: 1fr; }
+  .lesson-view__title { font-size: 24px; }
+}
 .techmod--locked { border-style: dashed; opacity: 0.6; }
 /* Честный empty-state: «модули идут дальше» (п.3) */
 .techmod--soon { border-style: dashed; opacity: 0.7; }

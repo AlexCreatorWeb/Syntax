@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CodeEditor from "./CodeEditor";
+import LessonView from "./views/LessonView";
 import MainView from "./views/MainView";
 import RoadmapView from "./views/RoadmapView";
 import TechnologyView from "./views/TechnologyView";
@@ -43,14 +44,16 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   const taskFileMap = { javascript: "index.js", python: "main.py", postgres: "queries.sql", html: "index.html", css: "styles.css", node: "server.js", react: "App.jsx", vue: "App.vue", mongo: "models.js" };
   const openDbLesson = (lesson, techId) => {
     const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
-    onNavigate("editor", {
+    // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
+    onNavigate("lesson", {
       kind: "lesson",
       title: lesson.title,
       desc: (staticFor && staticFor.desc) || "",
+      content: typeof lesson.content === "string" ? lesson.content : "",
       backTab: "technology",
       techId: techId || undefined,
       file: (techId && taskFileMap[techId]) || "index.js",
-      code: typeof lesson.content === "string" ? lesson.content : undefined,
+      code: typeof lesson.code === "string" ? lesson.code : undefined,
       fromDb: true,
     });
   };
@@ -150,6 +153,9 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
         return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} />;
       case "editor":
         return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
+      case "lesson":
+        // Урок из базы: материал + редактор (job = строка lessons)
+        return <LessonView job={job} theme={theme} onNavigate={onNavigate} />;
       case "tasks":
         // key=activeTech: смена трека перемонтирует вьюху — tech-фильтр синхронен с выбранным треком
         return <TasksView key={activeTech || "none"} activeTech={activeTech} onSelectTech={onSelectTech} onSolve={(i, techId) => openTask(i, techId)} />;
