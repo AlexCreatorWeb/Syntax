@@ -95,6 +95,24 @@ function isTechRelated(item, feed) {
 
 // Кэш на сессию: первый fetch записывает, дальше — из памяти (как lessons).
 let newsCache = null;
+// Кэш в localStorage: поллинг раз в 10 мин НЕ перечитывает ленты чаще TTL,
+// иначе дневные квоты free-шлюзов (rss2json ~200/день) сгорают за часы.
+// Смена дня в App → refresh: true → мимо кэша.
+const LS_CACHE_KEY = "syntax-medium-cache";
+const CACHE_TTL_MS = 2 * 3600 * 1000;
+function readLsCache() {
+  try {
+    const raw = localStorage.getItem(LS_CACHE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    return Array.isArray(c.items) && c.ts && Date.now() - c.ts < CACHE_TTL_MS ? c.items : null;
+  } catch {
+    return null;
+  }
+}
+function writeLsCache(items) {
+  try { localStorage.setItem(LS_CACHE_KEY, JSON.stringify({ ts: Date.now(), items })); } catch { /* ignore */ }
+}
 
 /**
  * Возвращает свежие публикации Medium по технологиям платформы
@@ -120,6 +138,9 @@ async function fetchFeedItems(feed) {
     },
     { id: "allorigins", url: `https://api.allorigins.win/raw?url=${encodeURIComponent(xmlUrl)}`, toItems: rssXmlToItems },
     { id: "corsproxy", url: `https://corsproxy.io/?url=${encodeURIComponent(xmlUrl)}`, toItems: rssXmlToItems },
+    // Jina читает RSS с CORS и отдаёт markdown: "### [](url)" + дата RFC2822.
+    // Титулы пустые — slug → заголовок. Самая живучая нога (RPM-лимит, не дневной).
+    { id: "jina", url: `https://r.jina.ai/${xmlUrl}`, toItems: (res) => res.text().then(jinaRssToItems) },
   ];
   for (const gw of gateways) {
     if (gwFail[gw.id] >= GW_DEAD) continue; // сессийно мёртвый — дальше
@@ -145,6 +166,43 @@ async function fetchFeedItems(feed) {
   return [];
 }
 
+// Jina markdown-дамп RSS → items: блоки "### [](url)" + строка даты RFC2822
+function jinaRssToItems(src) {
+  const body = src.includes("Markdown Content:")
+    ? src.slice(src.indexOf("Markdown Content:") + "Markdown Content:".length)
+    : src;
+  const items = [];
+  for (const blk of body.split(/^### \[/m).slice(1)) {
+    const urlM = blk.match(/\]\((https?:[^)\s]+)\)/);
+    const dateM = blk.match(/([A-Z][a-z]{2}, \d{1,2} [A-Z][a-z]{2} \d{4} [\d:]+ GMT)/);
+    if (!urlM) continue;
+    items.push({
+      link: urlM[1],
+      title: slugToTitle(urlM[1]),
+      pubDate: dateM ? dateM[1] : "",
+      description: "",
+    });
+  }
+  if (!items.length) throw new Error("no items");
+  return items;
+}
+
+// Slug Medium-ссылки → читаемый заголовок (Jina-фолбэк отдаёт пустые title)
+function slugToTitle(link) {
+  try {
+    const seg = new URL(link).pathname.split("/").filter(Boolean).pop() || "";
+    const clean = seg.replace(/\?[^]*$/, "").replace(/-[a-f0-9]{8,}$/i, "");
+    return clean
+      .replace(/[-_]+/g, " ")
+      .trim()
+      .split(" ")
+      .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+      .join(" ");
+  } catch {
+    return link;
+  }
+}
+
 // RSS XML (Medium) → items в формате rss2json-объекта (title/link/pubDate/description)
 function rssXmlToItems(res) {
   return res.text().then((xml) => {
@@ -162,6 +220,13 @@ function rssXmlToItems(res) {
 
 export async function fetchMediumNews({ refresh = false } = {}) {
   if (newsCache && !refresh) return newsCache;
+  if (!refresh) {
+    const ls = readLsCache();
+    if (ls) {
+      newsCache = ls;
+      return ls;
+    }
+  }
   if (newsPending) return newsPending;
   newsPending = (async () => {
     try {
@@ -210,6 +275,7 @@ export async function fetchMediumNews({ refresh = false } = {}) {
       if (!added) break;
     }
     newsCache = picked;
+    writeLsCache(picked);
     return newsCache;
     } finally {
       newsPending = null;
