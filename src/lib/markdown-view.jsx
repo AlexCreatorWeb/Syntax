@@ -14,7 +14,7 @@ function CodeBlock({ lang, code, t }) {
   };
   return (
     <div className="code-block md-code-block">
-      <div className="code-block__head">
+      <div className="code-block__bar">
         <span className="code-block__lang">{lang || "code"}</span>
         <button type="button" className="code-block__copy" onClick={copy}>
           {copied ? t("docs.copied") : t("docs.copy")}

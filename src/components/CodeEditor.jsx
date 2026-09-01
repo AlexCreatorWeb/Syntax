@@ -344,7 +344,9 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const runCode = () => {
     setSubmitStatus(null);
     if (hasHtml) {
+      // Run = запустить и показать результат: превью включается само (глазик убран)
       willCollectRef.current = true;
+      setShowPreview(true);
       setRunToken((v) => v + 1);
     } else if (hasJs) {
       setRunnerDoc(buildRunnerDoc(files, contents));
@@ -474,28 +476,6 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
               {/* Мобилка: короткая подпись «Submit» (аудит #8) */}
               <span className="btn-label btn-label--full">{t("editor.submit")}</span>
               <span className="btn-label btn-label--short">{t("editor.submitShort")}</span>
-            </button>
-          )}
-          {hasHtml && (
-            <button
-              className="icon-btn icon-btn--sm"
-              type="button"
-              aria-label={t("editor.preview")}
-              aria-pressed={showPreview}
-              onClick={() => setShowPreview((v) => !v)}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
             </button>
           )}
           {/* Reset: инлайн-подтверждение вместо dialog (аудит #5) */}

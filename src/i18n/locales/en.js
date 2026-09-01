@@ -185,12 +185,6 @@ export default {
   notifications: {
     title: "Notifications",
     none: "No new notifications",
-    news: "Fresh articles · Medium",
-    items: [
-      { text: "New comment on your task", important: true },
-      { text: "Daily challenge available", important: true },
-      { text: "Weekly leaderboard updated", important: false },
-    ],
   },
   news: {
     empty: "No new posts yet",

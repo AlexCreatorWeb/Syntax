@@ -1367,7 +1367,7 @@ code {
   line-height: 48px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--primary);
+  color: var(--text);
 }
 .chip--live {
   display: inline-flex;
@@ -4371,8 +4371,7 @@ code {
 .tb-menu__item[aria-disabled="true"] { color: var(--muted); cursor: default; }
 .tb-menu__item[aria-disabled="true"]:hover { background: none; }
 
-/* Важное уведомление: красная метка (как в дизайне) */
-.tb-menu__item--notif { display: flex; align-items: flex-start; gap: 10px; }
+/* Метка уведомления: обычная — серая, активное/непрочитанное — красная */
 .tb-menu__notif-dot {
   flex: none;
   width: 8px;
@@ -4389,7 +4388,6 @@ code {
 
 /* --- Новости Medium в списке уведомлений (RSS → RSS2JSON) --- */
 .tb-menu--notif { min-width: 340px; max-width: min(92vw, 400px); }
-.tb-menu__title--section { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 10px; }
 .tb-menu__item--news { display: flex; align-items: flex-start; gap: 10px; }
 .tb-menu__news-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .tb-menu__news-title {

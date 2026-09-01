@@ -1,7 +1,6 @@
 import { useState } from "react";
 import CodeEditor from "../CodeEditor";
 import { MdContent } from "../../lib/markdown-view";
-import { goalFrom } from "../../lib/markdown";
 import TechList, { getTech } from "../../lib/techs";
 import { useT } from "../../i18n/useT";
 
@@ -19,9 +18,6 @@ function LessonView({ job, theme, onNavigate }) {
 
   const tech = job && job.techId ? getTech(job.techId) : null;
   const Logo = job && job.techId ? LOGO_MAP[job.techId] : null;
-  // Описание урока — из материала (раздел «Цель»), иначе — из job
-  const goal = job.content ? goalFrom(job.content) : "";
-  const desc = goal || job.desc || "";
 
   const goTask = () => {
     setTab("task");
@@ -52,7 +48,6 @@ function LessonView({ job, theme, onNavigate }) {
       </nav>
 
       <h1 className="lesson-view__title">{job.title}</h1>
-      {desc ? <p className="lesson-view__desc">{desc}</p> : null}
 
       {/* Табы: материал / задание (редактор не размонтируется) */}
       <div className="lesson-view__tabs" role="tablist">

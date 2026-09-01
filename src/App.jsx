@@ -7,7 +7,7 @@ import SignupModal from "./components/SignupModal";
 import NewsModal from "./components/NewsModal";
 import { getTech } from "./lib/techs";
 import { fetchDbLessons } from "./lib/supabase";
-import { fetchMediumNews, getSeenLinks, markLinkSeen } from "./lib/medium";
+import { fetchMediumNews, getSeenLinks, markLinkSeen, clearSeenLinks, mediumDayKey } from "./lib/medium";
 
 // URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
 // Единственный параметризованный маршрут: #/technology/<techId> (deep-link на трек).
@@ -45,20 +45,44 @@ function App() {
     };
   }, []);
 
-  // Новости Medium (фронтенд-теги): список в уведомлениях хедера + активная
-  // метка на колокольчике у непрочитанных. Поллинг раз в 10 минут — новые
-  // публикации появляются без перезагрузки.
+  // Новости Medium (технологии платформы): список в уведомлениях хедера + активная
+  // метка на колокольчике у непрочитанных. Только свежие за сегодня; поллинг раз в 10
+  // минут. Переход через 00:00 — поле очищается (clearSeenLinks + refresh фидов),
+  // все сегодняшние новости снова «активные».
+  // Дневной сброс при mount — в initializer (не синхронно в effect — lint-правило).
+  const [seenNewsLinks, setSeenNewsLinks] = useState(() => {
+    const day = mediumDayKey();
+    let savedDay;
+    try { savedDay = localStorage.getItem("syntax-medium-day"); } catch { /* некритично */ }
+    if (savedDay !== day) {
+      try { localStorage.setItem("syntax-medium-day", day); } catch { /* некритично */ }
+      clearSeenLinks();
+    }
+    return getSeenLinks();
+  });
   const [mediumNews, setMediumNews] = useState([]);
-  const [seenNewsLinks, setSeenNewsLinks] = useState(() => getSeenLinks());
   const [newsItem, setNewsItem] = useState(null);
   useEffect(() => {
     let alive = true;
-    const load = (refresh) =>
+    const load = (forcedRefresh = false) => {
+      let refresh = forcedRefresh;
+      // Переход через 00:00 прямо в работающем приложении — только из интервала
+      // (async-контекст), поэтому setState здесь легально.
+      const day = mediumDayKey();
+      let savedDay;
+      try { savedDay = localStorage.getItem("syntax-medium-day"); } catch { /* некритично */ }
+      if (savedDay !== day) {
+        try { localStorage.setItem("syntax-medium-day", day); } catch { /* некритично */ }
+        clearSeenLinks();
+        setSeenNewsLinks(getSeenLinks());
+        refresh = true;
+      }
       fetchMediumNews({ refresh }).then((rows) => {
         if (alive) setMediumNews(rows);
       });
-    load(false);
-    const timer = setInterval(() => load(true), 10 * 60 * 1000);
+    };
+    load();
+    const timer = setInterval(() => load(), 10 * 60 * 1000);
     return () => {
       alive = false;
       clearInterval(timer);

@@ -53,12 +53,6 @@ export const LOCALES_EXTRA = {
     notifications: {
       title: "Сповіщення",
       none: "Нових сповіщень немає",
-      news: "Свіжі статті · Medium",
-      items: [
-        { text: "Новий коментар до вашого завдання", important: true },
-        { text: "Щоденний челлендж доступний", important: true },
-        { text: "Щотижневий рейтинг оновлено", important: false },
-      ],
     },
     news: {
       empty: "Нових публікацій поки немає",
@@ -620,12 +614,6 @@ export const LOCALES_EXTRA = {
     notifications: {
       title: "Notificaciones",
       none: "Sin nuevas notificaciones",
-      news: "Artículos nuevos · Medium",
-      items: [
-        { text: "Nuevo comentario en tu tarea", important: true },
-        { text: "Desafío diario disponible", important: true },
-        { text: "Clasificación semanal actualizada", important: false },
-      ],
     },
     news: {
       empty: "Aún no hay publicaciones nuevas",
@@ -1188,12 +1176,6 @@ export const LOCALES_EXTRA = {
     notifications: {
       title: "Benachrichtigungen",
       none: "Keine neuen Benachrichtigungen",
-      news: "Neue Artikel · Medium",
-      items: [
-        { text: "Neuer Kommentar zu deiner Aufgabe", important: true },
-        { text: "Tägliche Herausforderung verfügbar", important: true },
-        { text: "Wöchentliche Rangliste aktualisiert", important: false },
-      ],
     },
     news: {
       empty: "Noch keine neuen Beiträge",

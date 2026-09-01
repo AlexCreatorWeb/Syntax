@@ -192,7 +192,6 @@ function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNews
           </button>
           <div className="tb-menu tb-menu--notif" role="menu" hidden={openMenu !== "notif"}>
             <span className="tb-menu__title">{t("notifications.title")}</span>
-            <span className="tb-menu__title tb-menu__title--section">{t("notifications.news")}</span>
             {mediumNews.length === 0 ? (
               <span className="tb-menu__empty">{t("news.empty")}</span>
             ) : (
@@ -220,22 +219,6 @@ function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNews
                 </button>
               ))
             )}
-            {(t("notifications.items") || []).map((item, i) => (
-              <button
-                key={i}
-                type="button"
-                role="menuitem"
-                className="tb-menu__item tb-menu__item--notif"
-                title={t("home.soon")}
-                aria-disabled="true"
-              >
-                <span
-                  className={`tb-menu__notif-dot ${item.important ? "is-important" : ""}`}
-                  aria-hidden="true"
-                />
-                {item.text}
-              </button>
-            ))}
           </div>
         </div>
 

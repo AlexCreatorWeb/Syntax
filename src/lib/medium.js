@@ -34,6 +34,25 @@ const activeFeeds = () =>
     keywords: TECH_MEDIUM[tech.id].keywords,
   }));
 
+// Дневная ротация: ключ «YYYY-M-D» по местному времени.
+export function mediumDayKey(date = new Date()) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
+// Показываем только свежие за сегодня (локальная дата).
+// pubDate из rss2json — «YYYY-MM-DD HH:MM:SS» без таймзоны (GMT у Medium),
+// поэтому парсим как UTC и сравниваем локальные календарные дни.
+function isPublishedToday(pubDate) {
+  const d = new Date(String(pubDate).replace(" ", "T") + "Z");
+  if (isNaN(d)) return false;
+  const n = new Date();
+  return (
+    d.getFullYear() === n.getFullYear() &&
+    d.getMonth() === n.getMonth() &&
+    d.getDate() === n.getDate()
+  );
+}
+
 function htmlToText(html) {
   if (!html) return "";
   const el = document.createElement("div");
@@ -71,8 +90,10 @@ let newsCache = null;
 
 /**
  * Возвращает свежие публикации Medium по технологиям платформы
- * (сортировка по дате desc, дедупликация по ссылке).
- * refresh: true — перечитать ленты (поллинг раз в 10 минут в App).
+ * **только за сегодня** (локальная дата), сортировка по дате desc,
+ * дедупликация по ссылке.
+ * refresh: true — перечитать ленты (поллинг раз в 10 минут в App;
+ * App сам форсирует refresh при переходе через 00:00).
  * Сбой/пусто → [] (хедер просто не покажет новости).
  */
 export async function fetchMediumNews({ timeoutMs = 12000, refresh = false } = {}) {
@@ -91,15 +112,14 @@ export async function fetchMediumNews({ timeoutMs = 12000, refresh = false } = {
         if (json.status !== "ok" || !Array.isArray(json.items)) throw new Error("bad feed");
         return json.items
           .map((it) => normalizeItem(it, feed))
-          .filter((it) => it && isTechRelated(it, feed));
-      })
+          .filter((it) => it && isTechRelated(it, feed));      })
     );
     const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
     const seen = new Set();
     const items = all.filter((it) => {
       if (seen.has(it.link)) return false;
       seen.add(it.link);
-      return true;
+      return isPublishedToday(it.pubDate);
     });
     items.sort((a, b) => String(b.pubDate).localeCompare(String(a.pubDate)));
     newsCache = items.slice(0, 8);
@@ -113,6 +133,7 @@ export async function fetchMediumNews({ timeoutMs = 12000, refresh = false } = {
 
 // Прочитанность — localStorage (паттерн syntax-theme/syntax-tech):
 // ссылка есть в списке → метка-«красная точка» гаснет.
+// После 00:00 App очищает список (clearSeenLinks) — новости снова «активные».
 const SEEN_KEY = "syntax-medium-seen";
 const SEEN_LIMIT = 60;
 
@@ -122,6 +143,15 @@ export function getSeenLinks() {
     return new Set(Array.isArray(arr) ? arr : []);
   } catch {
     return new Set();
+  }
+}
+
+// Новая календарная дата → все сегодняшние новости снова непрочитанные.
+export function clearSeenLinks() {
+  try {
+    localStorage.removeItem(SEEN_KEY);
+  } catch {
+    /* некритично */
   }
 }
 
