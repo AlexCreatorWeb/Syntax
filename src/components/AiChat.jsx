@@ -22,6 +22,13 @@ function AiChat({ techId }) {
   const [draft, setDraft] = useState("");
   const boxRef = useRef(null);
   const abortRef = useRef(null);
+  // «Прилипание» к низу: автоскролл только если пользователь рядом с дном чата.
+  // Иначе при стриминге каждый токен дергает его вниз, и «скролл не работает».
+  const stickRef = useRef(true);
+  const onChatScroll = () => {
+    const el = boxRef.current;
+    if (el) stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
   const configured = isAiConfigured();
 
   const errKey =
@@ -30,11 +37,11 @@ function AiChat({ techId }) {
     error === "modelLoading" ? "ai.errModel" :
     "ai.errGeneric";
 
-  // Авто-скролл вниз на новые сообщения и при стриминге токенов
+  // Авто-скролл вниз на новые сообщения и при стриминге — ТОЛЬКО если пользователь не ушёл читать вверх
   const lastContent = messages.length ? messages[messages.length - 1].content : "";
   useEffect(() => {
     const el = boxRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el && stickRef.current) el.scrollTop = el.scrollHeight;
   }, [messages.length, lastContent]);
 
   // Отмена полёта запроса при unmount (ушли со страницы технологии)
@@ -51,6 +58,7 @@ function AiChat({ techId }) {
       .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
     const userMsg = { id: `u${Date.now()}`, role: "user", content: question };
     const aiMsg = { id: `a${Date.now()}`, role: "ai", content: "" };
+    stickRef.current = true; // свой вопрос — всегда показываем низ чата
     setMessages((prev) => [...prev, userMsg, aiMsg]);
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -86,6 +94,7 @@ function AiChat({ techId }) {
 
   const clear = () => {
     if (busy && abortRef.current) abortRef.current.abort();
+    stickRef.current = true;
     setMessages([]);
     setError(null);
   };
@@ -116,7 +125,7 @@ function AiChat({ techId }) {
         </div>
       )}
 
-      <div className="tech-aside__chat" ref={boxRef}>
+      <div className="tech-aside__chat" ref={boxRef} onScroll={onChatScroll}>
         {messages.length === 0 && (
           <p className="tech-aside__bubble tech-aside__bubble--ai">{t("techPage.aiHint")}</p>
         )}

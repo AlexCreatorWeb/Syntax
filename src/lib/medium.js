@@ -10,6 +10,14 @@
 import TECHS from "./techs";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
+// RSS → JSON шлюзы-цепочка: rss2json (free — ДНЕВНОЙ лимит ~200, горит под
+// тестами) → allorigins (XML) → corsproxy.io (XML). Сессийный dead-флаг на
+// шлюз (2 фейла подряд) — не дёргаем мёртвый 9 раз.
+const gwFail = { rss2json: 0, allorigins: 0, corsproxy: 0 };
+const GW_DEAD = 2;
+const TOP_N = 8; // сколько новостей показать в дропдауне (round-robin по техам)
+const FEED_GAP_MS = 1050; // ~1 req/с — последовательно, иначе 429
+let newsPending = null; // in-flight дедупликация (StrictMode дублирует mount-эффект)
 
 // Технология платформы → тег Medium + фильтр релевантности.
 // Ключевые слова нужны: теги Medium неточные (например, «node» подмешивает
@@ -96,39 +104,118 @@ let newsCache = null;
  * App сам форсирует refresh при переходе через 00:00).
  * Сбой/пусто → [] (хедер просто не покажет новости).
  */
-export async function fetchMediumNews({ timeoutMs = 12000, refresh = false } = {}) {
-  if (newsCache && !refresh) return newsCache;
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const results = await Promise.allSettled(
-      activeFeeds().map(async (feed) => {
-        const url = `${RSS2JSON}?rss_url=${encodeURIComponent(
-          `https://medium.com/feed/tag/${feed.tag}`
-        )}`;
-        const res = await fetch(url, { signal: ctrl.signal });
-        if (!res.ok) throw new Error(`http ${res.status}`);
+// RSS-лента одной технологии через цепочку шлюзов: rss2json (JSON) →
+// allorigins (XML) → corsproxy.io (XML). Возвращает normalized items.
+async function fetchFeedItems(feed) {
+  const xmlUrl = `https://medium.com/feed/tag/${feed.tag}`;
+  const gateways = [
+    {
+      id: "rss2json",
+      url: `${RSS2JSON}?rss_url=${encodeURIComponent(xmlUrl)}`,
+      toItems: async (res) => {
         const json = await res.json();
         if (json.status !== "ok" || !Array.isArray(json.items)) throw new Error("bad feed");
-        return json.items
-          .map((it) => normalizeItem(it, feed))
-          .filter((it) => it && isTechRelated(it, feed));      })
-    );
-    const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+        return json.items;
+      },
+    },
+    { id: "allorigins", url: `https://api.allorigins.win/raw?url=${encodeURIComponent(xmlUrl)}`, toItems: rssXmlToItems },
+    { id: "corsproxy", url: `https://corsproxy.io/?url=${encodeURIComponent(xmlUrl)}`, toItems: rssXmlToItems },
+  ];
+  for (const gw of gateways) {
+    if (gwFail[gw.id] >= GW_DEAD) continue; // сессийно мёртвый — дальше
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 9000);
+    let items = null;
+    try {
+      const res = await fetch(gw.url, { signal: ctrl.signal });
+      if (!res.ok) throw new Error(`http ${res.status}`);
+      items = await gw.toItems(res);
+      if (!items.length) throw new Error("empty");
+    } catch {
+      gwFail[gw.id] += 1;
+    } finally {
+      clearTimeout(timer);
+    }
+    if (items) {
+      return items
+        .map((it) => normalizeItem(it, feed))
+        .filter((it) => it && isTechRelated(it, feed));
+    }
+  }
+  return [];
+}
+
+// RSS XML (Medium) → items в формате rss2json-объекта (title/link/pubDate/description)
+function rssXmlToItems(res) {
+  return res.text().then((xml) => {
+    const doc = new DOMParser().parseFromString(xml, "text/xml");
+    const items = [...doc.querySelectorAll("item")].map((el) => ({
+      title: (el.querySelector("title")?.textContent || "").trim(),
+      link: (el.querySelector("link")?.textContent || "").trim(),
+      pubDate: (el.querySelector("pubDate")?.textContent || "").trim(),
+      description: (el.querySelector("description")?.textContent || "").trim(),
+    }));
+    if (!items.length) throw new Error("no items");
+    return items;
+  });
+}
+
+export async function fetchMediumNews({ refresh = false } = {}) {
+  if (newsCache && !refresh) return newsCache;
+  if (newsPending) return newsPending;
+  newsPending = (async () => {
+    try {
+      // Ленты ПООЧЕРЁДНО (шлюзы free: ~1 req/с). Сбой ленты = [] (остальные живут).
+      const all = [];
+      const feeds = activeFeeds();
+      for (let fi = 0; fi < feeds.length; fi++) {
+        const feed = feeds[fi];
+        all.push(...(await fetchFeedItems(feed)));
+        if (fi < feeds.length - 1) await new Promise((r) => setTimeout(r, FEED_GAP_MS));
+      }
     const seen = new Set();
-    const items = all.filter((it) => {
+    const today = all.filter((it) => {
       if (seen.has(it.link)) return false;
       seen.add(it.link);
       return isPublishedToday(it.pubDate);
     });
-    items.sort((a, b) => String(b.pubDate).localeCompare(String(a.pubDate)));
-    newsCache = items.slice(0, 8);
+    // Разнообразие: «топ-8 самых свежих» захватывает одна активная технология
+    // (фидбэк: «все новости Python»). ROUND-ROBIN: сначала по ОДНОЙ СЛУЧАЙНОЙ
+    // статье с каждой технологии, потом второй круг — до N. Рандом внутри
+    // технологии: при каждом refresh (10 мин) сет меняется.
+    const byTech = new Map();
+    for (const it of today) {
+      const arr = byTech.get(it.techId) || [];
+      arr.push(it);
+      byTech.set(it.techId, arr);
+    }
+    for (const arr of byTech.values()) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+    const picked = [];
+    const techs = [...byTech.keys()];
+    for (let round = 0; picked.length < TOP_N && techs.length; round++) {
+      let added = false;
+      for (const tid of techs) {
+        const arr = byTech.get(tid);
+        if (arr.length > round) {
+          picked.push(arr[round]);
+          added = true;
+          if (picked.length >= TOP_N) break;
+        }
+      }
+      if (!added) break;
+    }
+    newsCache = picked;
     return newsCache;
-  } catch {
-    return newsCache || [];
-  } finally {
-    clearTimeout(timer);
-  }
+    } finally {
+      newsPending = null;
+    }
+  })();
+  return newsPending;
 }
 
 // Прочитанность — localStorage (паттерн syntax-theme/syntax-tech):
