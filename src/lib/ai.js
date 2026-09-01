@@ -1,32 +1,20 @@
-// AI Assistant — HuggingFace Inference API, модель google/gemma-3-12b-it.
-// (gemma-2-9b-it в каталоге Inference Providers больше нет — NXDOMAIN/404; 12b-3 = преемник)
-// Ключ — из VITE_HF_API_KEY (.env). Ключ — обычный HF token (hf_…),
-// в браузер попадает VITE_-префиксом, но учти: без бэкенда любой токен виден в сети.
+// AI Assistant — модель google/gemma-3-12b-it (HuggingFace Inference).
 //
-// Эндпоинт — OpenAI-совместимый чат-роутер: POST /v1/chat/completions,
-// `stream: true` → SSE-поток (data: {...}). Старый api-inference.huggingface.co
-// отключён — работает только router.huggingface.co. Холодный старт модели:
-// заголовок X-Wait-For-Model: true — роутер держит запрос в очереди вместо 503.
-const HF_BASE = "https://router.huggingface.co/v1";
+// ДВА режима (чтобы HF-токен НЕ плыл в публичный репо/бандл — GitHub secret-scanning
+// ревайдит такие токены и блокирует пуши):
+//   • DEV:  есть VITE_HF_API_KEY (.env.local, в git не попадает) → прямой запрос к HF;
+//   • PROD: ключа нет → POST /api/ai (Vercel serverless-прокси, токен в Vercel env
+//           HF_API_KEY — только на сервере). SSE-поток в обоих режимах одинаковый.
+//
+// Эндпоинт — OpenAI-совместимый чат-роутер (router.huggingface.co), stream: true → SSE.
+import { buildSystemPrompt } from "./ai-prompt";
+
 export const AI_MODEL = "google/gemma-3-12b-it";
 export const AI_MODEL_SHORT = AI_MODEL.split("/").pop();
-const HF_KEY = import.meta.env.VITE_HF_API_KEY || "";
+const DEV_KEY = import.meta.env.VITE_HF_API_KEY || "";
 
-export const isAiConfigured = () => Boolean(HF_KEY);
-
-// Сис-промпт: репетитор Syntax, знает трек студента, отвечает в его языке,
-// формат — markdown-lite (парсер: src/lib/markdown.js — без таблиц/списков).
-export function buildSystemPrompt(techName) {
-  return [
-    "You are Syntax AI, the friendly coding tutor of the Syntax learning platform (people learn programming right in the browser).",
-    techName ? `The student is currently on the "${techName}" track — prefer examples in that technology when relevant.` : "",
-    "Rules: answer in the student's own language; be concise (under 200 words) and practical; show code in fenced blocks with a language tag.",
-    "Formatting: use **bold**, `inline code` and ``` fenced code blocks. Do NOT use markdown tables, links with images, or ordered/unordered list syntax (no leading - or 1.) — write plain paragraphs instead; separate items with blank lines.",
-    "If the question is not about coding, still keep the answer short and helpful.",
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
+// Dev: настроен, если есть локальный ключ. Prod: всегда (прокси есть, если Vercel env выставлен).
+export const isAiConfigured = () => DEV_KEY || import.meta.env.PROD;
 
 // Ошибка с «человечным» кодом: badKey / rateLimit / modelLoading / network / http.
 export class AiError extends Error {
@@ -38,23 +26,8 @@ export class AiError extends Error {
 
 // Прогоняет SSE-поток, вызывает onToken(text) по мере прихода дельт.
 // Возвращает полное собрание текста. signal — для отмены.
-async function streamChatCompletion({ messages, signal, onToken }) {
-  const res = await fetch(`${HF_BASE}/chat/completions`, {
-    method: "POST",
-    signal,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${HF_KEY}`,
-      "X-Wait-For-Model": "true",
-    },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages,
-      stream: true,
-      temperature: 0.4,
-      max_tokens: 900,
-    }),
-  });
+async function streamChatCompletion({ url, headers, body, signal, onToken }) {
+  const res = await fetch(url, { method: "POST", signal, headers, body: JSON.stringify(body) });
 
   if (!res.ok) {
     let code = "http";
@@ -106,24 +79,44 @@ async function streamChatCompletion({ messages, signal, onToken }) {
 }
 
 /**
- * Очередь одного сообщения студента.
+ * Отправить вопрос ассистенту.
  * history — массив {role, content} предыдущих сообщений (без сис-промпта).
- * @returns {Promise<void>} — onToken получает дельты, ответ уже в messages последнего элемента
+ * @returns {Promise<string>} полный ответ; onToken получает накапливаемый текст
  */
 export async function askAssistant({ techName, history, question, onToken, signal }) {
-  if (!isAiConfigured()) throw new AiError("noKey", "VITE_HF_API_KEY is not set");
-  const messages = [
-    { role: "system", content: buildSystemPrompt(techName) },
-    ...history.slice(-10),
-    { role: "user", content: question },
-  ];
+  if (!isAiConfigured()) throw new AiError("noKey", "VITE_HF_API_KEY is not set (dev) or HF_API_KEY in Vercel env (prod)");
+  const hist = Array.isArray(history) ? history.slice(-10) : [];
+
+  // DEV: прямой HF (ключ из .env.local). PROD: /api/ai — прокси сам собирает messages.
+  const request = DEV_KEY
+    ? {
+        url: "https://router.huggingface.co/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${DEV_KEY}`,
+          "X-Wait-For-Model": "true", // холодный старт: очередь вместо 503
+        },
+        body: {
+          model: AI_MODEL,
+          messages: [{ role: "system", content: buildSystemPrompt(techName) }, ...hist, { role: "user", content: question }],
+          stream: true,
+          temperature: 0.4,
+          max_tokens: 900,
+        },
+      }
+    : {
+        url: "/api/ai",
+        headers: { "Content-Type": "application/json" },
+        body: { techName, history: hist, question },
+      };
+
   let acc = "";
   const token = (txt) => {
     acc += txt;
     onToken(acc);
   };
   try {
-    await streamChatCompletion({ messages, signal, onToken: token });
+    await streamChatCompletion({ ...request, signal, onToken: token });
   } catch (e) {
     if (e && e.name === "AbortError") throw e;
     if (e instanceof AiError) throw e;
