@@ -219,7 +219,7 @@ function App() {
         onMarkAllNewsRead={markAllNewsRead}
         activeTab={activeTab}
       />
-      <div className="shell">
+      <div className="shell" data-tab={activeTab}>
         <Sidebar
           activeTab={activeTab}
           theme={theme}

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useT } from "../../i18n/useT";
 import TechCardsGrid from "../TechCardsGrid";
+import DailyChallenge from "../DailyChallenge";
+import PromoCard from "../PromoCard";
 
 // Значения статистики (мокап): число + суффикс для count-up
 const STATS = {
@@ -184,7 +186,7 @@ function HeroDemo({ t }) {
   );
 }
 
-function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
+function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLessons, isAuthed, onAuth }) {
   const t = useT();
 
   // Success-rate кольцо: r=52 => окружность ~326.7. Sweep при mount (двойной rAF —
@@ -364,6 +366,14 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
           </svg>
         </button>
       </section>
+
+      {/* Мобайл (≤640px): rail-виджеты (Daily Challenge + книга) — ДО футера, а не после
+          (фидбек 2026-09: правая колонка на мобильном уезжала вниз страницы, после футера);
+          сама rail на home скрыта этим же брейкпоинтом */}
+      <div className="home__mobile-rail">
+        <DailyChallenge dbLessons={dbLessons} isAuthed={isAuthed} onAuth={onAuth} onNavigate={onNavigate} backTab="home" />
+        <PromoCard id="book" />
+      </div>
 
       {/* 7. Футер */}
       <footer className="home__footer">

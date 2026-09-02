@@ -11,9 +11,9 @@ import TECHS from "./techs";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 // RSS → JSON шлюзы-цепочка: rss2json (free — ДНЕВНОЙ лимит ~200, горит под
-// тестами) → allorigins (XML) → corsproxy.io (XML). Сессийный dead-флаг на
+// тестами) → allorigins (XML). Сессийный dead-флаг на
 // шлюз (2 фейла подряд) — не дёргаем мёртвый 9 раз.
-const gwFail = { rss2json: 0, allorigins: 0, corsproxy: 0 };
+const gwFail = { rss2json: 0, allorigins: 0 };
 const GW_DEAD = 2;
 const TOP_N = 8; // сколько новостей показать в дропдауне (round-robin по техам)
 const FEED_GAP_MS = 1050; // ~1 req/с — последовательно, иначе 429
@@ -127,7 +127,8 @@ function writeLsCache(items) {
  * Сбой/пусто → [] (хедер просто не покажет новости).
  */
 // RSS-лента одной технологии через цепочку шлюзов: rss2json (JSON) →
-// allorigins (XML) → corsproxy.io (XML). Возвращает normalized items.
+// allorigins (XML). Возвращает normalized items.
+// (corsproxy.io убран: с 2025 требует API-ключ — стабильный 401 в консоли гостя)
 async function fetchFeedItems(feed) {
   const xmlUrl = `https://medium.com/feed/tag/${feed.tag}`;
   const gateways = [
@@ -141,7 +142,6 @@ async function fetchFeedItems(feed) {
       },
     },
     { id: "allorigins", url: `https://api.allorigins.win/raw?url=${encodeURIComponent(xmlUrl)}`, toItems: rssXmlToItems },
-    { id: "corsproxy", url: `https://corsproxy.io/?url=${encodeURIComponent(xmlUrl)}`, toItems: rssXmlToItems },
     // Jina читает RSS с CORS и отдаёт markdown: "### [](url)" + дата RFC2822.
     // Титулы пустые — slug → заголовок. Самая живучая нога (RPM-лимит, не дневной).
     { id: "jina", url: `https://r.jina.ai/${xmlUrl}`, toItems: (res) => res.text().then(jinaRssToItems) },

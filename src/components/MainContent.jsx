@@ -43,14 +43,9 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
   const isAuthed = Boolean(session);
 
-  // Гостям уроки закрыты (требование приватности): любой переход к уроку —
-  // в auth-модалку с контекстом «lesson» (цель не теряется после входа).
-  const requireAuth = () => {
-    if (isAuthed) return true;
-    onAuth("signup", "lesson");
-    return false;
-  };
-
+  // Уроки открыты гостю (фидбек 2026-09: «Try a demo lesson» обязан работать без аккаунта —
+  // обещание «first lesson in 2 minutes»); прогресс гостя живёт в localStorage анонимно.
+  // Auth-гейт остался только у Daily Challenge (там он осмыслен: «вызов дня»).
   // #/lesson без job-контекста (refresh/bookmark): урок живёт в состоянии App,
   // после перезагрузки job=null — вместо белого экрана мягкий редирект на roadmap
   useEffect(() => {
@@ -62,13 +57,11 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   // Приоритет: таблица `lessons` в Supabase (строка с tech = трек) → i18n-статика (fallback).
   const dbLessonsArr = dbLessons || [];
   const openDbLesson = (lesson, techId, backTab = "technology") => {
-    if (!requireAuth()) return;
     const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
     // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
     onNavigate("lesson", lessonJobFor(lesson, techId, backTab, (staticFor && staticFor.desc) || ""));
   };
   const openLesson = (techId) => {
-    if (!requireAuth()) return;
     // Урок трека из БД: первый НЕВЫПОЛНЕННЫЙ (иначе — первый); демо-урок без трека — первая строка
     const completed = getCompleted(techId);
     const techLessons = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
@@ -157,6 +150,9 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
             onDemo={() => openLesson()}
             activeTech={activeTech}
             onSelectTech={onSelectTech}
+            dbLessons={dbLessons}
+            isAuthed={isAuthed}
+            onAuth={onAuth}
           />
         );
       case "roadmap":

@@ -188,29 +188,35 @@ function buildPreviewDoc(files, contents) {
 }
 
 // Скрипт для «сухого» запуска JS-файлов без HTML: только console-перехват + JS
-// Python-раннер (ВРЕМЕННАЯ заглушка до Pyodide из параллельной сессии: вызов buildPythonDoc
-// появился, а функция нет — линт падал). Run не молчит: исходник + пометка в консоли.
+// Python-раннер: main.py → Pyodide (настоящий CPython 3.12 в WASM, CDN jsDelivr).
+// Код студента — как есть в text/plain-теге (экранируем </script), runPythonAsync: traceback-строки
+// совпадают со строками файла (1-indexed) — клик по ошибке работает без сдвига.
+// setStdout/setStderr → console-перехват (CONSOLE_CAPTURE). Top-level await поддерживается (asyncio-уроки).
+const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+
 function buildPythonDoc(pyCode) {
   const src = (pyCode || "").replace(/<\/script/gi, "<\\/script");
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
 </head><body>
-<div id="root"></div>
 ${CONSOLE_CAPTURE}
+<script src="${PYODIDE_URL}pyodide.js"></script>
 <script type="text/plain" id="syntax-py-src">
 ${src}
 </script>
 <script>
-(function () {
-  var code = document.getElementById("syntax-py-src").textContent.replace(/^\n/, "");
-  var pre = document.createElement("pre");
-  pre.style.cssText = "padding:16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.55;white-space:pre-wrap;";
-  pre.textContent = code;
-  var note = document.createElement("div");
-  note.style.cssText = "padding:10px 16px 0;font-size:12px;opacity:.65;";
-  note.textContent = "Python runner (Pyodide) — loading soon";
-  document.getElementById("root").appendChild(note);
-  document.getElementById("root").appendChild(pre);
+(async () => {
+  try {
+    window.__syntaxOffset = 0; // traceback = строки файла (код передаётся как есть)
+    var pyodide = await loadPyodide({ indexURL: "${PYODIDE_URL}" });
+    pyodide.setStdout({ batched: function (t) { console.log(t); } });
+    pyodide.setStderr({ batched: function (t) { console.error(t); } });
+    var code = document.getElementById("syntax-py-src").textContent.replace(/^\\n/, "").split("<\\\\/script").join("</scr" + "ipt");
+    await pyodide.runPythonAsync(code);
+    console.log("[Syntax] Python sandbox ready (CPython " + pyodide.version + ")");
+  } catch (e) {
+    console.error(String((e && e.message) || e));
+  }
 })();
 </script>
 </body></html>`;

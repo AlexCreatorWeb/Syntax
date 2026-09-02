@@ -3135,6 +3135,10 @@ code {
 
 /* Success Rate — широкая карточка. Кольцо с числом в центре (hero композиции):
    sweep при загрузке (1.4s), после — дышащее свечение (is-live) = живой, не статичный блок */
+/* Мобайл-версия rail-виджетов главной (Daily Challenge + книга) — видима только на ≤640px;
+   на десктопе те же виджеты живут в правой колонке (.rail) */
+.home__mobile-rail { display: none; }
+
 .stat-card--success {
   grid-column: 1 / -1;
   flex-direction: row;
@@ -3476,6 +3480,15 @@ code {
   .tech-card { height: auto; padding: 14px 16px; }
   /* Статистика: 2 колонки по 50% (экономия места); success-карта — во всю ширину, компактная */
   .home__stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  /* Rail-виджеты (Daily Challenge + книга) на home — внутри контента ДО футера (.home__mobile-rail),
+     внешняя rail скрыта: иначе они уезжали вниз страницы, после футера (фидбек 2026-09) */
+  [data-tab="home"] .rail { display: none; }
+  .home__mobile-rail { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Hero-кодовая карточка: меньше строк — трек-карты не уходят далеко под складку (фидбек 2026-09) */
+  .hero-demo__line:nth-child(n+6) { display: none; }
+  .hero-demo__code { padding: 8px 0; }
   .stat-card { padding: 14px; min-height: 0; }
   .stat-card__value { font-size: 21px; }
   .stat-card__delta { font-size: 11px; }
