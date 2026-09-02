@@ -3,9 +3,15 @@
     "id": "html-001",
     "track": "html",
     "category": "structure",
-    "categoryI18n": { "en": "Structure", "ru": "Структура" },
+    "categoryI18n": {
+      "en": "Structure",
+      "ru": "Структура"
+    },
     "order": 1,
-    "title": { "en": "Valid Page Skeleton", "ru": "Корректный каркас страницы" },
+    "title": {
+      "en": "Valid Page Skeleton",
+      "ru": "Корректный каркас страницы"
+    },
     "prompt": {
       "en": "Complete the HTML skeleton: the document must start with `<!DOCTYPE html>`, have an `<html>` element with `lang=\"en\"`, a `<head>` with `<meta charset=\"UTF-8\">` and a `<title>` equal to \"My Page\", and a `<body>` with an `<h1>` that says \"Hello\". Run the page and make all tests green.",
       "ru": "Дополни каркас HTML: документ должен начинаться с `<!DOCTYPE html>`, иметь элемент `<html>` с `lang=\"en\"`, в `<head>` — `<meta charset=\"UTF-8\">` и `<title>` равный \"My Page\", а в `<body>` — `<h1>` с текстом \"Hello\". Запусти страницу и сделай все тесты зелёными."
@@ -17,11 +23,26 @@
       "index.html": "<!-- TODO: <!DOCTYPE html> на первой строке -->\n<html>\n<head>\n  <!-- TODO: meta charset + title \"My Page\" -->\n</head>\n<body>\n  <!-- TODO: h1 \"Hello\" -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "doctype on first line", "code": "const doc = document.documentElement.outerHTML; assert(/<!DOCTYPE html>/i.test(doc), \"expected <!DOCTYPE html>\");" },
-      { "name": "html lang=en", "code": "assert(document.documentElement.getAttribute('lang') === 'en', \"expected lang='en'\");" },
-      { "name": "charset meta", "code": "const m = document.querySelector('meta[charset]'); assert(m && /utf-8/i.test(m.getAttribute('charset')), \"expected meta charset utf-8\");" },
-      { "name": "title", "code": "assert(document.title === 'My Page', \"expected title 'My Page', got '\" + document.title + \"'\");" },
-      { "name": "h1 Hello", "code": "const h1 = document.querySelector('h1'); assert(h1 && h1.textContent.trim() === 'Hello', \"expected <h1>Hello</h1>\");" }
+      {
+        "name": "doctype on first line",
+        "code": "const doc = document.documentElement.outerHTML; assert(/<!DOCTYPE html>/i.test(doc), \"expected <!DOCTYPE html>\");"
+      },
+      {
+        "name": "html lang=en",
+        "code": "assert(document.documentElement.getAttribute('lang') === 'en', \"expected lang='en'\");"
+      },
+      {
+        "name": "charset meta",
+        "code": "const m = document.querySelector('meta[charset]'); assert(m && /utf-8/i.test(m.getAttribute('charset')), \"expected meta charset utf-8\");"
+      },
+      {
+        "name": "title",
+        "code": "assert(document.title === 'My Page', \"expected title 'My Page', got '\" + document.title + \"'\");"
+      },
+      {
+        "name": "h1 Hello",
+        "code": "const h1 = document.querySelector('h1'); assert(h1 && h1.textContent.trim() === 'Hello', \"expected <h1>Hello</h1>\");"
+      }
     ],
     "hint": {
       "en": "Order matters: DOCTYPE first, then <html lang>, then <head> (meta + title), then <body>.",
@@ -36,9 +57,15 @@
     "id": "html-002",
     "track": "html",
     "category": "structure",
-    "categoryI18n": { "en": "Structure", "ru": "Структура" },
+    "categoryI18n": {
+      "en": "Structure",
+      "ru": "Структура"
+    },
     "order": 2,
-    "title": { "en": "Headings Hierarchy", "ru": "Иерархия заголовков" },
+    "title": {
+      "en": "Headings Hierarchy",
+      "ru": "Иерархия заголовков"
+    },
     "prompt": {
       "en": "Build a section with a proper heading hierarchy: one `<h1>` (\"Article\"), then `<h2>` (\"Part one\") and `<h3>` (\"Details\") in that order, each followed by a paragraph. The document must be a valid HTML5 page with `<title>` \"Headings\".",
       "ru": "Собери секцию с правильной иерархией заголовков: один `<h1>` (\"Article\"), затем `<h2>` (\"Part one\") и `<h3>` (\"Details\") в этом порядке, за каждым — параграф. Документ — корректная HTML5-страница с `<title>` \"Headings\"."
@@ -50,11 +77,26 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <!-- TODO: title \"Headings\" -->\n</head>\n<body>\n  <!-- TODO: h1 \"Article\" + p -->\n  <!-- TODO: h2 \"Part one\" + p -->\n  <!-- TODO: h3 \"Details\" + p -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "single h1", "code": "const h1 = document.querySelectorAll('h1'); assert(h1.length === 1 && h1[0].textContent.trim() === 'Article', \"expected one <h1>Article</h1>\");" },
-      { "name": "h2 and h3 texts", "code": "assert(document.querySelector('h2') && document.querySelector('h2').textContent.trim() === 'Part one', \"expected h2 'Part one'\");\nassert(document.querySelector('h3') && document.querySelector('h3').textContent.trim() === 'Details', \"expected h3 'Details'\");" },
-      { "name": "order h1 < h2 < h3", "code": "const order = ['h1', 'h2', 'h3'].map((t) => { const e = document.querySelector(t); return e ? Array.from(e.getRootNode().body.querySelectorAll('*')).indexOf(e) : -1; }); assert(order[0] < order[1] && order[1] < order[2], \"headings must appear in order h1, h2, h3\");" },
-      { "name": "paragraphs exist", "code": "assert(document.querySelectorAll('p').length >= 3, \"expected at least 3 <p>\");" },
-      { "name": "title", "code": "assert(document.title === 'Headings', \"expected title 'Headings'\");" }
+      {
+        "name": "single h1",
+        "code": "const h1 = document.querySelectorAll('h1'); assert(h1.length === 1 && h1[0].textContent.trim() === 'Article', \"expected one <h1>Article</h1>\");"
+      },
+      {
+        "name": "h2 and h3 texts",
+        "code": "assert(document.querySelector('h2') && document.querySelector('h2').textContent.trim() === 'Part one', \"expected h2 'Part one'\");\nassert(document.querySelector('h3') && document.querySelector('h3').textContent.trim() === 'Details', \"expected h3 'Details'\");"
+      },
+      {
+        "name": "order h1 < h2 < h3",
+        "code": "const order = ['h1', 'h2', 'h3'].map((t) => { const e = document.querySelector(t); return e ? Array.from(e.getRootNode().body.querySelectorAll('*')).indexOf(e) : -1; }); assert(order[0] < order[1] && order[1] < order[2], \"headings must appear in order h1, h2, h3\");"
+      },
+      {
+        "name": "paragraphs exist",
+        "code": "assert(document.querySelectorAll('p').length >= 3, \"expected at least 3 <p>\");"
+      },
+      {
+        "name": "title",
+        "code": "assert(document.title === 'Headings', \"expected title 'Headings'\");"
+      }
     ],
     "hint": {
       "en": "Do not skip levels: h1 → h2 → h3, and each heading is followed by its own <p>.",
@@ -69,9 +111,15 @@
     "id": "html-003",
     "track": "html",
     "category": "structure",
-    "categoryI18n": { "en": "Structure", "ru": "Структура" },
+    "categoryI18n": {
+      "en": "Structure",
+      "ru": "Структура"
+    },
     "order": 3,
-    "title": { "en": "Links That Behave", "ru": "Ссылки, которые ведут себя" },
+    "title": {
+      "en": "Links That Behave",
+      "ru": "Ссылки, которые ведут себя"
+    },
     "prompt": {
       "en": "Add a `<nav>` with three links: one to \"/about\" (same tab), one to \"https://example.com\" that opens in a new tab (with `rel=\"noopener\"`), and one mailto link to \"hello@example.com\". The nav must contain exactly these three `<a>` elements.",
       "ru": "Добавь `<nav>` с тремя ссылками: одна на \"/about\" (та же вкладка), одна на \"https://example.com\" в новой вкладке (с `rel=\"noopener\"`), и одна mailto на \"hello@example.com\". Внутри nav должно быть ровно три элемента `<a>`."
@@ -83,10 +131,22 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Links</title>\n</head>\n<body>\n  <!-- TODO: nav с тремя ссылками -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "nav with 3 links", "code": "const nav = document.querySelector('nav'); const a = nav ? nav.querySelectorAll('a') : []; assert(a.length === 3, \"expected 3 links in <nav>, got \" + a.length);" },
-      { "name": "internal link", "code": "const a = [...document.querySelectorAll('nav a')].find((x) => x.getAttribute('href') === '/about'); assert(a && !a.target, \"expected <a href=\\\"/about\\\"> without target\");" },
-      { "name": "external link opens in new tab", "code": "const a = [...document.querySelectorAll('nav a')].find((x) => x.getAttribute('href') === 'https://example.com'); assert(a && a.target === '_blank' && /noopener/.test(a.rel || ''), \"expected target=_blank + rel=noopener\");" },
-      { "name": "mailto link", "code": "const a = [...document.querySelectorAll('nav a')].find((x) => (x.getAttribute('href') || '').startsWith('mailto:')); assert(a && a.getAttribute('href') === 'mailto:hello@example.com', \"expected mailto:hello@example.com\");" }
+      {
+        "name": "nav with 3 links",
+        "code": "const nav = document.querySelector('nav'); const a = nav ? nav.querySelectorAll('a') : []; assert(a.length === 3, \"expected 3 links in <nav>, got \" + a.length);"
+      },
+      {
+        "name": "internal link",
+        "code": "const a = [...document.querySelectorAll('nav a')].find((x) => x.getAttribute('href') === '/about'); assert(a && !a.target, \"expected <a href=\\\"/about\\\"> without target\");"
+      },
+      {
+        "name": "external link opens in new tab",
+        "code": "const a = [...document.querySelectorAll('nav a')].find((x) => x.getAttribute('href') === 'https://example.com'); assert(a && a.target === '_blank' && /noopener/.test(a.rel || ''), \"expected target=_blank + rel=noopener\");"
+      },
+      {
+        "name": "mailto link",
+        "code": "const a = [...document.querySelectorAll('nav a')].find((x) => (x.getAttribute('href') || '').startsWith('mailto:')); assert(a && a.getAttribute('href') === 'mailto:hello@example.com', \"expected mailto:hello@example.com\");"
+      }
     ],
     "hint": {
       "en": "For the external link: `target=\"_blank\"` plus `rel=\"noopener\"` (security best practice).",
@@ -100,9 +160,15 @@
     "id": "html-004",
     "track": "html",
     "category": "media",
-    "categoryI18n": { "en": "Media", "ru": "Медиа" },
+    "categoryI18n": {
+      "en": "Media",
+      "ru": "Медиа"
+    },
     "order": 4,
-    "title": { "en": "Accessible Image", "ru": "Доступное изображение" },
+    "title": {
+      "en": "Accessible Image",
+      "ru": "Доступное изображение"
+    },
     "prompt": {
       "en": "Add an `<img>` to the page: `src` is \"https://picsum.photos/300/200\", `alt` describes the picture (\"A mountain lake\"), and the element has explicit `width=\"300\"` and `height=\"200\"` attributes. Also wrap it in a `<figure>` with a `<figcaption>` \"Lake photo\".",
       "ru": "Добавь на страницу `<img>`: `src` — \"https://picsum.photos/300/200\", `alt` описывает картинку (\"A mountain lake\"), у элемента явные атрибуты `width=\"300\"` и `height=\"200\"`. Оберни его в `<figure>` с `<figcaption>` \"Lake photo\"."
@@ -114,8 +180,14 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Image</title>\n</head>\n<body>\n  <!-- TODO: figure > img (src, alt, width, height) + figcaption -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "img attributes", "code": "const img = document.querySelector('img'); assert(img && img.getAttribute('src') === 'https://picsum.photos/300/200', \"expected the given src\");\nassert(img.getAttribute('alt') === 'A mountain lake', \"expected alt 'A mountain lake'\");\nassert(img.getAttribute('width') === '300' && img.getAttribute('height') === '200', \"expected width=300 height=200\");" },
-      { "name": "figure with caption", "code": "const fig = document.querySelector('figure'); const cap = fig ? fig.querySelector('figcaption') : null; assert(fig && cap && cap.textContent.trim() === 'Lake photo', \"expected <figure> with <figcaption>Lake photo</figcaption>\");" }
+      {
+        "name": "img attributes",
+        "code": "const img = document.querySelector('img'); assert(img && img.getAttribute('src') === 'https://picsum.photos/300/200', \"expected the given src\");\nassert(img.getAttribute('alt') === 'A mountain lake', \"expected alt 'A mountain lake'\");\nassert(img.getAttribute('width') === '300' && img.getAttribute('height') === '200', \"expected width=300 height=200\");"
+      },
+      {
+        "name": "figure with caption",
+        "code": "const fig = document.querySelector('figure'); const cap = fig ? fig.querySelector('figcaption') : null; assert(fig && cap && cap.textContent.trim() === 'Lake photo', \"expected <figure> with <figcaption>Lake photo</figcaption>\");"
+      }
     ],
     "hint": {
       "en": "alt is required for accessible images; width/height prevent layout shift on load.",
@@ -130,9 +202,15 @@
     "id": "html-005",
     "track": "html",
     "category": "semantics",
-    "categoryI18n": { "en": "Semantics", "ru": "Семантика" },
+    "categoryI18n": {
+      "en": "Semantics",
+      "ru": "Семантика"
+    },
     "order": 5,
-    "title": { "en": "Semantic Landmarks", "ru": "Семантические лендмарки" },
+    "title": {
+      "en": "Semantic Landmarks",
+      "ru": "Семантические лендмарки"
+    },
     "prompt": {
       "en": "Replace the plain divs with semantic landmarks: the page needs a `<header>` (with an `<h1>` \"Site\"), a `<nav>` with two links, a `<main>` (with at least one paragraph), a `<aside>` with an `<h2>` \"Extra\", and a `<footer>` containing the text \"© 2026\". Do not use div for these five blocks.",
       "ru": "Замени голое div семантическими лендмарками: на странице нужны `<header>` (с `<h1>` \"Site\"), `<nav>` с двумя ссылками, `<main>` (хотя бы одним параграфом), `<aside>` с `<h2>` \"Extra\" и `<footer>` с текстом \"© 2026\". Для этих пяти блоков div не использовать."
@@ -144,11 +222,26 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Semantics</title>\n</head>\n<body>\n  <!-- TODO: header (h1 \"Site\") / nav (2 ссылки) / main (p) / aside (h2 \"Extra\") / footer (© 2026) -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "header with h1", "code": "const h = document.querySelector('header'); assert(h && h.querySelector('h1') && h.querySelector('h1').textContent.trim() === 'Site', \"expected <header><h1>Site</h1>…\");" },
-      { "name": "nav with 2 links", "code": "const nav = document.querySelector('nav'); assert(nav && nav.querySelectorAll('a').length === 2, \"expected nav with 2 links\");" },
-      { "name": "main with paragraph", "code": "const m = document.querySelector('main'); assert(m && m.querySelector('p'), \"expected <main> with <p>\");" },
-      { "name": "aside with h2", "code": "const a = document.querySelector('aside'); assert(a && a.querySelector('h2') && a.querySelector('h2').textContent.trim() === 'Extra', \"expected aside with <h2>Extra</h2>\");" },
-      { "name": "footer text", "code": "const f = document.querySelector('footer'); assert(f && /© 2026/.test(f.textContent), \"expected footer with '© 2026'\");" }
+      {
+        "name": "header with h1",
+        "code": "const h = document.querySelector('header'); assert(h && h.querySelector('h1') && h.querySelector('h1').textContent.trim() === 'Site', \"expected <header><h1>Site</h1>…\");"
+      },
+      {
+        "name": "nav with 2 links",
+        "code": "const nav = document.querySelector('nav'); assert(nav && nav.querySelectorAll('a').length === 2, \"expected nav with 2 links\");"
+      },
+      {
+        "name": "main with paragraph",
+        "code": "const m = document.querySelector('main'); assert(m && m.querySelector('p'), \"expected <main> with <p>\");"
+      },
+      {
+        "name": "aside with h2",
+        "code": "const a = document.querySelector('aside'); assert(a && a.querySelector('h2') && a.querySelector('h2').textContent.trim() === 'Extra', \"expected aside with <h2>Extra</h2>\");"
+      },
+      {
+        "name": "footer text",
+        "code": "const f = document.querySelector('footer'); assert(f && /© 2026/.test(f.textContent), \"expected footer with '© 2026'\");"
+      }
     ],
     "hint": {
       "en": "Each landmark has a different meaning: header/nav/main/aside/footer are recognized by screen readers automatically.",
@@ -163,9 +256,15 @@
     "id": "html-006",
     "track": "html",
     "category": "accessibility",
-    "categoryI18n": { "en": "Accessibility", "ru": "Доступность" },
+    "categoryI18n": {
+      "en": "Accessibility",
+      "ru": "Доступность"
+    },
     "order": 6,
-    "title": { "en": "Labeled Form Fields", "ru": "Формы с подписями" },
+    "title": {
+      "en": "Labeled Form Fields",
+      "ru": "Формы с подписями"
+    },
     "prompt": {
       "en": "Build a form with id \"contact\": a text input with id \"name\" and a `<label for=\"name\">` (\"Name\"), and an email input with id \"email\" and a matching label (\"Email\"). The form must have a submit button with `type=\"submit\"` and text \"Send\". Every input must be reachable by its label.",
       "ru": "Сделай форму с id \"contact\": текстовый input с id \"name\" и `<label for=\"name\">` (\"Name\"), и email-input с id \"email\" и подписью (\"Email\"). В форме — кнопка отправки `type=\"submit\"` с текстом \"Send\". Каждый input должен быть привязан к своему label."
@@ -177,10 +276,22 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Contact</title>\n</head>\n<body>\n  <!-- TODO: form#contact: label+input (name), label+input (email), submit-кнопка \"Send\" -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "form exists", "code": "const form = document.querySelector('form#contact'); assert(form, \"expected <form id=\\\"contact\\\">\");" },
-      { "name": "label for name", "code": "const form = document.querySelector('form#contact'); const inp = form.querySelector('input#name'); const lab = form.querySelector('label[for=\"name\"]'); assert(inp && lab && lab.textContent.trim() === 'Name', \"expected label[for=name] 'Name'\");" },
-      { "name": "label for email", "code": "const form = document.querySelector('form#contact'); const inp = form.querySelector('input#email'); const lab = form.querySelector('label[for=\"email\"]'); assert(inp && inp.type === 'email' && lab && lab.textContent.trim() === 'Email', \"expected email input + label 'Email'\");" },
-      { "name": "submit button", "code": "const form = document.querySelector('form#contact'); const btn = form.querySelector('button[type=\"submit\"], input[type=\"submit\"]'); assert(btn && /send/i.test(btn.textContent || btn.value || ''), \"expected submit button 'Send'\");" }
+      {
+        "name": "form exists",
+        "code": "const form = document.querySelector('form#contact'); assert(form, \"expected <form id=\\\"contact\\\">\");"
+      },
+      {
+        "name": "label for name",
+        "code": "const form = document.querySelector('form#contact'); const inp = form.querySelector('input#name'); const lab = form.querySelector('label[for=\"name\"]'); assert(inp && lab && lab.textContent.trim() === 'Name', \"expected label[for=name] 'Name'\");"
+      },
+      {
+        "name": "label for email",
+        "code": "const form = document.querySelector('form#contact'); const inp = form.querySelector('input#email'); const lab = form.querySelector('label[for=\"email\"]'); assert(inp && inp.type === 'email' && lab && lab.textContent.trim() === 'Email', \"expected email input + label 'Email'\");"
+      },
+      {
+        "name": "submit button",
+        "code": "const form = document.querySelector('form#contact'); const btn = form.querySelector('button[type=\"submit\"], input[type=\"submit\"]'); assert(btn && /send/i.test(btn.textContent || btn.value || ''), \"expected submit button 'Send'\");"
+      }
     ],
     "hint": {
       "en": "`<label for=\"id\">` binds the label to the input by id — clicking the label focuses the field.",
@@ -195,9 +306,15 @@
     "id": "html-007",
     "track": "html",
     "category": "forms",
-    "categoryI18n": { "en": "Forms", "ru": "Формы" },
+    "categoryI18n": {
+      "en": "Forms",
+      "ru": "Формы"
+    },
     "order": 7,
-    "title": { "en": "Validated Signup Form", "ru": "Форма регистрации с валидацией" },
+    "title": {
+      "en": "Validated Signup Form",
+      "ru": "Форма регистрации с валидацией"
+    },
     "prompt": {
       "en": "Build a signup form (id \"signup\"): an email input (id \"email\", `required`, `type=\"email\"`, placeholder \"you@example.com\"), a password input (id \"password\", `type=\"password\"`, `minlength=\"8\"`), a checkbox (id \"terms\") with a label containing the text \"Terms\", and a submit button (\"Sign up\"). Native HTML validation only — no JavaScript.",
       "ru": "Сделай форму регистрации (id \"signup\"): email-input (id \"email\", `required`, `type=\"email\"`, placeholder \"you@example.com\"), пароль (id \"password\", `type=\"password\"`, `minlength=\"8\"`), чекбокс (id \"terms\") с подписью «Terms» и кнопку отправки (\"Sign up\"). Только нативная HTML-валидация — без JavaScript."
@@ -209,10 +326,22 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Signup</title>\n</head>\n<body>\n  <!-- TODO: form#signup: email (required), password (minlength 8), checkbox terms, submit -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "email field", "code": "const e = document.querySelector('#signup input#email'); assert(e && e.type === 'email' && e.required && e.placeholder === 'you@example.com', \"check email input attributes\");" },
-      { "name": "password field", "code": "const p = document.querySelector('#signup input#password'); assert(p && p.type === 'password' && p.minLength === 8, \"expected type=password minlength=8\");" },
-      { "name": "terms checkbox with label", "code": "const c = document.querySelector('#signup input#terms'); const l = document.querySelector('#signup label[for=\"terms\"]'); assert(c && c.type === 'checkbox' && l && /terms/i.test(l.textContent), \"expected checkbox + label 'Terms'\");" },
-      { "name": "submit text", "code": "const s = document.querySelector('#signup button[type=\"submit\"], #signup input[type=\"submit\"]'); assert(s && /sign up/i.test(s.textContent || s.value || ''), \"expected button 'Sign up'\");" }
+      {
+        "name": "email field",
+        "code": "const e = document.querySelector('#signup input#email'); assert(e && e.type === 'email' && e.required && e.placeholder === 'you@example.com', \"check email input attributes\");"
+      },
+      {
+        "name": "password field",
+        "code": "const p = document.querySelector('#signup input#password'); assert(p && p.type === 'password' && p.minLength === 8, \"expected type=password minlength=8\");"
+      },
+      {
+        "name": "terms checkbox with label",
+        "code": "const c = document.querySelector('#signup input#terms'); const l = document.querySelector('#signup label[for=\"terms\"]'); assert(c && c.type === 'checkbox' && l && /terms/i.test(l.textContent), \"expected checkbox + label 'Terms'\");"
+      },
+      {
+        "name": "submit text",
+        "code": "const s = document.querySelector('#signup button[type=\"submit\"], #signup input[type=\"submit\"]'); assert(s && /sign up/i.test(s.textContent || s.value || ''), \"expected button 'Sign up'\");"
+      }
     ],
     "hint": {
       "en": "The browser checks required/type/minlength automatically on submit — no JS needed.",
@@ -227,9 +356,15 @@
     "id": "html-008",
     "track": "html",
     "category": "structure",
-    "categoryI18n": { "en": "Structure", "ru": "Структура" },
+    "categoryI18n": {
+      "en": "Structure",
+      "ru": "Структура"
+    },
     "order": 8,
-    "title": { "en": "Proper Data Table", "ru": "Корректная таблица данных" },
+    "title": {
+      "en": "Proper Data Table",
+      "ru": "Корректная таблица данных"
+    },
     "prompt": {
       "en": "Build a data table (id \"prices\"): a `<thead>` with a header row of three `<th>` (\"Item\", \"Qty\", \"Price\"), and a `<tbody>` with three data rows (use `<td>`). The first data row must be: \"Apples\", \"3\", \"1.50\". Total cells in the body: exactly 9.",
       "ru": "Собери таблицу данных (id \"prices\"): `<thead>` с заголовочной строкой из трёх `<th>` (\"Item\", \"Qty\", \"Price\") и `<tbody>` с тремя строками данных (`<td>`). Первая строка данных: \"Apples\", \"3\", \"1.50\". Ячеек в tbody — ровно 9."
@@ -241,10 +376,22 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Table</title>\n</head>\n<body>\n  <!-- TODO: table#prices: thead (3 th) + tbody (3 строки по 3 td) -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "header row", "code": "const th = document.querySelectorAll('#prices thead th'); assert(th.length === 3 && th[0].textContent.trim() === 'Item' && th[1].textContent.trim() === 'Qty' && th[2].textContent.trim() === 'Price', \"expected thead with Item/Qty/Price\");" },
-      { "name": "first data row", "code": "const first = document.querySelector('#prices tbody tr'); const td = first ? first.querySelectorAll('td') : []; assert(td.length === 3 && td[0].textContent.trim() === 'Apples' && td[1].textContent.trim() === '3' && td[2].textContent.trim() === '1.50', \"expected Apples/3/1.50\");" },
-      { "name": "9 body cells", "code": "assert(document.querySelectorAll('#prices tbody td').length === 9, \"expected 9 <td> in tbody\");" },
-      { "name": "rows use tr", "code": "assert(document.querySelectorAll('#prices tbody tr').length === 3, \"expected 3 <tr> in tbody\");" }
+      {
+        "name": "header row",
+        "code": "const th = document.querySelectorAll('#prices thead th'); assert(th.length === 3 && th[0].textContent.trim() === 'Item' && th[1].textContent.trim() === 'Qty' && th[2].textContent.trim() === 'Price', \"expected thead with Item/Qty/Price\");"
+      },
+      {
+        "name": "first data row",
+        "code": "const first = document.querySelector('#prices tbody tr'); const td = first ? first.querySelectorAll('td') : []; assert(td.length === 3 && td[0].textContent.trim() === 'Apples' && td[1].textContent.trim() === '3' && td[2].textContent.trim() === '1.50', \"expected Apples/3/1.50\");"
+      },
+      {
+        "name": "9 body cells",
+        "code": "assert(document.querySelectorAll('#prices tbody td').length === 9, \"expected 9 <td> in tbody\");"
+      },
+      {
+        "name": "rows use tr",
+        "code": "assert(document.querySelectorAll('#prices tbody tr').length === 3, \"expected 3 <tr> in tbody\");"
+      }
     ],
     "hint": {
       "en": "Structure: table > thead > tr > th and table > tbody > tr > td.",
@@ -259,9 +406,15 @@
     "id": "html-009",
     "track": "html",
     "category": "semantics",
-    "categoryI18n": { "en": "Semantics", "ru": "Семантика" },
+    "categoryI18n": {
+      "en": "Semantics",
+      "ru": "Семантика"
+    },
     "order": 9,
-    "title": { "en": "Article Anatomy", "ru": "Анатомия статьи" },
+    "title": {
+      "en": "Article Anatomy",
+      "ru": "Анатомия статьи"
+    },
     "prompt": {
       "en": "Compose a blog post: an `<article>` with a `<header>` containing `<h1>` (\"Post title\") and a `<time datetime=\"2026-09-01\">` (\"Sept 1, 2026\"), the article body as `<section>` elements (two of them, with headings \"Intro\" and \"Body\"), and an `<article>` footer with the author name \"Ada\". The `<time>` must keep its `datetime` attribute exactly \"2026-09-01\".",
       "ru": "Составь пост блога: `<article>` с `<header>`, в котором `<h1>` (\"Post title\") и `<time datetime=\"2026-09-01\">` (\"Sept 1, 2026\"), текст — два `<section>` с заголовками \"Intro\" и \"Body\", и футер статьи с автором \"Ada\". Атрибут `datetime` у `<time>` — точно \"2026-09-01\"."
@@ -273,10 +426,22 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Blog</title>\n</head>\n<body>\n  <!-- TODO: article: header (h1 + time datetime=\"2026-09-01\"), 2 section (Intro/Body), автор \"Ada\" -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "article header", "code": "const art = document.querySelector('article'); const h = art ? art.querySelector('header h1') : null; assert(h && h.textContent.trim() === 'Post title', \"expected <h1>Post title</h1> in article header\");" },
-      { "name": "time element", "code": "const tm = document.querySelector('article time'); assert(tm && tm.getAttribute('datetime') === '2026-09-01' && /Sept 1, 2026/.test(tm.textContent), \"expected <time datetime=\\\"2026-09-01\\\">Sept 1, 2026</time>\");" },
-      { "name": "two sections with headings", "code": "const secs = document.querySelectorAll('article section'); const hs = [...secs].map((s) => (s.querySelector('h2,h3') || {}).textContent || '').map((x) => x.trim()); assert(secs.length === 2 && hs.includes('Intro') && hs.includes('Body'), \"expected sections Intro and Body\");" },
-      { "name": "author", "code": "const art = document.querySelector('article'); const foot = art ? art.querySelector('footer') : null; assert(foot && /Ada/.test(foot.textContent), \"expected author 'Ada' in article footer\");" }
+      {
+        "name": "article header",
+        "code": "const art = document.querySelector('article'); const h = art ? art.querySelector('header h1') : null; assert(h && h.textContent.trim() === 'Post title', \"expected <h1>Post title</h1> in article header\");"
+      },
+      {
+        "name": "time element",
+        "code": "const tm = document.querySelector('article time'); assert(tm && tm.getAttribute('datetime') === '2026-09-01' && /Sept 1, 2026/.test(tm.textContent), \"expected <time datetime=\\\"2026-09-01\\\">Sept 1, 2026</time>\");"
+      },
+      {
+        "name": "two sections with headings",
+        "code": "const secs = document.querySelectorAll('article section'); const hs = [...secs].map((s) => (s.querySelector('h2,h3') || {}).textContent || '').map((x) => x.trim()); assert(secs.length === 2 && hs.includes('Intro') && hs.includes('Body'), \"expected sections Intro and Body\");"
+      },
+      {
+        "name": "author",
+        "code": "const art = document.querySelector('article'); const foot = art ? art.querySelector('footer') : null; assert(foot && /Ada/.test(foot.textContent), \"expected author 'Ada' in article footer\");"
+      }
     ],
     "hint": {
       "en": "article > header/section/footer: <time datetime> gives machines the exact date, humans — a readable one.",
@@ -291,9 +456,15 @@
     "id": "html-010",
     "track": "html",
     "category": "media",
-    "categoryI18n": { "en": "Media", "ru": "Медиа" },
+    "categoryI18n": {
+      "en": "Media",
+      "ru": "Медиа"
+    },
     "order": 10,
-    "title": { "en": "Video Player Markup", "ru": "Разметка видео" },
+    "title": {
+      "en": "Video Player Markup",
+      "ru": "Разметка видео"
+    },
     "prompt": {
       "en": "Add a `<video>` element (id \"player\"): `src` is \"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4\", it has `controls`, `width=\"480\"`, and at least one `<source>` child with `type=\"video/mp4\"` pointing to the same URL. Wrap the video in a `<figure>` with a `<figcaption>` \"Flower\".",
       "ru": "Добавь элемент `<video>` (id \"player\"): `src` — \"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4\", есть `controls` и `width=\"480\"`, внутри — хотя бы один `<source>` с `type=\"video/mp4\"` на тот же URL. Оберни видео в `<figure>` с `<figcaption>` \"Flower\"."
@@ -305,9 +476,18 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Video</title>\n</head>\n<body>\n  <!-- TODO: figure > video#player (src, controls, width, source) + figcaption \"Flower\" -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "video attributes", "code": "const v = document.querySelector('video#player'); assert(v && v.controls === true, \"expected controls on video\");\nassert(v.getAttribute('width') === '480', \"expected width=480\");\nassert((v.getAttribute('src') || '').includes('flower.mp4'), \"expected flower.mp4 src\");" },
-      { "name": "source child", "code": "const s = document.querySelector('video#player source'); assert(s && s.type === 'video/mp4', \"expected <source type=\\\"video/mp4\\\">\");" },
-      { "name": "figure + caption", "code": "const fig = document.querySelector('figure'); const cap = fig ? fig.querySelector('figcaption') : null; assert(fig && cap && cap.textContent.trim() === 'Flower', \"expected figure with caption 'Flower'\");" }
+      {
+        "name": "video attributes",
+        "code": "const v = document.querySelector('video#player'); assert(v && v.controls === true, \"expected controls on video\");\nassert(v.getAttribute('width') === '480', \"expected width=480\");\nassert((v.getAttribute('src') || '').includes('flower.mp4'), \"expected flower.mp4 src\");"
+      },
+      {
+        "name": "source child",
+        "code": "const s = document.querySelector('video#player source'); assert(s && s.type === 'video/mp4', \"expected <source type=\\\"video/mp4\\\">\");"
+      },
+      {
+        "name": "figure + caption",
+        "code": "const fig = document.querySelector('figure'); const cap = fig ? fig.querySelector('figcaption') : null; assert(fig && cap && cap.textContent.trim() === 'Flower', \"expected figure with caption 'Flower'\");"
+      }
     ],
     "hint": {
       "en": "<video controls src=...><source ...></video> — the browser picks a supported format from <source>.",
@@ -322,9 +502,15 @@
     "id": "html-011",
     "track": "html",
     "category": "accessibility",
-    "categoryI18n": { "en": "Accessibility", "ru": "Доступность" },
+    "categoryI18n": {
+      "en": "Accessibility",
+      "ru": "Доступность"
+    },
     "order": 11,
-    "title": { "en": "Skip Link + ARIA Menu", "ru": "Skip-ссылка и ARIA-меню" },
+    "title": {
+      "en": "Skip Link + ARIA Menu",
+      "ru": "Skip-ссылка и ARIA-меню"
+    },
     "prompt": {
       "en": "Make the page screen-reader friendly: (1) as the first focusable element in `<body>` add a skip link `<a class=\"skip-link\" href=\"#main\">Skip to content</a>`; (2) the main content gets `id=\"main\"` and `tabindex=\"-1\"`; (3) the `<nav>` menu gets `aria-label=\"Main\"` and each of its two links gets a real text label (\"Home\", \"Docs\"). Do not use empty links or icons without labels.",
       "ru": "Сделай страницу дружелюбной к скринридерам: (1) первым фокусируемым элементом в `<body>` — skip-ссылку `<a class=\"skip-link\" href=\"#main\">Skip to content</a>`; (2) основной контент получает `id=\"main\"` и `tabindex=\"-1\"`; (3) меню `<nav>` получает `aria-label=\"Main\"`, каждая из двух ссылок — реальный текстовый лейбл (\"Home\", \"Docs\"). Пустых ссылок и иконок без лейблов быть не должно."
@@ -336,10 +522,22 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>A11y</title>\n</head>\n<body>\n  <!-- TODO: 1) skip-link первым элементом  2) #main tabindex=-1  3) nav aria-label + ссылки с текстом -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "skip link first", "code": "const skip = document.querySelector('a.skip-link'); assert(skip && skip.getAttribute('href') === '#main' && /skip to content/i.test(skip.textContent), \"expected skip link as first element\");\nconst bodyKids = [...document.body.children]; assert(bodyKids.indexOf(skip) === 0, \"skip link must be the first child of <body>\");" },
-      { "name": "main target", "code": "const m = document.querySelector('#main'); assert(m && m.getAttribute('tabindex') === '-1', \"expected #main with tabindex=-1\");" },
-      { "name": "nav aria-label", "code": "const nav = document.querySelector('nav'); assert(nav && nav.getAttribute('aria-label') === 'Main', \"expected nav[aria-label=Main]\");" },
-      { "name": "links have text", "code": "const links = [...document.querySelectorAll('nav a')]; assert(links.length === 2 && links.every((a) => a.textContent.trim().length > 0) && links.map((a) => a.textContent.trim()).includes('Home') && links.map((a) => a.textContent.trim()).includes('Docs'), \"expected labeled links Home and Docs\");" }
+      {
+        "name": "skip link first",
+        "code": "const skip = document.querySelector('a.skip-link'); assert(skip && skip.getAttribute('href') === '#main' && /skip to content/i.test(skip.textContent), \"expected skip link as first element\");\nconst bodyKids = [...document.body.children]; assert(bodyKids.indexOf(skip) === 0, \"skip link must be the first child of <body>\");"
+      },
+      {
+        "name": "main target",
+        "code": "const m = document.querySelector('#main'); assert(m && m.getAttribute('tabindex') === '-1', \"expected #main with tabindex=-1\");"
+      },
+      {
+        "name": "nav aria-label",
+        "code": "const nav = document.querySelector('nav'); assert(nav && nav.getAttribute('aria-label') === 'Main', \"expected nav[aria-label=Main]\");"
+      },
+      {
+        "name": "links have text",
+        "code": "const links = [...document.querySelectorAll('nav a')]; assert(links.length === 2 && links.every((a) => a.textContent.trim().length > 0) && links.map((a) => a.textContent.trim()).includes('Home') && links.map((a) => a.textContent.trim()).includes('Docs'), \"expected labeled links Home and Docs\");"
+      }
     ],
     "hint": {
       "en": "A skip link lets keyboard users bypass the navigation; tabindex=\"-1\" makes #main a programmatic focus target.",
@@ -354,9 +552,15 @@
     "id": "html-012",
     "track": "html",
     "category": "seo",
-    "categoryI18n": { "en": "SEO", "ru": "SEO" },
+    "categoryI18n": {
+      "en": "SEO",
+      "ru": "SEO"
+    },
     "order": 12,
-    "title": { "en": "SEO Meta Base", "ru": "SEO-базис" },
+    "title": {
+      "en": "SEO Meta Base",
+      "ru": "SEO-базис"
+    },
     "prompt": {
       "en": "Prepare the page for search engines: `<title>` \"Learn HTML — Syntax\"; `<meta name=\"description\" content=\"Step-by-step HTML course in the browser.\">`; Open Graph tags `<meta property=\"og:title\" content=\"Learn HTML\">` and `<meta property=\"og:description\" content=\"HTML course\">`; viewport meta; exactly one `<h1>`; and a `<link rel=\"canonical\" href=\"https://syntax.dev/html\">`.",
       "ru": "Подготовь страницу к поиску: `<title>` \"Learn HTML — Syntax\"; `<meta name=\"description\" content=\"Step-by-step HTML course in the browser.\">`; Open Graph: `<meta property=\"og:title\" content=\"Learn HTML\">` и `<meta property=\"og:description\" content=\"HTML course\">`; viewport-meta; ровно один `<h1>`; и `<link rel=\"canonical\" href=\"https://syntax.dev/html\">`."
@@ -368,12 +572,26 @@
       "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <!-- TODO: title, description, og:title, og:description, viewport, canonical -->\n</head>\n<body>\n  <!-- TODO: ровно один h1 + контент -->\n</body>\n</html>"
     },
     "tests": [
-      { "name": "title", "code": "assert(document.title === 'Learn HTML — Syntax', \"expected the exact title, got '\" + document.title + \"'\");" },
-      { "name": "description meta", "code": "const d = document.querySelector('meta[name=\"description\"]'); assert(d && d.content === 'Step-by-step HTML course in the browser.', \"expected the given description\");" },
-      { "name": "open graph", "code": "const ogT = document.querySelector('meta[property=\"og:title\"]'); const ogD = document.querySelector('meta[property=\"og:description\"]'); assert(ogT && ogT.content === 'Learn HTML' && ogD && ogD.content === 'HTML course', \"expected og:title and og:description\");" },
-      { "name": "viewport", "code": "const v = document.querySelector('meta[name=\"viewport\"]'); assert(v && /width/.test(v.content), \"expected viewport meta\");" },
-      { "name": "canonical", "code": "const c = document.querySelector('link[rel=\"canonical\"]'); assert(c && c.href === 'https://syntax.dev/html', \"expected canonical link\");" },
-      { "name": "single h1", "code": "assert(document.querySelectorAll('h1').length === 1, \"expected exactly one <h1>\");" }
+      {
+        "name": "title",
+        "code": "assert(document.title === 'Learn HTML — Syntax', \"expected the exact title, got '\" + document.title + \"'\");"
+      },
+      {
+        "name": "description meta",
+        "code": "const d = document.querySelector('meta[name=\"description\"]'); assert(d && d.content === 'Step-by-step HTML course in the browser.', \"expected the given description\");"
+      },
+      {
+        "name": "open graph",
+        "code": "const ogT = document.querySelector('meta[property=\"og:title\"]'); const ogD = document.querySelector('meta[property=\"og:description\"]'); assert(ogT && ogT.content === 'Learn HTML' && ogD && ogD.content === 'HTML course', \"expected og:title and og:description\");"
+      },
+      {
+        "name": "canonical",
+        "code": "const c = document.querySelector('link[rel=\"canonical\"]'); assert(c && c.href === 'https://syntax.dev/html', \"expected canonical link\");"
+      },
+      {
+        "name": "single h1",
+        "code": "assert(document.querySelectorAll('h1').length === 1, \"expected exactly one <h1>\");"
+      }
     ],
     "hint": {
       "en": "Meta tags go into <head>: description (≈150 chars), og:* for social previews, canonical — the canonical URL.",

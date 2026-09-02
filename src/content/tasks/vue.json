@@ -1,1 +1,416 @@
-[]
+[
+  {
+    "id": "vue-001",
+    "track": "vue",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 1,
+    "title": {
+      "en": "First SFC",
+      "ru": "Первый SFC"
+    },
+    "prompt": {
+      "en": "Edit the `App.vue` single-file component so its `<template>` renders an `<h1>` with the text \"Hello, Vue\" and a `<p>` below it. The app mounts into `#root` automatically — run and make the tests green.",
+      "ru": "Измени single-file-компонент `App.vue` так, чтобы его `<template>` рендерил `<h1>` с текстом \"Hello, Vue\" и ниже `<p>`. Приложение монтируется в `#root` автоматически — запусти и сделай тесты зелёными."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "App.vue": "<script setup>\n// TODO: ничего в скрипте не нужно — только template\n</script>\n\n<template>\n  <!-- TODO: h1 \"Hello, Vue\" + p -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "h1 text",
+        "code": "const root = document.getElementById('root'); assert(root.querySelector('h1') && root.querySelector('h1').textContent.trim() === 'Hello, Vue', \"expected <h1>Hello, Vue</h1>\");"
+      },
+      {
+        "name": "paragraph",
+        "code": "assert(document.getElementById('root').querySelector('p') && document.getElementById('root').querySelector('p').textContent.trim().length > 0, \"expected a non-empty <p>\");"
+      }
+    ],
+    "hint": {
+      "en": "In a static template no script is needed at all — just put the markup into <template>.",
+      "ru": "Для статичного template скрипт вообще не нужен — просто разметка в <template>."
+    },
+    "solution": "<script setup>\n</script>\n\n<template>\n  <h1>Hello, Vue</h1>\n  <p>Welcome to Vue single-file components.</p>\n</template>",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "vue-002",
+    "track": "vue",
+    "category": "reactivity",
+    "categoryI18n": {
+      "en": "Reactivity",
+      "ru": "Реактивность"
+    },
+    "order": 2,
+    "title": {
+      "en": "Reactive Counter",
+      "ru": "Реактивный счётчик"
+    },
+    "prompt": {
+      "en": "In `<script setup>` create `const count = ref(0)`. In the template: a `<span id=\"count\">` bound with `{{ count }}` and a `<button id=\"inc\">` with `@click=\"count++\"` and the text \"+1\". Three clicks must make the span show 3.",
+      "ru": "В `<script setup>` создай `const count = ref(0)`. В template: `<span id=\"count\">`, привязанный через `{{ count }}`, и `<button id=\"inc\">` с `@click=\"count++\"` и текстом \"+1\". Три клика должны показать 3 в span."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: const count = ref(0)\n</script>\n\n<template>\n  <!-- TODO: span#count {{ count }} + button#inc @click=... \"+1\" -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "initial 0",
+        "code": "const root = document.getElementById('root'); assert(root.querySelector('#count') && root.querySelector('#count').textContent.trim() === '0', \"expected 0, got \" + root.querySelector('#count').textContent);"
+      },
+      {
+        "name": "clicks",
+        "code": "const btn = document.getElementById('inc'); for (let i = 0; i < 3; i++) { btn.click(); await new Promise((r) => setTimeout(r, 30)); } assert(document.getElementById('count').textContent.trim() === '3', \"expected 3 after 3 clicks, got \" + document.getElementById('count').textContent);"
+      }
+    ],
+    "hint": {
+      "en": "ref(0) + @click=\"count++\" — the template updates automatically.",
+      "ru": "ref(0) + @click=\"count++\" — template обновляется автоматически."
+    },
+    "solution": "<script setup>\nimport { ref } from \"vue\";\n\nconst count = ref(0);\n</script>\n\n<template>\n  <span id=\"count\">{{ count }}</span>\n  <button id=\"inc\" @click=\"count++\">+1</button>\n</template>",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "vue-003",
+    "track": "vue",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 3,
+    "title": {
+      "en": "v-for List",
+      "ru": "Список v-for"
+    },
+    "prompt": {
+      "en": "Render a list with `v-for`: the array `const items = ['Alpha', 'Beta', 'Gamma']` in `<script setup>`; the template renders a `<ul id=\"items\">` with `<li v-for=\"item in items\" :key=\"item\">{{ item }}</li>`.",
+      "ru": "Отрендерь список через `v-for`: массив `const items = ['Alpha', 'Beta', 'Gamma']` в `<script setup>`; template рендерит `<ul id=\"items\">` с `<li v-for=\"item in items\" :key=\"item\">{{ item }}</li>`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "App.vue": "<script setup>\n// TODO: const items = ['Alpha', 'Beta', 'Gamma']\n</script>\n\n<template>\n  <!-- TODO: ul#items + li v-for -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "3 items in order",
+        "code": "const li = [...document.querySelectorAll('#items li')]; assert(li.length === 3 && li.map((x) => x.textContent.trim()).join(',') === 'Alpha,Beta,Gamma', \"expected Alpha/Beta/Gamma in order, got \" + li.map((x) => x.textContent.trim()).join(','));"
+      },
+      {
+        "name": "it is a ul",
+        "code": "assert(document.querySelector('ul#items'), 'expected <ul id=\"items\">');"
+      }
+    ],
+    "hint": {
+      "en": "v-for + :key — the standard list pattern in Vue.",
+      "ru": "v-for + :key — стандартный паттерн списков в Vue."
+    },
+    "solution": "<script setup>\nconst items = ['Alpha', 'Beta', 'Gamma'];\n</script>\n\n<template>\n  <ul id=\"items\">\n    <li v-for=\"item in items\" :key=\"item\">{{ item }}</li>\n  </ul>\n</template>",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "vue-004",
+    "track": "vue",
+    "category": "reactivity",
+    "categoryI18n": {
+      "en": "Reactivity",
+      "ru": "Реактивность"
+    },
+    "order": 4,
+    "title": {
+      "en": "v-model Input",
+      "ru": "v-model input"
+    },
+    "prompt": {
+      "en": "Two-way binding: `const name = ref('')` in `<script setup>`; the template renders `<input id=\"name\" v-model=\"name\" />` and `<p id=\"preview\">Hi, {{ name }}</p>`. Typing \"Ada\" must make the preview show \"Hi, Ada\".",
+      "ru": "Двусторонняя привязка: `const name = ref('')` в `<script setup>`; template рендерит `<input id=\"name\" v-model=\"name\" />` и `<p id=\"preview\">Hi, {{ name }}</p>`. Ввод \"Ada\" должен дать в превью \"Hi, Ada\"."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: const name = ref('')\n</script>\n\n<template>\n  <!-- TODO: input#name v-model + p#preview \"Hi, {{ name }}\" -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "initial",
+        "code": "const p = document.getElementById('preview'); assert(p && /Hi,/.test(p.textContent), \"expected 'Hi, …' initially\");"
+      },
+      {
+        "name": "typing updates preview",
+        "code": "const input = document.getElementById('name'); const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(input, 'Ada'); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 50)); assert(document.getElementById('preview').textContent.trim() === 'Hi, Ada', \"expected 'Hi, Ada', got '\" + document.getElementById('preview').textContent + \"'\");"
+      }
+    ],
+    "hint": {
+      "en": "v-model = value + @input in one directive.",
+      "ru": "v-model = value + @input одной директивой."
+    },
+    "solution": "<script setup>\nimport { ref } from \"vue\";\n\nconst name = ref('');\n</script>\n\n<template>\n  <input id=\"name\" v-model=\"name\" />\n  <p id=\"preview\">Hi, {{ name }}</p>\n</template>",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "vue-005",
+    "track": "vue",
+    "category": "components",
+    "categoryI18n": {
+      "en": "Components",
+      "ru": "Компоненты"
+    },
+    "order": 5,
+    "title": {
+      "en": "Child Component with Props",
+      "ru": "Дочерний компонент с пропсами"
+    },
+    "prompt": {
+      "en": "Define a local component `Greet` in `<script setup>`: `const Greet = { props: { name: String }, template: '<p class=\"greet\">Hello, {{ name }}!</p>' }` (the sandbox uses the full Vue build, so runtime templates work). App renders `<Greet name=\"Syntax\" />` inside a `<div id=\"box\">`.",
+      "ru": "Определи локальный компонент `Greet` в `<script setup>`: `const Greet = { props: { name: String }, template: '<p class=\"greet\">Hello, {{ name }}!</p>' }` (в песочнице полный билд Vue — runtime-шаблоны работают). App рендерит `<Greet name=\"Syntax\" />` внутри `<div id=\"box\">`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.vue": "<script setup>\n// TODO: const Greet = { props: { name: String }, template: '...' }\n</script>\n\n<template>\n  <div id=\"box\">\n    <!-- TODO: <Greet name=\"Syntax\" /> -->\n  </div>\n</template>"
+    },
+    "tests": [
+      {
+        "name": "greet rendered with prop",
+        "code": "const p = document.querySelector('#box .greet'); assert(p && p.textContent.trim() === 'Hello, Syntax!', \"expected 'Hello, Syntax!', got \" + (p && p.textContent));"
+      },
+      {
+        "name": "greet lives inside #box",
+        "code": "assert(document.querySelector('#box').contains(document.querySelector('.greet')), \"greet must be rendered inside #box\");"
+      }
+    ],
+    "hint": {
+      "en": "A plain object with props + template is a valid component in the full build.",
+      "ru": "Обычный объект с props + template — валидный компонент в полном билде."
+    },
+    "solution": "<script setup>\nconst Greet = {\n  props: { name: String },\n  template: '<p class=\"greet\">Hello, {{ name }}!</p>',\n};\n</script>\n\n<template>\n  <div id=\"box\">\n    <Greet name=\"Syntax\" />\n  </div>\n</template>",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "vue-006",
+    "track": "vue",
+    "category": "reactivity",
+    "categoryI18n": {
+      "en": "Reactivity",
+      "ru": "Реактивность"
+    },
+    "order": 6,
+    "title": {
+      "en": "Computed Property",
+      "ru": "Вычисляемое свойство"
+    },
+    "prompt": {
+      "en": "A computed derived value: `const price = ref(100)`, `const qty = ref(2)`, and `const total = computed(() => price.value * qty.value)`. The template renders `<span id=\"total\">{{ total }}</span>` and a `<button id=\"more\">` (\"+1 qty\") that does `qty++`. Initially the total is 200; after one click — 300.",
+      "ru": "Вычисляемое производное значение: `const price = ref(100)`, `const qty = ref(2)`, и `const total = computed(() => price.value * qty.value)`. Template рендерит `<span id=\"total\">{{ total }}</span>` и `<button id=\"more\">` (\"+1 qty\"), делающий `qty++`. Изначально total = 200; после клика — 300."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.vue": "<script setup>\nimport { ref, computed } from \"vue\";\n\n// TODO: price, qty, total (computed)\n</script>\n\n<template>\n  <!-- TODO: span#total + button#more \"+1 qty\" -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "initial 200",
+        "code": "assert(document.getElementById('total').textContent.trim() === '200', \"expected 200, got \" + document.getElementById('total').textContent);"
+      },
+      {
+        "name": "after click 300",
+        "code": "document.getElementById('more').click(); await new Promise((r) => setTimeout(r, 50)); assert(document.getElementById('total').textContent.trim() === '300', \"expected 300, got \" + document.getElementById('total').textContent);"
+      }
+    ],
+    "hint": {
+      "en": "computed(() => …) recomputes when its reactive dependencies change — no manual recalculation.",
+      "ru": "computed(() => …) пересчитывается, когда меняется реактивная зависимость — без ручного пересчёта."
+    },
+    "solution": "<script setup>\nimport { ref, computed } from \"vue\";\n\nconst price = ref(100);\nconst qty = ref(2);\nconst total = computed(() => price.value * qty.value);\n</script>\n\n<template>\n  <span id=\"total\">{{ total }}</span>\n  <button id=\"more\" @click=\"qty++\">+1 qty</button>\n</template>",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "vue-007",
+    "track": "vue",
+    "category": "composition",
+    "categoryI18n": {
+      "en": "Composition",
+      "ru": "Composition"
+    },
+    "order": 7,
+    "title": {
+      "en": "Composable useCounter",
+      "ru": "Компаузабель useCounter"
+    },
+    "prompt": {
+      "en": "Write a composable `useCounter(initial)` in `<script setup>` (or above it): it returns `{ value, increment, decrement }` built on a `ref`. Use it in App with initial 5: render `<span id=\"val\">{{ value }}</span>` and buttons `<button id=\"inc\">` / `<button id=\"dec\">`.",
+      "ru": "Напиши компаузабель `useCounter(initial)` в `<script setup>`: он возвращает `{ value, increment, decrement }` на основе `ref`. Используй в App со стартовым 5: рендер `<span id=\"val\">{{ value }}</span>` и кнопки `<button id=\"inc\">` / `<button id=\"dec\">`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: function useCounter(initial) { … }\n// const { value, increment, decrement } = useCounter(5);\n</script>\n\n<template>\n  <!-- TODO: span#val + кнопки #inc/#dec -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "initial 5",
+        "code": "assert(document.getElementById('val').textContent.trim() === '5', \"expected 5, got \" + document.getElementById('val').textContent);"
+      },
+      {
+        "name": "inc/dec",
+        "code": "const click = async (id) => { document.getElementById(id).click(); await new Promise((r) => setTimeout(r, 30)); }; const val = () => document.getElementById('val').textContent.trim(); await click('inc'); await click('inc'); assert(val() === '7', \"expected 7, got \" + val()); await click('dec'); assert(val() === '6', \"expected 6, got \" + val());"
+      }
+    ],
+    "hint": {
+      "en": "A composable is just a function that uses Vue reactivity and returns an API.",
+      "ru": "Компаузабель — просто функция, использующая реактивность Vue и возвращающая API."
+    },
+    "solution": "<script setup>\nimport { ref } from \"vue\";\n\nfunction useCounter(initial) {\n  const value = ref(initial);\n  return {\n    value,\n    increment: () => value.value++,\n    decrement: () => value.value--,\n  };\n}\n\nconst { value, increment, decrement } = useCounter(5);\n</script>\n\n<template>\n  <span id=\"val\">{{ value }}</span>\n  <button id=\"inc\" @click=\"increment\">+</button>\n  <button id=\"dec\" @click=\"decrement\">-</button>\n</template>",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "vue-008",
+    "track": "vue",
+    "category": "reactivity",
+    "categoryI18n": {
+      "en": "Reactivity",
+      "ru": "Реактивность"
+    },
+    "order": 8,
+    "title": {
+      "en": "Reactive Object, Deep",
+      "ru": "Реактивный объект, deeply"
+    },
+    "prompt": {
+      "en": "Use `reactive` (not ref) for a nested object: `const user = reactive({ profile: { name: 'Guest', level: 1 } })`. The template renders `<span id=\"name\">{{ user.profile.name }}</span>` and a `<button id=\"up\">` (\"Level up\") that does `user.profile.level++` and, when level reaches 2, renames profile.name to \"Member\". Initially: name Guest, level 1. After one click: name Member.",
+      "ru": "Используй `reactive` (не ref) для вложенного объекта: `const user = reactive({ profile: { name: 'Guest', level: 1 } })`. Template рендерит `<span id=\"name\">{{ user.profile.name }}</span>` и `<button id=\"up\">` (\"Level up\"), делающий `user.profile.level++` и, когда level станет 2, переименующий profile.name в \"Member\". Изначально: name Guest. После клика: name Member."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "App.vue": "<script setup>\nimport { reactive } from \"vue\";\n\n// TODO: const user = reactive({ profile: { name: 'Guest', level: 1 } })\n// функция levelUp: level++, при level === 2 → name = 'Member'\n</script>\n\n<template>\n  <!-- TODO: span#name + button#up \"Level up\" -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "initial name",
+        "code": "assert(document.getElementById('name').textContent.trim() === 'Guest', \"expected 'Guest', got \" + document.getElementById('name').textContent);"
+      },
+      {
+        "name": "level up changes nested state",
+        "code": "document.getElementById('up').click(); await new Promise((r) => setTimeout(r, 50)); assert(document.getElementById('name').textContent.trim() === 'Member', \"expected 'Member' after level up, got \" + document.getElementById('name').textContent);"
+      }
+    ],
+    "hint": {
+      "en": "reactive makes nested objects deeply reactive — no .value, just plain property access.",
+      "ru": "reactive делает вложенные объекты глубоко реактивными — без .value, обычный доступ к свойствам."
+    },
+    "solution": "<script setup>\nimport { reactive } from \"vue\";\n\nconst user = reactive({ profile: { name: 'Guest', level: 1 } });\nfunction levelUp() {\n  user.profile.level += 1;\n  if (user.profile.level === 2) user.profile.name = 'Member';\n}\n</script>\n\n<template>\n  <span id=\"name\">{{ user.profile.name }}</span>\n  <button id=\"up\" @click=\"levelUp\">Level up</button>\n</template>",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "vue-009",
+    "track": "vue",
+    "category": "components",
+    "categoryI18n": {
+      "en": "Components",
+      "ru": "Компоненты"
+    },
+    "order": 9,
+    "title": {
+      "en": "Props Down, Events Up",
+      "ru": "Пропсы вниз, события вверх"
+    },
+    "prompt": {
+      "en": "Parent-child communication: a local component `Box` (runtime template) with prop `msg` that emits an event: `defineEmits` is not available in a plain object component — use `emits: ['ping']` and in a click handler call `emit('ping')`. App: `<Box msg=\"Hi\" @ping=\"onPing\" />`, where `onPing` appends \"!\" to a `state` ref shown in `<p id=\"out\">`. Initially `#out` is empty; after clicking the box it shows \"!\".",
+      "ru": "Связь родитель-ребёнок: локальный компонент `Box` (runtime template) с пропом `msg`, который эмитит событие: `emits: ['ping']` и в click-обработчике — `emit('ping')`. App: `<Box msg=\"Hi\" @ping=\"onPing\" />`, где `onPing` добавляет \"!\" к ref `state`, показанному в `<p id=\"out\">`. Изначально `#out` пуст; после клика по box — показывает \"!\"."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: const Box = { props: ['msg'], emits: ['ping'], template: '<div class=\"box\" @click=\"emit(\\'ping\\')\">{{ msg }}</div>' }\n// const state = ref(''); const onPing = () => { state.value += '!'; }\n</script>\n\n<template>\n  <p id=\"out\">{{ state }}</p>\n  <!-- TODO: <Box msg=\"Hi\" @ping=\"onPing\" /> -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "box renders prop",
+        "code": "const box = document.querySelector('.box'); assert(box && box.textContent.trim() === 'Hi', \"expected box with 'Hi'\");"
+      },
+      {
+        "name": "initial out empty",
+        "code": "assert(document.getElementById('out').textContent.trim() === '', \"expected empty #out\");"
+      },
+      {
+        "name": "event bubbles up",
+        "code": "document.querySelector('.box').click(); await new Promise((r) => setTimeout(r, 50)); assert(document.getElementById('out').textContent.trim() === '!', \"expected '!' after click, got '\" + document.getElementById('out').textContent + \"'\");"
+      }
+    ],
+    "hint": {
+      "en": "In a plain object component the emit function is the second argument of setup(props, { emit }).",
+      "ru": "В обычном объектном компоненте emit — второй аргумент setup(props, { emit })."
+    },
+    "solution": "<script setup>\nimport { ref } from \"vue\";\n\nconst Box = {\n  props: ['msg'],\n  emits: ['ping'],\n  setup(props, { emit }) {\n    return { onBoxClick: () => emit('ping') };\n  },\n  template: '<div class=\"box\" @click=\"onBoxClick\">{{ msg }}</div>',\n};\n\nconst state = ref('');\nconst onPing = () => { state.value += '!'; };\n</script>\n\n<template>\n  <p id=\"out\">{{ state }}</p>\n  <Box msg=\"Hi\" @ping=\"onPing\" />\n</template>",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "vue-010",
+    "track": "vue",
+    "category": "composition",
+    "categoryI18n": {
+      "en": "Composition",
+      "ru": "Composition"
+    },
+    "order": 10,
+    "title": {
+      "en": "Composable useFetch",
+      "ru": "Компаузабель useFetch"
+    },
+    "prompt": {
+      "en": "The starter exports `fakeApi(url)` — resolves `{ ok: true, json: async () => ({ hello: 'world' }) }` after 60ms. Write a composable `useFetch(url)`: it runs the request in `onMounted`, returns `{ data, loading }` refs. App uses `useFetch('/hello')` and renders: `loading` → `<p id=\"s\">loading</p>`, after → `<p id=\"s\">{{ data.hello }}</p>`. After mount the paragraph must show \"world\".",
+      "ru": "Стартовый файл экспортирует `fakeApi(url)` — резолвится `{ ok: true, json: async () => ({ hello: 'world' }) }` через 60мс. Напиши компаузабель `useFetch(url)`: выполняет запрос в `onMounted`, возвращает ref'ы `{ data, loading }`. App использует `useFetch('/hello')` и рендерит: `loading` → `<p id=\"s\">loading</p>`, после → `<p id=\"s\">{{ data.hello }}</p>`. После монтирования параграф должен показывать \"world\"."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "App.vue": "<script setup>\nimport { ref, onMounted } from \"vue\";\n\n// Фейковый API: 60 мс\nexport function fakeApi(url) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve({ ok: true, json: async () => ({ hello: 'world' }) }), 60)\n  );\n}\n\n// TODO: function useFetch(url) { const data = ref(null); const loading = ref(true);\n//   onMounted(async () => { const res = await fakeApi(url); data.value = await res.json(); loading.value = false; });\n//   return { data, loading }; }\n// const { data, loading } = useFetch('/hello');\n</script>\n\n<template>\n  <!-- TODO: loading ? <p id=\"s\">loading</p> : <p id=\"s\">{{ data.hello }}</p> -->\n</template>"
+    },
+    "tests": [
+      {
+        "name": "data loaded",
+        "code": "await new Promise((r) => setTimeout(r, 400)); const p = document.getElementById('s'); assert(p && p.textContent.trim() === 'world', \"expected 'world', got \" + (p && p.textContent));"
+      },
+      {
+        "name": "loading state replaced",
+        "code": "const p = document.querySelector('#s'); assert(p && !/loading/.test(p.textContent), 'loading must be replaced by the data');"
+      }
+    ],
+    "hint": {
+      "en": "onMounted inside a composable runs when the consuming component mounts — the same lifecycle.",
+      "ru": "onMounted внутри компаузабель срабатывает при монтировании компонента, который его использует — тот же жизненный цикл."
+    },
+    "solution": "<script setup>\nimport { ref, onMounted } from \"vue\";\n\nexport function fakeApi(url) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve({ ok: true, json: async () => ({ hello: 'world' }) }), 60)\n  );\n}\n\nfunction useFetch(url) {\n  const data = ref(null);\n  const loading = ref(true);\n  onMounted(async () => {\n    const res = await fakeApi(url);\n    data.value = await res.json();\n    loading.value = false;\n  });\n  return { data, loading };\n}\n\nconst { data, loading } = useFetch('/hello');\n</script>\n\n<template>\n  <p id=\"s\" v-if=\"loading\">loading</p>\n  <p id=\"s\" v-else>{{ data.hello }}</p>\n</template>",
+    "dailyChallenge": true,
+    "status": "published"
+  }
+]

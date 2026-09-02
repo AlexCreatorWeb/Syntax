@@ -259,6 +259,7 @@ export default {
     techEmptyLine: "New tasks every week",
     noResultsQuery: 'No tasks match "{q}"',
     clearSearch: "Clear search",
+    open: "Open",
     clearFilters: "Clear filters",
     sample: "Sample",
 
@@ -298,6 +299,7 @@ export default {
       hard: "Hard",
       accept: "Accept Challenge",
       lessonNote: "Today's pick from the {tech} course — solve it in the editor before the timer ends.",
+      taskNote: "{cat} task · about {min} min — solve it in the editor before the timer ends.",
     },
     analytics: {
       title: "Task Analytics",
@@ -497,7 +499,7 @@ export default {
   signup: { title: "Create your free account", subtitle: "Two minutes, no card. Your progress is saved.", name: "Name", email: "Email", submit: "Sign up free", guest: "Continue as guest", titleChallenge: "Sign up to start the challenge", subtitleChallenge: "Your daily challenge is saved — it opens right after sign up." },
   auth: { loginTitle: "Welcome back", loginSubtitle: "Log in to continue your course", password: "Password", loginSubmit: "Log in", toLogin: "Already have an account? {action}", toSignup: "New to Syntax? {action}", loginCta: "Log in", signupCta: "Sign up free", emailSentTitle: "Check your inbox", emailSent: "We sent a confirmation link to {email}. Click it, then log in.", emailSentOk: "Got it", errInvalid: "Wrong email or password.", errUnconfirmed: "Email not confirmed — check your inbox for the link.", errExists: "This email is already registered — log in instead.", errWeak: "Password must be at least 6 characters.",
     errRateLimit: "Too many sign-ups right now — wait a few minutes and try again.", errEmail: "Enter a valid email address.", errNetwork: "No connection — check the network and try again.", errGeneric: "Something went wrong — try again." , forgot: "Forgot password?", forgotTitle: "Reset your password", forgotSubtitle: "Enter your email — we'll send you a reset link.", forgotSubmit: "Send reset link", backToLogin: "Back to log in", resetSent: "We sent a password reset link to {email}." },
-  profile: { guestTitle: "You're browsing as a guest", guestBody: "Log in to keep your progress in your account and pick up right where you left off.", login: "Log in", signup: "Sign up free", memberSince: "Member since {date}", progress: "Course progress", progressEmpty: "No completed lessons yet — finish a task in the editor and it will show up here.", doneOf: "{a} of {b}", totalDone: "Completed: {n}", openRoadmap: "Open roadmap", tasksDone: "{n} tasks" },
+  profile: { guestTitle: "You're browsing as a guest", guestBody: "Log in to keep your progress in your account and pick up right where you left off.", login: "Log in", signup: "Sign up free", memberSince: "Member since {date}", progress: "Course progress", progressEmpty: "No completed lessons yet — finish a task in the editor and it will show up here.", doneOf: "{a} of {b}", totalDone: "Completed: {n}", openRoadmap: "Open roadmap", tasksDone: "{n} tasks", xp: "Total XP: {n}" },
   footer: { product: "Product", company: "Company", legal: "Legal", privacy: "Privacy", terms: "Terms", tagline: "Learn programming by building — right in your browser." },
   home: {
     search: "Search commands, modules...",
@@ -712,6 +714,11 @@ export default {
     clearCode: "Clear code",
     cancel: "Cancel",
     consoleHint: "Press Run to see output here",
+    tests: "Tests",
+    testsRunning: "running…",
+    complete: "Complete +{xp} XP",
+    taskDone: "Completed",
+    allTestsPass: "All tests passed — press Complete to earn XP",
     htmlResultHint: "Result — see the live preview",
     markupLabel: "Page markup",
     runnerSoon: "The {lang} runner is coming soon — check your code manually for now.",

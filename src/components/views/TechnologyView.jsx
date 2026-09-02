@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useT } from "../../i18n/useT";
+import { useLanguage } from "../../context/useLanguage";
 import { getTech } from "../../lib/techs";
 import { getCompleted } from "../../lib/progress";
+import { localizedLessonTitle } from "../../lib/lessonTitles";
 import { hasRecentFeature } from "../../lib/web-features";
 import TechSwitch from "../TechSwitch";
 
@@ -10,6 +12,7 @@ import TechSwitch from "../TechSwitch";
 // (EN base + RU; uk/es/de откатываются на EN). UI-строки — `techPage.*` (5 языков).
 function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectTech }) {
   const t = useT();
+  const { langCode } = useLanguage();
   const tech = getTech(techId) || getTech("javascript");
   const Logo = tech.Logo;
   const content = t(`techs.${tech.id}`);
@@ -105,7 +108,7 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectT
                   </svg>
                 </span>
                 <div className="techmod__body">
-                  <h3 className="techmod__title">{i + 1}. {l.title}</h3>
+                  <h3 className="techmod__title">{i + 1}. {localizedLessonTitle(tech.id, i + 1, l.title, langCode)}</h3>
                   <p className="techmod__desc">{t("techPage.dbLessonOpen")}</p>
                 </div>
                 {/* NEW: урок про свежую технологию (см. web-features.js) */}

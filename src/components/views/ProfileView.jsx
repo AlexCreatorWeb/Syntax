@@ -2,6 +2,7 @@ import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
 import TECHS from "../../lib/techs";
 import { getCompleted, getDoneTasks } from "../../lib/progress";
+import { totalXp } from "../../lib/xp";
 
 // Страница профиля #/profile: личность (монограмма, имя, email, дата регистрации) +
 // реальный прогресс по курсам (отметки выполнения) + logout. Гость — CTA на вход.
@@ -35,6 +36,7 @@ function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLesson
   const rows = [];
   let totalDone = 0;
   const doneTasks = getDoneTasks().length;
+  const xpTotal = totalXp();
   if (isAuthed) {
     for (const tc of TECHS) {
       const dbTech = (dbLessons || []).filter((l) => l.tech === tc.id);
@@ -79,7 +81,7 @@ function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLesson
           <header className="profile__progress-head">
             <h2>{t("profile.progress")}</h2>
             <span className="profile__progress-total">
-              {t("profile.totalDone", { n: totalDone })}{isAuthed && doneTasks > 0 ? ` · ${t("profile.tasksDone", { n: doneTasks })}` : ""}
+              {t("profile.totalDone", { n: totalDone })}{isAuthed && doneTasks > 0 ? ` · ${t("profile.tasksDone", { n: doneTasks })}` : ""} · {t("profile.xp", { n: xpTotal })}
             </span>
           </header>
           {rows.length ? (

@@ -184,7 +184,7 @@ window.__syntaxRunTests = function () {
     for (var i = 0; i < window.__tests.length; i++) {
       var tst = window.__tests[i];
       try {
-        var run = new Function("assert", "return (async () => {" + tst.code + "})");
+        var run = new Function("assert", "return (async () => {" + tst.code + "})()");
         await run(assert);
         results.push({ name: tst.name, pass: true });
       } catch (e) {
@@ -767,6 +767,16 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     }, 250);
   };
 
+  // Медленный раннер (Pyodide грузит CPython в WASM 5–10с): collectFrom при onLoad (250мс) видит пустые логи
+  // и больше не вызывается → «—». Для python-трехка — поллинг до вывода (или таймаута).
+  const isPythonRunner = Boolean(job && job.techId === "python");
+  const pyPollRef = useRef(null);
+  useEffect(() => {
+    return () => {
+      if (pyPollRef.current) clearInterval(pyPollRef.current);
+    };
+  }, [runnerToken]);
+
   const runCode = () => {
     setSubmitStatus(null);
     setTestResults(null);
@@ -1165,6 +1175,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
               }}
               onMount={(editor, monaco) => {
                 editorRef.current = editor;
+                window.__syntaxEditor = editor; // E2E-хук: установка кода из puppeteer
                 // Ctrl/⌘+Enter — Run: базовая привычка кодеров (аудит #9)
                 editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runRef.current());
               }}
@@ -1355,7 +1366,29 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
             title="JS runner"
             srcDoc={runnerDoc}
             sandbox="allow-scripts allow-same-origin"
-            onLoad={() => setTimeout(() => collectFrom(runnerFrameRef.current), 250)}
+            onLoad={() => {
+              if (isPythonRunner) {
+                // поллинг: читаем логи, пока нет вывода (Pyodide-загрузка) — до 60с
+                const started = Date.now();
+                if (pyPollRef.current) clearInterval(pyPollRef.current);
+                pyPollRef.current = setInterval(() => {
+                  const f = runnerFrameRef.current;
+                  let has = false;
+                  try {
+                    has = (f?.contentWindow?.__logs || []).length > 0;
+                  } catch {
+                    /* sandbox */
+                  }
+                  collectFrom(runnerFrameRef.current);
+                  if (has || Date.now() - started > 60000) {
+                    clearInterval(pyPollRef.current);
+                    pyPollRef.current = null;
+                  }
+                }, 400);
+                return;
+              }
+              setTimeout(() => collectFrom(runnerFrameRef.current), 250);
+            }}
           />
         )}
       </div>

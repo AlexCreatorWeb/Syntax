@@ -1,1 +1,510 @@
-[]
+[
+  {
+    "id": "react-001",
+    "track": "react",
+    "category": "components",
+    "categoryI18n": {
+      "en": "Components",
+      "ru": "Компоненты"
+    },
+    "order": 1,
+    "title": {
+      "en": "First Component",
+      "ru": "Первый компонент"
+    },
+    "prompt": {
+      "en": "Replace the App stub so it renders an `<h1>` with the text \"Hello, Syntax\" and a `<p>` below it (any text). The app is mounted into `#root` automatically — run it and make the tests green.",
+      "ru": "Замени заглушку App так, чтобы он рендерил `<h1>` с текстом \"Hello, Syntax\" и ниже `<p>` (любой текст). Приложение монтируется в `#root` автоматически — запусти и сделай тесты зелёными."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "App.jsx": "export function App() {\n  // TODO: h1 \"Hello, Syntax\" + p\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "h1 text",
+        "code": "const root = document.getElementById('root'); assert(root.querySelector('h1') && root.querySelector('h1').textContent === 'Hello, Syntax', \"expected <h1>Hello, Syntax</h1>, got: \" + (root.querySelector('h1') && root.querySelector('h1').textContent));"
+      },
+      {
+        "name": "paragraph below",
+        "code": "const root = document.getElementById('root'); assert(root.querySelector('p') && root.querySelector('p').textContent.trim().length > 0, \"expected a non-empty <p>\");"
+      }
+    ],
+    "hint": {
+      "en": "JSX looks like HTML: return <h1>Hello, Syntax</h1> wrapped in a fragment <>…</> together with the <p>.",
+      "ru": "JSX похож на HTML: return <h1>Hello, Syntax</h1> вместе с <p> в фрагменте <>…</>."
+    },
+    "solution": "export function App() {\n  return (\n    <>\n      <h1>Hello, Syntax</h1>\n      <p>Welcome to the first lesson.</p>\n    </>\n  );\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "react-002",
+    "track": "react",
+    "category": "state",
+    "categoryI18n": {
+      "en": "State",
+      "ru": "Состояние"
+    },
+    "order": 2,
+    "title": {
+      "en": "Counter Button",
+      "ru": "Кнопка-счётчик"
+    },
+    "prompt": {
+      "en": "Build a counter: App keeps a `count` state (use `useState(0)`), renders a `<span id=\"count\">` with the current value and a `<button id=\"inc\">` with the text \"+1\" that increments the counter. Clicking the button 3 times must make the span show 3.",
+      "ru": "Сделай счётчик: App держит состояние `count` (`useState(0)`), рендерит `<span id=\"count\">` с текущим значением и `<button id=\"inc\">` с текстом \"+1\", который увеличивает счётчик. Три клика по кнопке должны показать 3 в span."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: useState(0), span#count, button#inc \"+1\"\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "initial state",
+        "code": "const root = document.getElementById('root'); assert(root.querySelector('#count') && root.querySelector('#count').textContent.trim() === '0', \"expected 0 initially, got \" + root.querySelector('#count').textContent);"
+      },
+      {
+        "name": "clicks increment",
+        "code": "const root = document.getElementById('root'); const btn = root.querySelector('#inc'); for (let i = 0; i < 3; i++) { btn.click(); await new Promise((r) => setTimeout(r, 30)); } assert(root.querySelector('#count').textContent.trim() === '3', \"expected 3 after 3 clicks, got \" + root.querySelector('#count').textContent);"
+      },
+      {
+        "name": "button text",
+        "code": "assert(document.getElementById('root').querySelector('#inc').textContent === '+1', \"expected button text '+1'\");"
+      }
+    ],
+    "hint": {
+      "en": "onClick={() => setCount(count + 1)} — never mutate state directly.",
+      "ru": "onClick={() => setCount(count + 1)} — состояние не мутируют напрямую."
+    },
+    "solution": "import { useState } from \"react\";\n\nexport function App() {\n  const [count, setCount] = useState(0);\n  return (\n    <>\n      <span id=\"count\">{count}</span>\n      <button id=\"inc\" onClick={() => setCount(count + 1)}>+1</button>\n    </>\n  );\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "react-003",
+    "track": "react",
+    "category": "components",
+    "categoryI18n": {
+      "en": "Components",
+      "ru": "Компоненты"
+    },
+    "order": 3,
+    "title": {
+      "en": "Render a List",
+      "ru": "Рендер списка"
+    },
+    "prompt": {
+      "en": "Render a list of technologies: given the array `[\"HTML\", \"CSS\", \"JavaScript\", \"React\"]`, App must render a `<ul id=\"techs\">` with one `<li>` per item, in order. Use `map` with a proper `key`.",
+      "ru": "Отрендерь список технологий: дан массив `[\"HTML\", \"CSS\", \"JavaScript\", \"React\"]` — App должен рендерить `<ul id=\"techs\">` с одним `<li>` на элемент, по порядку. Используй `map` с правильным `key`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "App.jsx": "const TECHS = [\"HTML\", \"CSS\", \"JavaScript\", \"React\"];\n\nexport function App() {\n  // TODO: ul#techs + li через map\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "4 items in order",
+        "code": "const li = [...document.querySelectorAll('#techs li')]; assert(li.length === 4, \"expected 4 <li>, got \" + li.length);\nassert(li.map((x) => x.textContent).join(',') === 'HTML,CSS,JavaScript,React', \"expected the array order, got \" + li.map((x) => x.textContent).join(','));"
+      },
+      {
+        "name": "it is a ul",
+        "code": "assert(document.querySelector('ul#techs'), \"expected <ul id=\\\"techs\\\">\");"
+      }
+    ],
+    "hint": {
+      "en": "TECHS.map((t) => <li key={t}>{t}</li>) inside the <ul>.",
+      "ru": "TECHS.map((t) => <li key={t}>{t}</li>) внутри <ul>."
+    },
+    "solution": "const TECHS = [\"HTML\", \"CSS\", \"JavaScript\", \"React\"];\n\nexport function App() {\n  return (\n    <ul id=\"techs\">\n      {TECHS.map((t) => (\n        <li key={t}>{t}</li>\n      ))}\n    </ul>\n  );\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "react-004",
+    "track": "react",
+    "category": "state",
+    "categoryI18n": {
+      "en": "State",
+      "ru": "Состояние"
+    },
+    "order": 4,
+    "title": {
+      "en": "Controlled Input",
+      "ru": "Контролируемый input"
+    },
+    "prompt": {
+      "en": "Make a controlled input: App keeps `text` state, renders `<input id=\"name\" />` bound to it (value + onChange), and a `<p id=\"preview\">` that shows \"Hi, \" + text (when empty — \"Hi, \"). Typing \"Ada\" into the input must make the preview show \"Hi, Ada\".",
+      "ru": "Сделай контролируемый input: App держит состояние `text`, рендерит `<input id=\"name\" />`, привязанный к нему (value + onChange), и `<p id=\"preview\">` с текстом \"Hi, \" + text (если пусто — \"Hi, \"). Ввод \"Ada\" должен дать в превью \"Hi, Ada\"."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: text-состояние, input#name (value/onChange), p#preview \"Hi, ...\"\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "initial preview",
+        "code": "const root = document.getElementById('root'); assert(root.querySelector('#preview') && /Hi,/.test(root.querySelector('#preview').textContent), \"expected <p id=\\\"preview\\\"> 'Hi, …'\");"
+      },
+      {
+        "name": "typing updates preview",
+        "code": "const root = document.getElementById('root'); const input = root.querySelector('#name'); const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(input, 'Ada'); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 30)); assert(root.querySelector('#preview').textContent === 'Hi, Ada', \"expected 'Hi, Ada', got '\" + root.querySelector('#preview').textContent + \"'\");"
+      },
+      {
+        "name": "input reflects state",
+        "code": "const root = document.getElementById('root'); const input = root.querySelector('#name'); assert(input && input.type === 'text', \"expected a text input #name\");"
+      }
+    ],
+    "hint": {
+      "en": "value={text} + onChange={(e) => setText(e.target.value)} — the classic controlled pattern.",
+      "ru": "value={text} + onChange={(e) => setText(e.target.value)} — классический контролируемый паттерн."
+    },
+    "solution": "import { useState } from \"react\";\n\nexport function App() {\n  const [text, setText] = useState(\"\");\n  return (\n    <>\n      <input id=\"name\" type=\"text\" value={text} onChange={(e) => setText(e.target.value)} />\n      <p id=\"preview\">Hi, {text}</p>\n    </>\n  );\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "react-005",
+    "track": "react",
+    "category": "hooks",
+    "categoryI18n": {
+      "en": "Hooks",
+      "ru": "Хуки"
+    },
+    "order": 5,
+    "title": {
+      "en": "Effect After Mount",
+      "ru": "Эффект после монтирования"
+    },
+    "prompt": {
+      "en": "Use `useEffect` to set a greeting after the component mounts: the effect (no dependency array needed for this task — it may run on every render, but the final state must be stable) sets state `greeted` to true, and the component renders `<p id=\"status\">` with \"mounted\" when `greeted` is true and \"loading\" before. After mount the status must read \"mounted\".",
+      "ru": "С помощью `useEffect` установи приветствие после монтирования: эффект (для этой задачи массив зависимостей можно не указывать) выставляет состояние `greeted` = true; компонент рендерит `<p id=\"status\">` со значением \"mounted\", если `greeted`, и \"loading\" до этого. После монтирования статус должен показывать \"mounted\"."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.jsx": "import { useState, useEffect } from \"react\";\n\nexport function App() {\n  // TODO: greeted-состояние, useEffect, p#status (loading → mounted)\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "status after mount",
+        "code": "await new Promise((r) => setTimeout(r, 100)); const st = document.getElementById('root').querySelector('#status'); assert(st && st.textContent === 'mounted', \"expected 'mounted', got \" + (st && st.textContent));"
+      },
+      {
+        "name": "status is a paragraph",
+        "code": "const st = document.querySelector('#status'); assert(st && st.tagName === 'P', 'expected a <p> status');"
+      }
+    ],
+    "hint": {
+      "en": "useEffect(() => { setGreeted(true); }); — the effect runs after the first render.",
+      "ru": "useEffect(() => { setGreeted(true); }); — эффект выполняется после первого рендера."
+    },
+    "solution": "import { useState, useEffect } from \"react\";\n\nexport function App() {\n  const [greeted, setGreeted] = useState(false);\n  useEffect(() => {\n    setGreeted(true);\n  });\n  return <p id=\"status\">{greeted ? \"mounted\" : \"loading\"}</p>;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "react-006",
+    "track": "react",
+    "category": "state",
+    "categoryI18n": {
+      "en": "State",
+      "ru": "Состояние"
+    },
+    "order": 6,
+    "title": {
+      "en": "Mini Todo List",
+      "ru": "Мини-список задач"
+    },
+    "prompt": {
+      "en": "Build a mini todo app: App has an array state of todos (start with `[\"Write code\"]`). It renders a `<ul id=\"todos\">` with the items, and a `<button id=\"add\">` (\"Add\") that pushes \"New task\" to the list. After two clicks the list must contain 3 items, the last one being \"New task\".",
+      "ru": "Сделай мини-тудо: у App — массив-состояние задач (старт: `[\"Write code\"]`). Рендер: `<ul id=\"todos\">` с элементами и `<button id=\"add\">` (\"Add\"), который добавляет в конец \"New task\". После двух кликов в списке 3 элемента, последний — \"New task\"."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: todos-состояние [\"Write code\"], ul#todos, button#add добавляет \"New task\"\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "initial item",
+        "code": "const li = document.querySelectorAll('#todos li'); assert(li.length === 1 && li[0].textContent === 'Write code', \"expected one initial item, got \" + li.length);"
+      },
+      {
+        "name": "add works",
+        "code": "const btn = document.getElementById('add'); btn.click(); await new Promise((r) => setTimeout(r, 30)); btn.click(); await new Promise((r) => setTimeout(r, 30)); const li = [...document.querySelectorAll('#todos li')]; assert(li.length === 3, \"expected 3 items, got \" + li.length);\nassert(li[li.length - 1].textContent === 'New task', \"last item must be 'New task'\");"
+      },
+      {
+        "name": "state not mutated",
+        "code": "const btn = document.getElementById('add'); btn.click(); await new Promise((r) => setTimeout(r, 30)); assert(document.querySelectorAll('#todos li').length === 4, \"a 4th click adds another item\");"
+      }
+    ],
+    "hint": {
+      "en": "setTodos([...todos, 'New task']) — a new array, not push on the state.",
+      "ru": "setTodos([...todos, 'New task']) — новый массив, а не push по состоянию."
+    },
+    "solution": "import { useState } from \"react\";\n\nexport function App() {\n  const [todos, setTodos] = useState([\"Write code\"]);\n  return (\n    <>\n      <ul id=\"todos\">\n        {todos.map((t, i) => (\n          <li key={i}>{t}</li>\n        ))}\n      </ul>\n      <button id=\"add\" onClick={() => setTodos([...todos, 'New task'])}>Add</button>\n    </>\n  );\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "react-007",
+    "track": "react",
+    "category": "hooks",
+    "categoryI18n": {
+      "en": "Hooks",
+      "ru": "Хуки"
+    },
+    "order": 7,
+    "title": {
+      "en": "Counter with useReducer",
+      "ru": "Счётчик на useReducer"
+    },
+    "prompt": {
+      "en": "Implement the counter with `useReducer`: state is a number (start 0), the reducer handles actions `{type: 'inc'}` (+1), `{type: 'dec'}` (-1) and `{type: 'reset'}` (→ 0). Render `<span id=\"val\">` with the value and three buttons: `<button id=\"up\">` (dispatches inc), `<button id=\"down\">` (dec), `<button id=\"reset\">` (reset).",
+      "ru": "Реализуй счётчик на `useReducer`: состояние — число (старт 0), редьюсер обрабатывает `{type: 'inc'}` (+1), `{type: 'dec'}` (-1) и `{type: 'reset'}` (→ 0). Рендер: `<span id=\"val\">` со значением и три кнопки: `<button id=\"up\">` (inc), `<button id=\"down\">` (dec), `<button id=\"reset\">` (reset)."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.jsx": "import { useReducer } from \"react\";\n\n// TODO: reducer (inc/dec/reset) + кнопки #up #down #reset + span#val\nexport function App() {\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "inc/dec",
+        "code": "const click = async (id) => { document.getElementById(id).click(); await new Promise((r) => setTimeout(r, 30)); }; const val = () => document.getElementById('val').textContent.trim(); assert(val() === '0', \"start at 0\"); await click('up'); await click('up'); await click('up'); assert(val() === '3', \"expected 3 after 3 up, got \" + val()); await click('down'); assert(val() === '2', \"expected 2 after down, got \" + val());"
+      },
+      {
+        "name": "reset",
+        "code": "await click('up'); await click('reset'); assert(document.getElementById('val').textContent.trim() === '0', \"expected 0 after reset\");"
+      }
+    ],
+    "hint": {
+      "en": "function reducer(state, action) { switch (action.type) { … } } — pure function, returns the new state.",
+      "ru": "function reducer(state, action) { switch (action.type) { … } } — чистая функция, возвращает новое состояние."
+    },
+    "solution": "import { useReducer } from \"react\";\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'inc': return state + 1;\n    case 'dec': return state - 1;\n    case 'reset': return 0;\n    default: return state;\n  }\n}\n\nexport function App() {\n  const [value, dispatch] = useReducer(reducer, 0);\n  return (\n    <>\n      <span id=\"val\">{value}</span>\n      <button id=\"up\" onClick={() => dispatch({ type: 'inc' })}>+</button>\n      <button id=\"down\" onClick={() => dispatch({ type: 'dec' })}>-</button>\n      <button id=\"reset\" onClick={() => dispatch({ type: 'reset' })}>reset</button>\n    </>\n  );\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "react-008",
+    "track": "react",
+    "category": "data-fetching",
+    "categoryI18n": {
+      "en": "Data Fetching",
+      "ru": "Загрузка данных"
+    },
+    "order": 8,
+    "title": {
+      "en": "Async Data Loading",
+      "ru": "Асинхронная загрузка данных"
+    },
+    "prompt": {
+      "en": "The starter file exports `fetchUsers` — a fake API that resolves with a list of names after 100ms. App must load data in a `useEffect` on mount: while loading render `<p id=\"status\">loading</p>`, after — `<ul id=\"users\">` with one `<li>` per name. No errors, no duplicates in the list.",
+      "ru": "Стартовый файл экспортирует `fetchUsers` — фейковый API, который резолвится со списком имён через 100мс. App обязан загрузить данные в `useEffect` при монтировании: пока грузит — рендерит `<p id=\"status\">loading</p>`, после — `<ul id=\"users\">` с одним `<li>` на имя. Без ошибок и дублей в списке."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "App.jsx": "import { useState, useEffect } from \"react\";\n\n// Фейковый API: список имён через 100 мс\nexport async function fetchUsers() {\n  await new Promise((r) => setTimeout(r, 100));\n  return [\"Ada\", \"Linus\", \"Grace\"];\n}\n\nexport function App() {\n  // TODO: useEffect при монтировании, loading → список #users\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "users rendered",
+        "code": "await new Promise((r) => setTimeout(r, 400)); const li = [...document.querySelectorAll('#users li')]; assert(li.length === 3, \"expected 3 users, got \" + li.length);\nconst names = li.map((x) => x.textContent); assert(names.includes('Ada') && names.includes('Linus') && names.includes('Grace'), \"expected Ada/Linus/Grace, got \" + names.join(','));"
+      },
+      {
+        "name": "no duplicates",
+        "code": "const li = [...document.querySelectorAll('#users li')].map((x) => x.textContent); assert(new Set(li).size === li.length, \"no duplicates allowed\");"
+      }
+    ],
+    "hint": {
+      "en": "useEffect(() => { let alive = true; fetchUsers().then((u) => { if (alive) setUsers(u); }); return () => { alive = false; }; }, []);",
+      "ru": "useEffect(() => { let alive = true; fetchUsers().then((u) => { if (alive) setUsers(u); }); return () => { alive = false; }; }, []);"
+    },
+    "solution": "import { useState, useEffect } from \"react\";\n\nexport async function fetchUsers() {\n  await new Promise((r) => setTimeout(r, 100));\n  return [\"Ada\", \"Linus\", \"Grace\"];\n}\n\nexport function App() {\n  const [users, setUsers] = useState(null);\n  useEffect(() => {\n    let alive = true;\n    fetchUsers().then((u) => { if (alive) setUsers(u); });\n    return () => { alive = false; };\n  }, []);\n  if (!users) return <p id=\"status\">loading</p>;\n  return (\n    <ul id=\"users\">\n      {users.map((u) => (\n        <li key={u}>{u}</li>\n      ))}\n    </ul>\n  );\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "react-009",
+    "track": "react",
+    "category": "state",
+    "categoryI18n": {
+      "en": "State",
+      "ru": "Состояние"
+    },
+    "order": 9,
+    "title": {
+      "en": "Lift State Up",
+      "ru": "Поднятие состояния вверх"
+    },
+    "prompt": {
+      "en": "Two components, one state: `App` holds the `name` state and renders `<Child name={name} onRename={(n) => setName(n)} />` plus `<p id=\"show\">{name}</p>`. The `Child` component (define it in the same file) renders an input and a button (\"Save\") that calls `onRename` with the input value. Type \"Ada\" and click Save — `#show` must display \"Ada\".",
+      "ru": "Два компонента, одно состояние: `App` держит состояние `name` и рендерит `<Child name={name} onRename={(n) => setName(n)} />` плюс `<p id=\"show\">{name}</p>`. Компонент `Child` (определи в том же файле) рендерит input и кнопку (\"Save\"), которая вызывает `onRename` со значением input. Введи \"Ada\" и нажми Save — `#show` должен показать \"Ada\"."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "App.jsx": "import { useState } from \"react\";\n\n// TODO: Child (input + button \"Save\" → onRename(value)); App: name-состояние, #show\nexport function App() {\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "initial",
+        "code": "const root = document.getElementById('root'); assert(root.querySelector('#show') && /world/i.test(root.querySelector('#show').textContent), \"expected initial 'world' in #show, got \" + (root.querySelector('#show') && root.querySelector('#show').textContent));"
+      },
+      {
+        "name": "save updates parent state",
+        "code": "const root = document.getElementById('root'); const input = root.querySelector('input'); const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(input, 'Ada'); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 30)); const btn = root.querySelector('button'); btn.click(); await new Promise((r) => setTimeout(r, 30)); assert(root.querySelector('#show').textContent === 'Ada', \"expected 'Ada' after save, got '\" + root.querySelector('#show').textContent + \"'\");"
+      }
+    ],
+    "hint": {
+      "en": "State lives in the parent; the child receives data via props and reports back through a callback prop.",
+      "ru": "Состояние живёт в родителе; ребёнок получает данные через props и сообщает через callback-проп."
+    },
+    "solution": "import { useState } from \"react\";\n\nfunction Child({ onRename }) {\n  const [value, setValue] = useState(\"\");\n  return (\n    <>\n      <input value={value} onChange={(e) => setValue(e.target.value)} />\n      <button onClick={() => onRename(value)}>Save</button>\n    </>\n  );\n}\n\nexport function App() {\n  const [name, setName] = useState(\"world\");\n  return (\n    <>\n      <Child name={name} onRename={setName} />\n      <p id=\"show\">{name}</p>\n    </>\n  );\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "react-010",
+    "track": "react",
+    "category": "hooks",
+    "categoryI18n": {
+      "en": "Hooks",
+      "ru": "Хуки"
+    },
+    "order": 10,
+    "title": {
+      "en": "Custom Hook useCounter",
+      "ru": "Свой хук useCounter"
+    },
+    "prompt": {
+      "en": "Write a custom hook `useCounter(initial)` that returns `{ value, increment, decrement, reset }`. Then use it in App (initial 10): render `<span id=\"val\">` with the value and buttons `<button id=\"inc\">`, `<button id=\"dec\">`, `<button id=\"rst\">`. The hook must be reusable — App uses it exactly once in this task.",
+      "ru": "Напиши кастомный хук `useCounter(initial)`, возвращающий `{ value, increment, decrement, reset }`. Используй его в App (initial 10): рендер `<span id=\"val\">` со значением и кнопок `<button id=\"inc\">`, `<button id=\"dec\">`, `<button id=\"rst\">`. Хук должен быть переиспользуемым — в этой задаче App использует его ровно один раз."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "App.jsx": "import { useState } from \"react\";\n\n// TODO: useCounter(initial) → { value, increment, decrement, reset }\n// App: useCounter(10), #val, кнопки #inc #dec #rst\nexport function App() {\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "initial 10",
+        "code": "assert(document.getElementById('val').textContent.trim() === '10', \"expected 10, got \" + document.getElementById('val').textContent);"
+      },
+      {
+        "name": "inc/dec/reset",
+        "code": "const click = async (id) => { document.getElementById(id).click(); await new Promise((r) => setTimeout(r, 30)); }; const val = () => document.getElementById('val').textContent.trim(); await click('inc'); await click('inc'); assert(val() === '12', \"expected 12, got \" + val()); await click('dec'); assert(val() === '11', \"expected 11, got \" + val()); await click('rst'); assert(val() === '10', \"expected 10 after reset, got \" + val());"
+      }
+    ],
+    "hint": {
+      "en": "A custom hook is a function whose name starts with use and calls other hooks: it returns the API, the component just consumes it.",
+      "ru": "Кастомный хук — функция, имя которой начинается с use и которая вызывает другие хуки: возвращает API, компонент просто потребляет."
+    },
+    "solution": "import { useState } from \"react\";\n\nfunction useCounter(initial) {\n  const [value, setValue] = useState(initial);\n  return {\n    value,\n    increment: () => setValue(value + 1),\n    decrement: () => setValue(value - 1),\n    reset: () => setValue(initial),\n  };\n}\n\nexport function App() {\n  const { value, increment, decrement, reset } = useCounter(10);\n  return (\n    <>\n      <span id=\"val\">{value}</span>\n      <button id=\"inc\" onClick={increment}>+</button>\n      <button id=\"dec\" onClick={decrement}>-</button>\n      <button id=\"rst\" onClick={reset}>reset</button>\n    </>\n  );\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "react-011",
+    "track": "react",
+    "category": "data-fetching",
+    "categoryI18n": {
+      "en": "Data Fetching",
+      "ru": "Загрузка данных"
+    },
+    "order": 11,
+    "title": {
+      "en": "Search with Debounce",
+      "ru": "Поиск с дебаунсом"
+    },
+    "prompt": {
+      "en": "The starter provides `searchApi(query)` (resolves matching fruit names after 80ms). App: an input `<input id=\"q\" />`, a state for the query, and a `useEffect` that (re)loads results when the query changes with a 150ms debounce (clear the pending timer on every keystroke). Render the results in `<ul id=\"res\">`. After typing \"ap\" and waiting, the list must contain \"Apple\" and \"Apricot\".",
+      "ru": "Стартовый файл даёт `searchApi(query)` (резолвится со списком подходящих фруктов через 80мс). App: input `<input id=\"q\" />`, состояние запроса и `useEffect`, который (пере)загружает результаты при изменении запроса с дебаунсом 150мс (очистка таймера на каждый ввод). Результаты — в `<ul id=\"res\">`. После ввода \"ap\" и ожидания в списке должны быть \"Apple\" и \"Apricot\"."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "App.jsx": "import { useState, useEffect } from \"react\";\n\nconst FRUITS = [\"Apple\", \"Apricot\", \"Banana\", \"Peach\", \"Pear\"];\n\n// Фейковый API поиска: 80 мс, подстрока без учёта регистра\nexport function searchApi(query) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve(FRUITS.filter((f) => f.toLowerCase().includes(query.toLowerCase()))), 80)\n  );\n}\n\nexport function App() {\n  // TODO: input#q, query-состояние, useEffect с debounce 150ms, ul#res\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "search returns matches",
+        "code": "const root = document.getElementById('root'); const input = root.querySelector('#q'); const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(input, 'ap'); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 500)); const li = [...root.querySelectorAll('#res li')].map((x) => x.textContent); assert(li.includes('Apple') && li.includes('Apricot') && !li.includes('Banana'), \"expected Apple+Apricot only, got \" + li.join(','));"
+      },
+      {
+        "name": "second query narrows results",
+        "code": "const root = document.getElementById('root'); const input = root.querySelector('#q'); const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(input, 'ba'); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 500)); const li = [...root.querySelectorAll('#res li')].map((x) => x.textContent); assert(li.includes('Banana') && !li.includes('Apple'), \"'ba' must give Banana only, got \" + li.join(','));"
+      }
+    ],
+    "hint": {
+      "en": "useEffect with [query]: const t = setTimeout(load, 150); return () => clearTimeout(t);",
+      "ru": "useEffect с [query]: const t = setTimeout(load, 150); return () => clearTimeout(t);"
+    },
+    "solution": "import { useState, useEffect } from \"react\";\n\nconst FRUITS = [\"Apple\", \"Apricot\", \"Banana\", \"Peach\", \"Pear\"];\n\nexport function searchApi(query) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve(FRUITS.filter((f) => f.toLowerCase().includes(query.toLowerCase()))), 80)\n  );\n}\n\nexport function App() {\n  const [query, setQuery] = useState(\"\");\n  const [results, setResults] = useState([]);\n  useEffect(() => {\n    const t = setTimeout(() => {\n      searchApi(query).then(setResults);\n    }, 150);\n    return () => clearTimeout(t);\n  }, [query]);\n  return (\n    <>\n      <input id=\"q\" value={query} onChange={(e) => setQuery(e.target.value)} />\n      <ul id=\"res\">\n        {results.map((f) => (\n          <li key={f}>{f}</li>\n        ))}\n      </ul>\n    </>\n  );\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "react-012",
+    "track": "react",
+    "category": "components",
+    "categoryI18n": {
+      "en": "Components",
+      "ru": "Компоненты"
+    },
+    "order": 12,
+    "title": {
+      "en": "Form Validation",
+      "ru": "Валидация формы"
+    },
+    "prompt": {
+      "en": "Build a signup form in React: an email `<input id=\"email\" />` and a submit `<button id=\"go\">` (\"Sign up\"). On submit (preventDefault) validate: valid email (contains \"@\" and \".\") → render `<p id=\"ok\">Welcome, <email></p>`; invalid → `<p id=\"err\">Invalid email</p>`. Initially there is neither `#ok` nor `#err`.",
+      "ru": "Сделай форму регистрации на React: email `<input id=\"email\" />` и кнопка отправки `<button id=\"go\">` (\"Sign up\"). При сабмите (preventDefault) валидация: валидный email (содержит \"@\" и \".\") → рендер `<p id=\"ok\">Welcome, <email></p>`; невалидный → `<p id=\"err\">Invalid email</p>`. Изначально нет ни `#ok`, ни `#err`."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: email-состояние, submit-валидация, #ok / #err\n  return null;\n}"
+    },
+    "tests": [
+      {
+        "name": "no status initially",
+        "code": "const root = document.getElementById('root'); assert(!root.querySelector('#ok') && !root.querySelector('#err'), \"no status before submit\");"
+      },
+      {
+        "name": "invalid email",
+        "code": "const root = document.getElementById('root'); const input = root.querySelector('#email'); const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(input, 'nope'); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 30)); root.querySelector('#go').click(); await new Promise((r) => setTimeout(r, 30)); assert(root.querySelector('#err') && /invalid email/i.test(root.querySelector('#err').textContent), \"expected 'Invalid email'\");"
+      },
+      {
+        "name": "valid email",
+        "code": "const root = document.getElementById('root'); const input = root.querySelector('#email'); const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; setter.call(input, 'ada@example.com'); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 30)); root.querySelector('#go').click(); await new Promise((r) => setTimeout(r, 30)); assert(root.querySelector('#ok') && /ada@example.com/.test(root.querySelector('#ok').textContent), \"expected 'Welcome, ada@example.com'\");"
+      }
+    ],
+    "hint": {
+      "en": "Keep the status in state: null | {ok, email} | {err}. Render conditionally.",
+      "ru": "Держи статус в состоянии: null | {ok, email} | {err}. Рендер — условный."
+    },
+    "solution": "import { useState } from \"react\";\n\nexport function App() {\n  const [email, setEmail] = useState(\"\");\n  const [status, setStatus] = useState(null);\n  const submit = (e) => {\n    e.preventDefault();\n    if (email.includes('@') && email.includes('.')) setStatus({ ok: true, email });\n    else setStatus({ err: true });\n  };\n  return (\n    <form onSubmit={submit}>\n      <input id=\"email\" value={email} onChange={(e) => setEmail(e.target.value)} />\n      <button id=\"go\" type=\"submit\">Sign up</button>\n      {status && status.ok && <p id=\"ok\">Welcome, {status.email}</p>}\n      {status && status.err && <p id=\"err\">Invalid email</p>}\n    </form>\n  );\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  }
+]

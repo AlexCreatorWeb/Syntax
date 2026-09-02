@@ -1,1 +1,437 @@
-[]
+[
+  {
+    "id": "pg-001",
+    "track": "postgres",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 1,
+    "title": {
+      "en": "Create Table and Insert",
+      "ru": "Создать таблицу и вставить"
+    },
+    "prompt": {
+      "en": "The sandbox has an in-memory PostgreSQL (node's `pg` driver). In query.js: `import pg from \"pg\"`, create a pool, `CREATE TABLE items (title TEXT)` (columns: `id` is added automatically), insert three rows ('apples', 'bread', 'milk') with `INSERT INTO items (title) VALUES (…)` one by one, then `SELECT * FROM items` and store the rows in `globalThis.result` (an array of {id, title}).",
+      "ru": "В песочнице есть in-memory PostgreSQL (драйвер `pg` для node). В query.js: `import pg from \"pg\"`, создай пул, `CREATE TABLE items (title TEXT)` (колонка `id` добавляется автоматически), вставь три строки ('apples', 'bread', 'milk') через `INSERT INTO items (title) VALUES (…)` по одной, затем `SELECT * FROM items` и сохрани строки в `globalThis.result` (массив {id, title})."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: CREATE TABLE items (title TEXT);\n// TODO: 3 × INSERT INTO items (title) VALUES ('…');\n// TODO: const res = await pool.query('SELECT * FROM items');\n// TODO: globalThis.result = res.rows;\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "3 rows",
+        "code": "const r = globalThis.result; assert(Array.isArray(r) && r.length === 3, \"expected 3 rows, got \" + (r && r.length));"
+      },
+      {
+        "name": "titles",
+        "code": "const titles = (globalThis.result || []).map((x) => x.title); assert(JSON.stringify(titles) === JSON.stringify(['apples', 'bread', 'milk']), \"expected apples/bread/milk, got \" + JSON.stringify(titles));"
+      },
+      {
+        "name": "ids auto",
+        "code": "assert(globalThis.result.every((x) => typeof x.id === 'number'), \"each row must have a numeric id\");"
+      }
+    ],
+    "hint": {
+      "en": "const pool = new pg.Pool(); await pool.query('CREATE TABLE items (title TEXT)'); … pool.end().",
+      "ru": "const pool = new pg.Pool(); await pool.query('CREATE TABLE items (title TEXT)'); … pool.end()."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nawait pool.query('CREATE TABLE items (title TEXT)');\nfor (const title of ['apples', 'bread', 'milk']) {\n  await pool.query('INSERT INTO items (title) VALUES ($1)', [title]);\n}\nconst res = await pool.query('SELECT * FROM items');\nglobalThis.result = res.rows;\nawait pool.end();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "pg-002",
+    "track": "postgres",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 2,
+    "title": {
+      "en": "INSERT … RETURNING *",
+      "ru": "INSERT … RETURNING *"
+    },
+    "prompt": {
+      "en": "The `users` table is pre-populated (1 user). Insert a new user `INSERT INTO users (name, age) VALUES ('Grace', 45) RETURNING *` and store the returned row in `globalThis.result`. Then verify with `SELECT COUNT(*) AS n FROM users` that the table now has 2 rows — store `n` in `globalThis.count`.",
+      "ru": "Таблица `users` посеяна (1 пользователь). Вставь нового `INSERT INTO users (name, age) VALUES ('Grace', 45) RETURNING *` и сохрани возвращённую строку в `globalThis.result`. Затем проверь через `SELECT COUNT(*) AS n FROM users`, что в таблице стало 2 строки — сохрани `n` в `globalThis.count`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE users (name TEXT, age INT)'); await pool.query('INSERT INTO users (name, age) VALUES ($1, $2)', ['Ada', 36]);",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: INSERT INTO users (name, age) VALUES ('Grace', 45) RETURNING * → globalThis.result\n// TODO: SELECT COUNT(*) AS n FROM users → globalThis.count\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "returned row",
+        "code": "const r = globalThis.result; assert(r && r.name === 'Grace' && r.age === 45 && typeof r.id === 'number', \"expected { id, name: 'Grace', age: 45 }, got \" + JSON.stringify(r));"
+      },
+      {
+        "name": "count is 2",
+        "code": "assert(globalThis.count === 2, \"expected count 2, got \" + globalThis.count);"
+      }
+    ],
+    "hint": {
+      "en": "RETURNING * makes INSERT return the inserted row: res.rows[0].",
+      "ru": "RETURNING * заставляет INSERT вернуть вставленную строку: res.rows[0]."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nconst ins = await pool.query('INSERT INTO users (name, age) VALUES ($1, $2) RETURNING *', ['Grace', 45]);\nglobalThis.result = ins.rows[0];\nconst cnt = await pool.query('SELECT COUNT(*) AS n FROM users');\nglobalThis.count = cnt.rows[0].n;\nawait pool.end();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "pg-003",
+    "track": "postgres",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 3,
+    "title": {
+      "en": "Parameterized WHERE",
+      "ru": "Параметризованный WHERE"
+    },
+    "prompt": {
+      "en": "The `products` table is pre-populated (5 products: id, name, price). Write a parameterized query `SELECT * FROM products WHERE price > $1` with the parameter [50] and store the rows in `globalThis.result` (sorted by name — add `ORDER BY name`). Then `UPDATE products SET price = price WHERE id = $1`… no: just `UPDATE products SET price = 99 WHERE id = $1` for the product with id 1, and store the updated price of id 1 in `globalThis.updated` (read it back with SELECT).",
+      "ru": "Таблица `products` посеяна (5 товаров: id, name, price). Напиши параметризованный запрос `SELECT * FROM products WHERE price > $1` с параметром [50] и сохрани строки в `globalThis.result` (отсортированные по имени — добавь `ORDER BY name`). Затем `UPDATE products SET price = 99 WHERE id = $1` для товара с id 1 и сохрани обновлённую цену id 1 в `globalThis.updated` (прочитай через SELECT)."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE products (name TEXT, price INT)'); const prod = [['Keyboard', 80], ['Mouse', 30], ['Monitor', 250], ['Webcam', 60], ['Hub', 25]]; for (const [n, pr] of prod) { await pool.query('INSERT INTO products (name, price) VALUES ($1, $2)', [n, pr]); }",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: SELECT * FROM products WHERE price > $1 ORDER BY name  (params: [50]) → globalThis.result\n// TODO: UPDATE products SET price = 99 WHERE id = $1  (params: [1])\n// TODO: SELECT * FROM products WHERE id = $1 → globalThis.updated = строка.price\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "filter by price",
+        "code": "const names = (globalThis.result || []).map((x) => x.name); assert(JSON.stringify(names) === JSON.stringify(['Keyboard', 'Monitor', 'Webcam']), \"expected Keyboard/Monitor/Webcam, got \" + JSON.stringify(names));"
+      },
+      {
+        "name": "updated price",
+        "code": "assert(globalThis.updated === 99, \"expected 99, got \" + globalThis.updated);"
+      }
+    ],
+    "hint": {
+      "en": "pool.query('SELECT … WHERE price > $1 ORDER BY name', [50]) — parameters protect from SQL-injection.",
+      "ru": "pool.query('SELECT … WHERE price > $1 ORDER BY name', [50]) — параметры защищают от SQL-инъекций."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nconst res = await pool.query('SELECT * FROM products WHERE price > $1 ORDER BY name', [50]);\nglobalThis.result = res.rows;\nawait pool.query('UPDATE products SET price = 99 WHERE id = $1', [1]);\nconst one = await pool.query('SELECT * FROM products WHERE id = $1', [1]);\nglobalThis.updated = one.rows[0].price;\nawait pool.end();",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "pg-004",
+    "track": "postgres",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 4,
+    "title": {
+      "en": "Delete and Limit",
+      "ru": "Удаление и LIMIT"
+    },
+    "prompt": {
+      "en": "The `messages` table is pre-populated (6 messages: id, body, read boolean). (1) Delete all unread messages: `DELETE FROM messages WHERE read = $1` with [false]… the sandbox compares values literally — use `WHERE read = false` (a boolean literal) and store the number of deleted rows in `globalThis.deleted` (result.rowCount). (2) Take the first 2 remaining (read) messages: `SELECT * FROM messages ORDER BY id LIMIT 2` → `globalThis.result`.",
+      "ru": "Таблица `messages` посеяна (6 сообщений: id, body, read — boolean). (1) Удали все непрочитанные: `DELETE FROM messages WHERE read = false` (булевый литерал) и сохрани число удалённых строк в `globalThis.deleted` (result.rowCount). (2) Возьми первые 2 оставшихся (прочитанных): `SELECT * FROM messages ORDER BY id LIMIT 2` → `globalThis.result`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE messages (body TEXT, read BOOL)'); const msgs = [['m1', true], ['m2', false], ['m3', true], ['m4', false], ['m5', true], ['m6', false]]; for (const [b, r] of msgs) { await pool.query('INSERT INTO messages (body, read) VALUES ($1, $2)', [b, r]); }",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: DELETE FROM messages WHERE read = false → globalThis.deleted = rowCount\n// TODO: SELECT * FROM messages ORDER BY id LIMIT 2 → globalThis.result\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "3 deleted",
+        "code": "assert(globalThis.deleted === 3, \"expected 3 deleted, got \" + globalThis.deleted);"
+      },
+      {
+        "name": "first 2 read",
+        "code": "const bodies = (globalThis.result || []).map((x) => x.body); assert(JSON.stringify(bodies) === JSON.stringify(['m1', 'm3']), \"expected m1/m3, got \" + JSON.stringify(bodies));"
+      },
+      {
+        "name": "3 left in table",
+        "code": "const pool = new (globalThis.__shims.pg.Pool)(); const r = await pool.query('SELECT COUNT(*) AS n FROM messages'); assert(r.rows[0].n === 3, \"expected 3 rows left, got \" + r.rows[0].n);"
+      }
+    ],
+    "hint": {
+      "en": "DELETE returns rowCount; LIMIT 2 + ORDER BY id — a deterministic page.",
+      "ru": "DELETE возвращает rowCount; LIMIT 2 + ORDER BY id — детерминированная «страница»."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nconst del = await pool.query('DELETE FROM messages WHERE read = false');\nglobalThis.deleted = del.rowCount;\nconst res = await pool.query('SELECT * FROM messages ORDER BY id LIMIT 2');\nglobalThis.result = res.rows;\nawait pool.end();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "pg-005",
+    "track": "postgres",
+    "category": "joins",
+    "categoryI18n": {
+      "en": "Joins",
+      "ru": "Joins"
+    },
+    "order": 5,
+    "title": {
+      "en": "Write the JOIN",
+      "ru": "Напиши JOIN"
+    },
+    "prompt": {
+      "en": "Two pre-populated tables: `authors` (id, name) and `books` (id, title, author_id). Write the SQL for an inner join in `globalThis.result.sql`: `SELECT authors.name, books.title FROM books INNER JOIN authors ON books.author_id = authors.id ORDER BY books.title` — the sandbox verifies the shape of the query. Then actually produce the joined rows in JS (map books to their author names) and store them in `globalThis.result.rows` as an array of `{ name, title }` sorted by title.",
+      "ru": "Две посеянные таблицы: `authors` (id, name) и `books` (id, title, author_id). Напиши SQL внутреннего соединения в `globalThis.result.sql`: `SELECT authors.name, books.title FROM books INNER JOIN authors ON books.author_id = authors.id ORDER BY books.title` — песочница проверит форму запроса. Затем реально произведи соединение в JS (сопоставь книги с именами авторов) и сохрани в `globalThis.result.rows` массив `{ name, title }`, отсортированный по title."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE authors (name TEXT)'); await pool.query('CREATE TABLE books (title TEXT, author_id INT)'); await pool.query('INSERT INTO authors (name) VALUES ($1)', ['Ada']); await pool.query('INSERT INTO authors (name) VALUES ($1)', ['Linus']); const books = [['SICP', 1], ['The Art of Unix', 2], ['Lisp for You', 1]]; for (const [b, a] of books) { await pool.query('INSERT INTO books (title, author_id) VALUES ($1, $2)', [b, a]); }",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: '…INNER JOIN…', rows: […] }\n// rows: прочитай обе таблицы (SELECT *), сопоставь книги с авторами, отсортируй по title\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "sql shape",
+        "code": "const sql = (globalThis.result && globalThis.result.sql) || ''; assert(/INNER\\s+JOIN/i.test(sql) && /ON\\s+books\\.author_id\\s*=\\s*authors\\.id/i.test(sql) && /FROM\\s+books/i.test(sql), \"expected an inner join of books ON author_id, got: \" + sql);"
+      },
+      {
+        "name": "joined rows",
+        "code": "const rows = (globalThis.result && globalThis.result.rows) || []; const got = rows.map((r) => r.name + '|' + r.title).join(';'); assert(got === 'Ada|Lisp for You;Ada|SICP;Linus|The Art of Unix', \"expected joined+sorted rows, got: \" + got);"
+      }
+    ],
+    "hint": {
+      "en": "Read both tables, build a map authorId → name, and for each book compose { name, title }; sort by title.",
+      "ru": "Прочитай обе таблицы, собери map authorId → name и для каждой книги собери { name, title }; отсортируй по title."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nconst sql = 'SELECT authors.name, books.title FROM books INNER JOIN authors ON books.author_id = authors.id ORDER BY books.title';\nconst authors = (await pool.query('SELECT * FROM authors')).rows;\nconst books = (await pool.query('SELECT * FROM books')).rows;\nconst byId = Object.fromEntries(authors.map((a) => [a.id, a.name]));\nconst rows = books\n  .map((b) => ({ name: byId[b.author_id], title: b.title }))\n  .sort((x, y) => (x.title < y.title ? -1 : x.title > y.title ? 1 : 0));\nglobalThis.result = { sql, rows };\nawait pool.end();",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "pg-006",
+    "track": "postgres",
+    "category": "joins",
+    "categoryI18n": {
+      "en": "Joins",
+      "ru": "Joins"
+    },
+    "order": 6,
+    "title": {
+      "en": "LEFT JOIN Semantics",
+      "ru": "Семантика LEFT JOIN"
+    },
+    "prompt": {
+      "en": "Tables `users` (id, name) and `orders` (id, user_id, amount) are pre-populated; one user has no orders. Implement in JS the LEFT JOIN semantics `users LEFT JOIN orders ON orders.user_id = users.id`: every user appears at least once; a user without orders gets `amount: null`. Store in `globalThis.result` an array of `{ name, amount }` (a user with several orders — one row per order) sorted by name, and in `globalThis.result.sql` the query `SELECT users.name, orders.amount FROM users LEFT JOIN orders ON orders.user_id = users.id`.",
+      "ru": "Таблицы `users` (id, name) и `orders` (id, user_id, amount) посеяны; у одного пользователя нет заказов. Реализуй в JS семантику LEFT JOIN: `users LEFT JOIN orders ON orders.user_id = users.id` — каждый пользователь появляется хотя бы раз; у пользователя без заказов `amount: null`. В `globalThis.result` — массив `{ name, amount }` (у пользователя с несколькими заказами — строка на каждый заказ), отсортированный по name, а в `globalThis.result.sql` — запрос `SELECT users.name, orders.amount FROM users LEFT JOIN orders ON orders.user_id = users.id`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE users (name TEXT)'); await pool.query('CREATE TABLE orders (user_id INT, amount INT)'); for (const n of ['Ada', 'Ben', 'Cara']) { await pool.query('INSERT INTO users (name) VALUES ($1)', [n]); } for (const [u, a] of [[1, 100], [1, 50], [2, 20]]) { await pool.query('INSERT INTO orders (user_id, amount) VALUES ($1, $2)', [u, a]); }",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: LEFT JOIN в JS: каждый user, заказы или amount: null\n// TODO: globalThis.result = { sql: '…LEFT JOIN…', rows… } — перестрой объект: { sql, rows }\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "sql shape",
+        "code": "const sql = (globalThis.result && globalThis.result.sql) || ''; assert(/LEFT\\s+JOIN/i.test(sql) && /users/i.test(sql) && /orders/i.test(sql) && /ON/i.test(sql), \"expected LEFT JOIN users/orders, got: \" + sql);"
+      },
+      {
+        "name": "rows",
+        "code": "const rows = (globalThis.result && globalThis.result.rows) || []; const got = rows.map((r) => r.name + '|' + r.amount).join(';'); assert(got === 'Ada|100;Ada|50;Ben|20;Cara|null', \"expected Ada×2, Ben×1, Cara×null sorted by name, got: \" + got);"
+      }
+    ],
+    "hint": {
+      "en": "For each user: take their orders; if none — one row with amount: null. Then sort all rows by name.",
+      "ru": "Для каждого пользователя: бери его заказы; если нет — одна строка с amount: null. Потом все строки — по имени."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nconst sql = 'SELECT users.name, orders.amount FROM users LEFT JOIN orders ON orders.user_id = users.id';\nconst users = (await pool.query('SELECT * FROM users')).rows;\nconst orders = (await pool.query('SELECT * FROM orders')).rows;\nconst rows = users.flatMap((u) => {\n  const own = orders.filter((o) => o.user_id === u.id);\n  if (!own.length) return [{ name: u.name, amount: null }];\n  return own.map((o) => ({ name: u.name, amount: o.amount }));\n});\nrows.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));\nglobalThis.result = { sql, rows };\nawait pool.end();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "pg-007",
+    "track": "postgres",
+    "category": "joins",
+    "categoryI18n": {
+      "en": "Joins",
+      "ru": "Joins"
+    },
+    "order": 7,
+    "title": {
+      "en": "Aggregation After Join",
+      "ru": "Агрегация после соединения"
+    },
+    "prompt": {
+      "en": "The tables `users` and `orders` are pre-populated. In JS compute: for every user — the total amount of their orders (users without orders → 0). Store in `globalThis.result.rows` an array of `{ name, total }` sorted by total descending, and in `globalThis.result.sql` the query: `SELECT users.name, COALESCE(SUM(orders.amount), 0) AS total FROM users LEFT JOIN orders ON orders.user_id = users.id GROUP BY users.name ORDER BY total DESC` (the sandbox checks the shape).",
+      "ru": "Таблицы `users` и `orders` посеяны. В JS вычисли: для каждого пользователя — сумму заказов (без заказов → 0). В `globalThis.result.rows` — массив `{ name, total }` отсортированный по total по убыванию, а в `globalThis.result.sql` — запрос: `SELECT users.name, COALESCE(SUM(orders.amount), 0) AS total FROM users LEFT JOIN orders ON orders.user_id = users.id GROUP BY users.name ORDER BY total DESC` (песочница проверит форму)."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE users (name TEXT)'); await pool.query('CREATE TABLE orders (user_id INT, amount INT)'); await pool.query(\"INSERT INTO users (name) VALUES ('Ada')\"); await pool.query(\"INSERT INTO users (name) VALUES ('Ben')\"); await pool.query(\"INSERT INTO users (name) VALUES ('Cara')\"); await pool.query(\"INSERT INTO orders (user_id, amount) VALUES (1, 100)\"); await pool.query(\"INSERT INTO orders (user_id, amount) VALUES (1, 50)\"); await pool.query(\"INSERT INTO orders (user_id, amount) VALUES (3, 300)\");",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: totals по каждому user (null → 0), сортировка по total DESC\n// TODO: globalThis.result = { sql: '…GROUP BY…', rows }\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "sql shape",
+        "code": "const sql = (globalThis.result && globalThis.result.sql) || ''; assert(/GROUP\\s+BY/i.test(sql) && /SUM\\s*\\(/i.test(sql) && /ORDER\\s+BY\\s+total\\s+DESC/i.test(sql), \"expected GROUP BY + SUM + ORDER BY total DESC, got: \" + sql);"
+      },
+      {
+        "name": "totals",
+        "code": "const rows = (globalThis.result && globalThis.result.rows) || []; const got = rows.map((r) => r.name + '|' + r.total).join(';'); assert(got === 'Cara|300;Ada|150;Ben|0', \"expected Cara/Ada/Ben with totals, got: \" + got);"
+      }
+    ],
+    "hint": {
+      "en": "Sum orders per user_id; users without orders get 0 (COALESCE in SQL); sort descending.",
+      "ru": "Суммируй заказы по user_id; у пользователей без заказов — 0 (в SQL это COALESCE); сортируй по убыванию."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nconst sql = 'SELECT users.name, COALESCE(SUM(orders.amount), 0) AS total FROM users LEFT JOIN orders ON orders.user_id = users.id GROUP BY users.name ORDER BY total DESC';\nconst users = (await pool.query('SELECT * FROM users')).rows;\nconst orders = (await pool.query('SELECT * FROM orders')).rows;\nconst rows = users.map((u) => ({\n  name: u.name,\n  total: orders.filter((o) => o.user_id === u.id).reduce((s, o) => s + o.amount, 0),\n}));\nrows.sort((a, b) => b.total - a.total);\nglobalThis.result = { sql, rows };\nawait pool.end();",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "pg-008",
+    "track": "postgres",
+    "category": "indexes",
+    "categoryI18n": {
+      "en": "Indexes",
+      "ru": "Индексы"
+    },
+    "order": 8,
+    "title": {
+      "en": "CREATE INDEX",
+      "ru": "CREATE INDEX"
+    },
+    "prompt": {
+      "en": "The `events` table is pre-populated (1000 rows: id, user_id, kind). (1) Write the index for fast lookups by user: store in `globalThis.result.sql` the query `CREATE INDEX idx_events_user ON events (user_id)`. (2) Implement in JS an in-memory index: a Map user_id → array of event ids, built from the table; `globalThis.indexFor(userId)` must return the event ids for that user (export a function `indexFor` from query.js).",
+      "ru": "Таблица `events` посеяна (1000 строк: id, user_id, kind). (1) Напиши индекс для быстрого поиска по пользователю: в `globalThis.result.sql` — запрос `CREATE INDEX idx_events_user ON events (user_id)`. (2) Реализуй в JS индекс в памяти: Map user_id → массив event-id, построенный из таблицы; `globalThis.indexFor(userId)` должен возвращать event-id для этого пользователя (экспортируй функцию `indexFor` из query.js)."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE events (user_id INT, kind TEXT)'); const kinds = ['click', 'view', 'buy']; for (let i = 1; i <= 1000; i++) { await pool.query('INSERT INTO events (user_id, kind) VALUES (' + (i % 20 + 1) + ', ' + JSON.stringify(kinds[i % 3]) + ')'); }",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: 'CREATE INDEX idx_events_user ON events (user_id)' }\n// TODO: построить Map user_id → [event ids]; export function indexFor(userId) { … }\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "sql shape",
+        "code": "const sql = (globalThis.result && globalThis.result.sql) || ''; assert(/CREATE\\s+INDEX\\s+idx_events_user\\s+ON\\s+events\\s*\\(user_id\\)/i.test(sql), \"expected the given CREATE INDEX, got: \" + sql);"
+      },
+      {
+        "name": "index lookup",
+        "code": "assert(typeof window.__userModule.indexFor === 'function', \"export indexFor\"); const ids = window.__userModule.indexFor(1); assert(Array.isArray(ids) && ids.length === 50, \"user 1 must have 50 events, got \" + (ids && ids.length));\nassert(ids.every((x) => typeof x === 'number'), \"ids must be numbers\");"
+      },
+      {
+        "name": "missing user",
+        "code": "const ids = window.__userModule.indexFor(999); assert(ids === null || ids === undefined || (Array.isArray(ids) && ids.length === 0), \"no events for user 999\");"
+      }
+    ],
+    "hint": {
+      "en": "SELECT * FROM events, then events.reduce building Map<user_id, number[]>.",
+      "ru": "SELECT * FROM events, затем reduce по строкам строит Map<user_id, number[]>."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nglobalThis.result = { sql: 'CREATE INDEX idx_events_user ON events (user_id)' };\nconst rows = (await pool.query('SELECT * FROM events')).rows;\nconst index = new Map();\nfor (const r of rows) {\n  if (!index.has(r.user_id)) index.set(r.user_id, []);\n  index.get(r.user_id).push(r.id);\n}\nexport function indexFor(userId) {\n  return index.get(userId) || [];\n}\nawait pool.end();",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "pg-009",
+    "track": "postgres",
+    "category": "indexes",
+    "categoryI18n": {
+      "en": "Indexes",
+      "ru": "Индексы"
+    },
+    "order": 9,
+    "title": {
+      "en": "Covering Index Design",
+      "ru": "Проект covering-индекса"
+    },
+    "prompt": {
+      "en": "The `sessions` table is pre-populated (id, token, user_id, created). The hot query is `SELECT user_id FROM sessions WHERE token = $1` (a login check). (1) Store in `globalThis.result.sql` a covering index: `CREATE INDEX idx_sessions_token ON sessions (token) INCLUDE (user_id)` (the sandbox checks the shape). (2) In JS: build the token → user_id map from the table and export `lookupByToken(token)` (returns user_id or null). The test will look up several tokens.",
+      "ru": "Таблица `sessions` посеяна (id, token, user_id, created). Горячий запрос — `SELECT user_id FROM sessions WHERE token = $1` (проверка при входе). (1) В `globalThis.result.sql` — covering-индекс: `CREATE INDEX idx_sessions_token ON sessions (token) INCLUDE (user_id)` (песочница проверит форму). (2) В JS: собери map token → user_id из таблицы и экспортируй `lookupByToken(token)` (возвращает user_id или null). Тест поищет несколько токенов."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE sessions (token TEXT, user_id INT, created TEXT)'); const toks = ['alpha', 'beta', 'gamma', 'delta', 'epsilon']; for (let i = 0; i < toks.length; i++) { await pool.query('INSERT INTO sessions (token, user_id, created) VALUES ($1, $2, $3)', [toks[i], i + 1, '2026-09-01']); }",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: 'CREATE INDEX idx_sessions_token ON sessions (token) INCLUDE (user_id)' }\n// TODO: map token → user_id; export function lookupByToken(token) { … }\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "sql shape",
+        "code": "const sql = (globalThis.result && globalThis.result.sql) || ''; assert(/CREATE\\s+INDEX\\s+idx_sessions_token\\s+ON\\s+sessions\\s*\\(token\\)\\s+INCLUDE\\s*\\(user_id\\)/i.test(sql), \"expected a covering index with INCLUDE, got: \" + sql);"
+      },
+      {
+        "name": "lookup",
+        "code": "const f = window.__userModule.lookupByToken; assert(typeof f === 'function', \"export lookupByToken\"); assert(f('alpha') === 1 && f('gamma') === 3 && f('epsilon') === 5, \"tokens must map to their users\"); assert(f('nope') === null, \"unknown token → null\");"
+      }
+    ],
+    "hint": {
+      "en": "INCLUDE puts the column the query needs into the index — the table itself is not read (index-only scan).",
+      "ru": "INCLUDE кладёт в индекс колонку, которую нужен запрос — сама таблица не читается (index-only scan)."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nglobalThis.result = { sql: 'CREATE INDEX idx_sessions_token ON sessions (token) INCLUDE (user_id)' };\nconst rows = (await pool.query('SELECT * FROM sessions')).rows;\nconst byToken = Object.fromEntries(rows.map((r) => [r.token, r.user_id]));\nexport function lookupByToken(token) {\n  return byToken[token] === undefined ? null : byToken[token];\n}\nawait pool.end();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "pg-010",
+    "track": "postgres",
+    "category": "indexes",
+    "categoryI18n": {
+      "en": "Indexes",
+      "ru": "Индексы"
+    },
+    "order": 10,
+    "title": {
+      "en": "Query Plan: WHERE on Indexed Column",
+      "ru": "План запроса: WHERE по индексированной колонке"
+    },
+    "prompt": {
+      "en": "The `logs` table is pre-populated (2000 rows: id, level, created_day). A slow report queries `SELECT * FROM logs WHERE level = $1` (params ['error']) — it must use the index `CREATE INDEX idx_logs_level ON logs (level)` (store it in `globalThis.result.sql`). Your job: (1) run the parameterized query and store the rows in `globalThis.result.rows` (they come back in id order — the sandbox keeps insertion order); (2) store the fraction of 'error' rows in `globalThis.result.fraction` (errors / total, rounded to 3 decimals).",
+      "ru": "Таблица `logs` посеяна (2000 строк: id, level, created_day). Медленный отчёт запрашивает `SELECT * FROM logs WHERE level = $1` (параметры ['error']) — он должен использовать индекс `CREATE INDEX idx_logs_level ON logs (level)` (сохрани его в `globalThis.result.sql`). Твоя задача: (1) выполни параметризованный запрос и сохрани строки в `globalThis.result.rows` (они приходят в порядке id — песочница сохраняет порядок вставки); (2) в `globalThis.result.fraction` — долю строк 'error' (error / всего, округление до 3 знаков)."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE logs (level TEXT, created_day TEXT)'); const lv = ['info', 'info', 'info', 'error']; for (let i = 0; i < 2000; i++) { await pool.query('INSERT INTO logs (level, created_day) VALUES ($1, $2)', [lv[i % 4], '2026-09-0' + (i % 9 + 1)]); }",
+    "files": {
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: 'CREATE INDEX …', rows: [...], fraction: … }\n// rows: SELECT * FROM logs WHERE level = $1 (['error']) — порядок id = порядок вставки\n// fraction: errors / total, Math.round(x * 1000) / 1000\nawait pool.end();\n"
+    },
+    "tests": [
+      {
+        "name": "sql shape",
+        "code": "const sql = (globalThis.result && globalThis.result.sql) || ''; assert(/CREATE\\s+INDEX\\s+idx_logs_level\\s+ON\\s+logs\\s*\\(level\\)/i.test(sql), \"expected the index on level, got: \" + sql);"
+      },
+      {
+        "name": "500 error rows",
+        "code": "const rows = (globalThis.result && globalThis.result.rows) || []; assert(rows.length === 500, \"expected 500 error rows, got \" + rows.length);\nassert(rows.every((r) => r.level === 'error'), \"all rows must be 'error'\");"
+      },
+      {
+        "name": "fraction 0.25",
+        "code": "assert(globalThis.result.fraction === 0.25, \"expected 0.25, got \" + globalThis.result.fraction);"
+      }
+    ],
+    "hint": {
+      "en": "SELECT COUNT(*) AS n FROM logs — the total; the WHERE-query result — the errors. Round: Math.round(x * 1000) / 1000.",
+      "ru": "SELECT COUNT(*) AS n FROM logs — всего; результат WHERE-запроса — ошибок. Округление: Math.round(x * 1000) / 1000."
+    },
+    "solution": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\nconst rows = (await pool.query('SELECT * FROM logs WHERE level = $1', ['error'])).rows;\nconst total = (await pool.query('SELECT COUNT(*) AS n FROM logs')).rows[0].n;\nglobalThis.result = {\n  sql: 'CREATE INDEX idx_logs_level ON logs (level)',\n  rows,\n  fraction: Math.round((rows.length / total) * 1000) / 1000,\n};\nawait pool.end();",
+    "dailyChallenge": false,
+    "status": "published"
+  }
+]

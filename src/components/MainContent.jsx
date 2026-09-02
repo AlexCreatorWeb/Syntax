@@ -48,8 +48,11 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   const dbLessonsArr = dbLessons || [];
   const openDbLesson = (lesson, techId, backTab = "technology") => {
     const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
+    // n = номер урока в курсе (порядок id) — для EN-локализации заголовка
+    const rows = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
+    const n = rows.findIndex((l) => l.id === lesson.id) + 1;
     // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
-    onNavigate("lesson", lessonJobFor(lesson, techId, backTab, (staticFor && staticFor.desc) || ""));
+    onNavigate("lesson", lessonJobFor(lesson, techId, backTab, (staticFor && staticFor.desc) || "", n || null, langCode));
   };
   const openLesson = (techId) => {
     // Урок трека из БД: первый НЕВЫПОЛНЕННЫЙ (иначе — первый); демо-урок без трека — первая строка

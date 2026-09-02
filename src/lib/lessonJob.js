@@ -2,6 +2,7 @@
 // Общий конструктор: MainContent (кнопки Continue/Lessons) и DailyChallenge
 // (сайдбар) собирают одинаковый формат — один источник правды.
 import { markComplete } from "./progress";
+import { localizedLessonTitle } from "./lessonTitles";
 
 // Файл редактора по треку (имя/расширение соответствуют технологии)
 export const TASK_FILE = {
@@ -21,11 +22,13 @@ export const TASK_FILE = {
  * @param {string} techId id технологии (у демо-урока без трека — "")
  * @param {string} backTab куда вести «Назад»
  * @param {string} desc опциональное описание (i18n-статика трека)
+ * @param {number} [n] номер урока в курсе (с 1) — для EN-локализации заголовка
+ * @param {string} [langCode] язык интерфейса (ru → оригинал, остальное → EN-карта)
  */
-export function lessonJobFor(lesson, techId, backTab = "technology", desc = "") {
+export function lessonJobFor(lesson, techId, backTab = "technology", desc = "", n = null, langCode = "en") {
   return {
     kind: "lesson",
-    title: lesson.title,
+    title: localizedLessonTitle(techId, n, lesson.title, langCode),
     desc: desc || "",
     content: typeof lesson.content === "string" ? lesson.content : "",
     backTab,

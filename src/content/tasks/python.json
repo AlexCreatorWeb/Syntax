@@ -1,1 +1,448 @@
-[]
+[
+  {
+    "id": "py-001",
+    "track": "python",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 1,
+    "title": {
+      "en": "Reverse a String",
+      "ru": "Переверни строку"
+    },
+    "prompt": {
+      "en": "In main.py define a function `reverse_word(s)` that returns the string reversed. The Python sandbox (real CPython) runs your file, then runs the tests in the same interpreter — your functions are available. Example: `reverse_word('abc')` → `'cba'`.",
+      "ru": "В main.py объяви функцию `reverse_word(s)`, возвращающую строку в обратном порядке. Python-песочница (настоящий CPython) выполняет твой файл, затем запускает тесты в том же интерпретаторе — твои функции доступны. Пример: `reverse_word('abc')` → `'cba'`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "main.py": "# Reverse a String\n\ndef reverse_word(s):\n    # TODO: верни строку в обратном порядке\n    return s\n"
+    },
+    "tests": [
+      {
+        "name": "reverse_word('abc') == 'cba'",
+        "code": "assert reverse_word('abc') == 'cba', 'expected cba'"
+      },
+      {
+        "name": "empty string",
+        "code": "assert reverse_word('') == '', 'expected empty'"
+      },
+      {
+        "name": "palindrome",
+        "code": "assert reverse_word('abba') == 'abba', 'palindrome must stay'"
+      }
+    ],
+    "hint": {
+      "en": "Slicing: s[::-1] reverses a string.",
+      "ru": "Срезы: s[::-1] переворачивает строку."
+    },
+    "solution": "def reverse_word(s):\n    return s[::-1]\n",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "py-002",
+    "track": "python",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 2,
+    "title": {
+      "en": "Sum of Even Numbers",
+      "ru": "Сумма чётных"
+    },
+    "prompt": {
+      "en": "Define `sum_evens(numbers)` that returns the sum of all even numbers in the list (0 if there are none). Example: `sum_evens([1, 2, 3, 4])` → `6`.",
+      "ru": "Объяви `sum_evens(numbers)`, возвращающую сумму всех чётных чисел списка (0, если нет). Пример: `sum_evens([1, 2, 3, 4])` → `6`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "main.py": "# Sum of Even Numbers\n\ndef sum_evens(numbers):\n    # TODO: сумма чётных\n    return 0\n"
+    },
+    "tests": [
+      {
+        "name": "basics",
+        "code": "assert sum_evens([1, 2, 3, 4]) == 6, 'expected 6'"
+      },
+      {
+        "name": "no evens",
+        "code": "assert sum_evens([1, 3]) == 0, 'expected 0'"
+      },
+      {
+        "name": "empty",
+        "code": "assert sum_evens([]) == 0, 'expected 0'"
+      }
+    ],
+    "hint": {
+      "en": "A generator expression inside sum(): sum(x for x in numbers if x % 2 == 0).",
+      "ru": "Генератор внутри sum(): sum(x for x in numbers if x % 2 == 0)."
+    },
+    "solution": "def sum_evens(numbers):\n    return sum(x for x in numbers if x % 2 == 0)\n",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "py-003",
+    "track": "python",
+    "category": "functions",
+    "categoryI18n": {
+      "en": "Functions",
+      "ru": "Функции"
+    },
+    "order": 3,
+    "title": {
+      "en": "Default and Keyword Arguments",
+      "ru": "Аргументы по умолчанию и keyword"
+    },
+    "prompt": {
+      "en": "Define `greet(name, greeting='Hello', punctuation='!')` that returns `greeting + ', ' + name + punctuation`. All three calls must work: `greet('Ada')` → `'Hello, Ada!'`, `greet('Ada', greeting='Hi')` → `'Hi, Ada!'`, `greet('Ada', 'Hi', '.')` → `'Hi, Ada.'`.",
+      "ru": "Объяви `greet(name, greeting='Hello', punctuation='!')`, возвращающую `greeting + ', ' + name + punctuation`. Все три вызова должны работать: `greet('Ada')` → `'Hello, Ada!'`, `greet('Ada', greeting='Hi')` → `'Hi, Ada!'`, `greet('Ada', 'Hi', '.')` → `'Hi, Ada.'`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "main.py": "# Default and keyword arguments\n\ndef greet(name):\n    # TODO: greeting='Hello', punctuation='!' по умолчанию\n    return name\n"
+    },
+    "tests": [
+      {
+        "name": "defaults",
+        "code": "assert greet('Ada') == 'Hello, Ada!', 'got ' + greet('Ada')"
+      },
+      {
+        "name": "keyword",
+        "code": "assert greet('Ada', greeting='Hi') == 'Hi, Ada!', 'got ' + greet('Ada', greeting='Hi')"
+      },
+      {
+        "name": "positional",
+        "code": "assert greet('Ada', 'Hi', '.') == 'Hi, Ada.', 'got ' + greet('Ada', 'Hi', '.')"
+      }
+    ],
+    "hint": {
+      "en": "def greet(name, greeting='Hello', punctuation='!'): return f\"{greeting}, {name}{punctuation}\"",
+      "ru": "def greet(name, greeting='Hello', punctuation='!'): return f\"{greeting}, {name}{punctuation}\""
+    },
+    "solution": "def greet(name, greeting='Hello', punctuation='!'):\n    return f\"{greeting}, {name}{punctuation}\"\n",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "py-004",
+    "track": "python",
+    "category": "data-structures",
+    "categoryI18n": {
+      "en": "Data Structures",
+      "ru": "Структуры данных"
+    },
+    "order": 4,
+    "title": {
+      "en": "Word Frequency Counter",
+      "ru": "Счётчик частоты слов"
+    },
+    "prompt": {
+      "en": "Define `word_counts(text)`: returns a dict with word → occurrence count. Split on whitespace, lowercase everything. Example: `word_counts('the cat and the dog')` → `{'the': 2, 'cat': 1, 'and': 1, 'dog': 1}`.",
+      "ru": "Объяви `word_counts(text)`: возвращает dict слово → количество вхождений. Разбивай по пробелам, всё в нижний регистр. Пример: `word_counts('the cat and the dog')` → `{'the': 2, 'cat': 1, 'and': 1, 'dog': 1}`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "main.py": "# Word frequency counter\n\nfrom collections import Counter\n\ndef word_counts(text):\n    # TODO: dict слово → количество (lowercase, split по пробелам)\n    return {}\n"
+    },
+    "tests": [
+      {
+        "name": "counts",
+        "code": "r = word_counts('the cat and the dog'); assert r == {'the': 2, 'cat': 1, 'and': 1, 'dog': 1}, 'got ' + repr(r)"
+      },
+      {
+        "name": "case-insensitive",
+        "code": "assert word_counts('Apple apple APPLE') == {'apple': 3}, 'got ' + repr(word_counts('Apple apple APPLE'))"
+      },
+      {
+        "name": "empty",
+        "code": "assert word_counts('') == {}, 'expected {}'"
+      }
+    ],
+    "hint": {
+      "en": "Counter(text.lower().split()) does the whole job.",
+      "ru": "Counter(text.lower().split()) делает всю работу."
+    },
+    "solution": "from collections import Counter\n\ndef word_counts(text):\n    return dict(Counter(text.lower().split()))\n",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "py-005",
+    "track": "python",
+    "category": "functions",
+    "categoryI18n": {
+      "en": "Functions",
+      "ru": "Функции"
+    },
+    "order": 5,
+    "title": {
+      "en": "Higher-Order Functions",
+      "ru": "Функции высшего порядка"
+    },
+    "prompt": {
+      "en": "Define `apply_all(fn, items)` — applies `fn` to every element of `items` and returns the new list (like `map`), and `keep(fn, items)` — returns only the elements for which `fn` is true (like `filter`). Example: `apply_all(str.upper, ['a', 'b'])` → `['A', 'B']`; `keep(lambda x: x > 2, [1, 2, 3, 4])` → `[3, 4]`.",
+      "ru": "Объяви `apply_all(fn, items)` — применяет `fn` к каждому элементу `items` и возвращает новый список (как `map`), и `keep(fn, items)` — возвращает только элементы, для которых `fn` истинна (как `filter`). Пример: `apply_all(str.upper, ['a', 'b'])` → `['A', 'B']`; `keep(lambda x: x > 2, [1, 2, 3, 4])` → `[3, 4]`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "main.py": "# Higher-order functions\n\ndef apply_all(fn, items):\n    # TODO: применение fn ко всем элементам\n    return []\n\ndef keep(fn, items):\n    # TODO: только элементы, где fn(x) — True\n    return []\n"
+    },
+    "tests": [
+      {
+        "name": "apply_all",
+        "code": "assert apply_all(str.upper, ['a', 'b']) == ['A', 'B'], 'got ' + repr(apply_all(str.upper, ['a', 'b']))\nassert apply_all(lambda x: x * 2, [1, 2, 3]) == [2, 4, 6], 'doubling must work'"
+      },
+      {
+        "name": "keep",
+        "code": "assert keep(lambda x: x > 2, [1, 2, 3, 4]) == [3, 4], 'got ' + repr(keep(lambda x: x > 2, [1, 2, 3, 4]))\nassert keep(lambda x: False, [1, 2]) == [], 'no elements'"
+      }
+    ],
+    "hint": {
+      "en": "List comprehensions: [fn(x) for x in items] and [x for x in items if fn(x)].",
+      "ru": "Списочные включения: [fn(x) for x in items] и [x for x in items if fn(x)]."
+    },
+    "solution": "def apply_all(fn, items):\n    return [fn(x) for x in items]\n\ndef keep(fn, items):\n    return [x for x in items if fn(x)]\n",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "py-006",
+    "track": "python",
+    "category": "data-structures",
+    "categoryI18n": {
+      "en": "Data Structures",
+      "ru": "Структуры данных"
+    },
+    "order": 6,
+    "title": {
+      "en": "Merge Dicts",
+      "ru": "Слияние словарей"
+    },
+    "prompt": {
+      "en": "Define `merge(a, b)`: returns a new dict with all keys of `a` and `b`; on a key conflict the value from `b` wins. Nested dicts are merged recursively; other values are replaced. Do not mutate the inputs. Example: `merge({'x': 1, 'n': {'a': 1}}, {'x': 2, 'n': {'b': 2}})` → `{'x': 2, 'n': {'a': 1, 'b': 2}}`.",
+      "ru": "Объяви `merge(a, b)`: возвращает новый dict со всеми ключами `a` и `b`; при конфликте ключа выигрывает значение из `b`. Вложенные dict'и сливаются рекурсивно; остальные значения заменяются. Входы не мутировать. Пример: `merge({'x': 1, 'n': {'a': 1}}, {'x': 2, 'n': {'b': 2}})` → `{'x': 2, 'n': {'a': 1, 'b': 2}}`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "main.py": "# Deep dict merge\n\ndef merge(a, b):\n    # TODO: новый dict; вложенные dict — рекурсивно, конфликты → из b\n    return {}\n"
+    },
+    "tests": [
+      {
+        "name": "nested merge",
+        "code": "r = merge({'x': 1, 'n': {'a': 1}}, {'x': 2, 'n': {'b': 2}}); assert r == {'x': 2, 'n': {'a': 1, 'b': 2}}, 'got ' + repr(r)"
+      },
+      {
+        "name": "inputs untouched",
+        "code": "a = {'n': {'a': 1}}; b = {'n': {'b': 2}}; merge(a, b); assert a == {'n': {'a': 1}} and b == {'n': {'b': 2}}, 'inputs must not be mutated'"
+      },
+      {
+        "name": "lists replace",
+        "code": "assert merge({'l': [1]}, {'l': [2]}) == {'l': [2]}, 'lists must be replaced'"
+      }
+    ],
+    "hint": {
+      "en": "Start from dict(a); for each key of b: if both are dicts — recurse, otherwise take b's value.",
+      "ru": "Начни с dict(a); для каждого ключа b: если оба dict — рекурсия, иначе — значение b."
+    },
+    "solution": "def merge(a, b):\n    out = dict(a)\n    for k, v in b.items():\n        if isinstance(v, dict) and isinstance(out.get(k), dict):\n            out[k] = merge(out[k], v)\n        else:\n            out[k] = v\n    return out\n",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "py-007",
+    "track": "python",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 7,
+    "title": {
+      "en": "FizzBuzz",
+      "ru": "FizzBuzz"
+    },
+    "prompt": {
+      "en": "Define `fizzbuzz(n)` that returns a list of n strings for the numbers 1..n: multiples of 3 → 'Fizz', of 5 → 'Buzz', of both → 'FizzBuzz', otherwise the number as a string. Example: `fizzbuzz(5)` → `['1', '2', 'Fizz', '4', 'Buzz']`.",
+      "ru": "Объяви `fizzbuzz(n)`, возвращающую список из n строк для чисел 1..n: кратные 3 → 'Fizz', 5 → 'Buzz', обоим → 'FizzBuzz', иначе число строкой. Пример: `fizzbuzz(5)` → `['1', '2', 'Fizz', '4', 'Buzz']`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "main.py": "# FizzBuzz\n\ndef fizzbuzz(n):\n    # TODO: 1..n → строки Fizz/Buzz/FizzBuzz\n    return []\n"
+    },
+    "tests": [
+      {
+        "name": "fizzbuzz(5)",
+        "code": "assert fizzbuzz(5) == ['1', '2', 'Fizz', '4', 'Buzz'], 'got ' + repr(fizzbuzz(5))"
+      },
+      {
+        "name": "fizzbuzz(15) end",
+        "code": "r = fizzbuzz(15); assert len(r) == 15 and r[-1] == 'FizzBuzz', 'last must be FizzBuzz'"
+      },
+      {
+        "name": "fizzbuzz(1)",
+        "code": "assert fizzbuzz(1) == ['1'], 'got ' + repr(fizzbuzz(1))"
+      }
+    ],
+    "hint": {
+      "en": "Check divisibility by 15 first (both), then 3, then 5, otherwise str(i).",
+      "ru": "Сначала проверяй делимость на 15 (оба), потом 3, потом 5, иначе str(i)."
+    },
+    "solution": "def fizzbuzz(n):\n    out = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            out.append('FizzBuzz')\n        elif i % 3 == 0:\n            out.append('Fizz')\n        elif i % 5 == 0:\n            out.append('Buzz')\n        else:\n            out.append(str(i))\n    return out\n",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "py-008",
+    "track": "python",
+    "category": "libraries",
+    "categoryI18n": {
+      "en": "Libraries",
+      "ru": "Библиотеки"
+    },
+    "order": 8,
+    "title": {
+      "en": "Datetime: Business Days",
+      "ru": "Datetime: рабочие дни"
+    },
+    "prompt": {
+      "en": "Using the standard library `datetime`, define `business_days(start, days)`: `start` is a date string 'YYYY-MM-DD', `days` — how many business days (Mon–Fri) to add. Return the resulting date as 'YYYY-MM-DD'. Example: `business_days('2026-09-01', 3)` (2026-09-01 is a Tuesday) → `'2026-09-04'` (Wed, Thu, Fri).",
+      "ru": "С использованием стандартной библиотеки `datetime` объяви `business_days(start, days)`: `start` — дата строкой 'YYYY-MM-DD', `days` — сколько рабочих дней (пн–пт) добавить. Верни получившуюся дату в формате 'YYYY-MM-DD'. Пример: `business_days('2026-09-01', 3)` (2026-09-01 — вторник) → `'2026-09-04'` (среда, четверг, пятница)."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "main.py": "# Business days with datetime\n\nfrom datetime import date, timedelta\n\ndef business_days(start, days):\n    # TODO: start 'YYYY-MM-DD' + days рабочих дней (Mon-Fri) → 'YYYY-MM-DD'\n    return start\n"
+    },
+    "tests": [
+      {
+        "name": "mid-week",
+        "code": "assert business_days('2026-09-01', 3) == '2026-09-04', 'got ' + business_days('2026-09-01', 3)"
+      },
+      {
+        "name": "weekend jump",
+        "code": "assert business_days('2026-09-04', 1) == '2026-09-07', 'Friday + 1 business day = Monday, got ' + business_days('2026-09-04', 1)"
+      },
+      {
+        "name": "zero days",
+        "code": "assert business_days('2026-09-02', 0) == '2026-09-02', '0 days → same date'"
+      }
+    ],
+    "hint": {
+      "en": "Loop: while added < days: d += timedelta(days=1); if d.weekday() < 5: added += 1.",
+      "ru": "Цикл: while added < days: d += timedelta(days=1); if d.weekday() < 5: added += 1."
+    },
+    "solution": "from datetime import date, timedelta\n\ndef business_days(start, days):\n    d = date.fromisoformat(start)\n    added = 0\n    while added < days:\n        d += timedelta(days=1)\n        if d.weekday() < 5:\n            added += 1\n    return d.isoformat()\n",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "py-009",
+    "track": "python",
+    "category": "data-structures",
+    "categoryI18n": {
+      "en": "Data Structures",
+      "ru": "Структуры данных"
+    },
+    "order": 9,
+    "title": {
+      "en": "Group by Key",
+      "ru": "Группировка по ключу"
+    },
+    "prompt": {
+      "en": "Define `group_by(items, key_fn)`: `items` is a list of dicts, `key_fn(item)` gives the group. Returns a dict group → list of items (order preserved). Example: `group_by([{'t': 'a', 'n': 1}, {'t': 'b', 'n': 2}, {'t': 'a', 'n': 3}], lambda x: x['t'])` → `{'a': […two items…], 'b': […one item…]}`.",
+      "ru": "Объяви `group_by(items, key_fn)`: `items` — список dict, `key_fn(item)` даёт группу. Возвращает dict группа → список элементов (порядок сохраняется). Пример: `group_by([{'t': 'a', 'n': 1}, {'t': 'b', 'n': 2}, {'t': 'a', 'n': 3}], lambda x: x['t'])` → `{'a': […два элемента…], 'b': […один элемент…]}`."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "main.py": "# Group by key\n\ndef group_by(items, key_fn):\n    # TODO: dict группа → список элементов (порядок сохраняется)\n    return {}\n"
+    },
+    "tests": [
+      {
+        "name": "groups",
+        "code": "r = group_by([{'t': 'a', 'n': 1}, {'t': 'b', 'n': 2}, {'t': 'a', 'n': 3}], lambda x: x['t']); assert set(r.keys()) == {'a', 'b'}, 'keys must be a and b'\nassert r['a'] == [{'t': 'a', 'n': 1}, {'t': 'a', 'n': 3}], 'group a in order, got ' + repr(r['a'])\nassert r['b'] == [{'t': 'b', 'n': 2}], 'group b'"
+      },
+      {
+        "name": "empty",
+        "code": "assert group_by([], lambda x: 1) == {}, 'expected {}'"
+      },
+      {
+        "name": "single group",
+        "code": "r = group_by([1, 2, 3], lambda x: 'all'); assert r == {'all': [1, 2, 3]}, 'got ' + repr(r)"
+      }
+    ],
+    "hint": {
+      "en": "Use setdefault: out.setdefault(key_fn(item), []).append(item).",
+      "ru": "setdefault: out.setdefault(key_fn(item), []).append(item)."
+    },
+    "solution": "def group_by(items, key_fn):\n    out = {}\n    for item in items:\n        out.setdefault(key_fn(item), []).append(item)\n    return out\n",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "py-010",
+    "track": "python",
+    "category": "libraries",
+    "categoryI18n": {
+      "en": "Libraries",
+      "ru": "Библиотеки"
+    },
+    "order": 10,
+    "title": {
+      "en": "JSON Round Trip",
+      "ru": "JSON round trip"
+    },
+    "prompt": {
+      "en": "Using the standard library `json`: define `encode(obj)` (dict/list → JSON string with sorted keys) and `decode(s)` (JSON string → Python objects). Then `round_trip(obj)` = `decode(encode(obj))` must return a deep-equal structure. Numbers and strings must survive the trip; a dict with keys in any order must serialize with sorted keys.",
+      "ru": "С использованием стандартной библиотеки `json`: объяви `encode(obj)` (dict/list → JSON-строка с отсортированными ключами) и `decode(s)` (JSON-строка → Python-объекты). Тогда `round_trip(obj)` = `decode(encode(obj))` должен возвращать структуру, глубокоравную входу. Числа и строки должны пережить путешествие; dict с ключами в любом порядке сериализуется с отсортированными ключами."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "main.py": "# JSON round trip\n\nimport json\n\ndef encode(obj):\n    # TODO: JSON-строка, ключи отсортированы\n    return ''\n\ndef decode(s):\n    # TODO: Python-объекты из JSON\n    return None\n\ndef round_trip(obj):\n    return decode(encode(obj))\n"
+    },
+    "tests": [
+      {
+        "name": "round trip",
+        "code": "obj = {'b': [1, 2, {'z': True, 'a': 'x'}], 'a': 5}; r = round_trip(obj); assert r == obj, 'got ' + repr(r)"
+      },
+      {
+        "name": "sorted keys",
+        "code": "s = encode({'b': 1, 'a': 2}); assert s.index('\"a\"') < s.index('\"b\"'), 'keys must be sorted: ' + s"
+      },
+      {
+        "name": "decode nested",
+        "code": "r = decode('{\"x\": [1, 2, 3]}'); assert r == {'x': [1, 2, 3]}, 'got ' + repr(r)"
+      }
+    ],
+    "hint": {
+      "en": "json.dumps(obj, sort_keys=True) and json.loads(s).",
+      "ru": "json.dumps(obj, sort_keys=True) и json.loads(s)."
+    },
+    "solution": "import json\n\ndef encode(obj):\n    return json.dumps(obj, sort_keys=True)\n\ndef decode(s):\n    return json.loads(s)\n\ndef round_trip(obj):\n    return decode(encode(obj))\n",
+    "dailyChallenge": true,
+    "status": "published"
+  }
+]

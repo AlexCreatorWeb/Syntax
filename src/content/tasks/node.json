@@ -1,1 +1,452 @@
-[]
+[
+  {
+    "id": "node-001",
+    "track": "node",
+    "category": "modules",
+    "categoryI18n": {
+      "en": "Modules",
+      "ru": "Модули"
+    },
+    "order": 1,
+    "title": {
+      "en": "ESM: Exports and Named Exports",
+      "ru": "ESM: экспорт и именованный экспорт"
+    },
+    "prompt": {
+      "en": "server.js is an ES module. Implement and export: a default function `double(n)` (returns n * 2) and a named function `triple(n)` (n * 3). The test sandbox imports your module — make the exports visible: `export default double; export function triple(n) { … }`.",
+      "ru": "server.js — ES-модуль. Реализуй и экспортируй: по умолчанию функцию `double(n)` (возвращает n * 2) и именованную `triple(n)` (n * 3). Песочница тестов импортирует твой модуль — сделай экспорт видимым: `export default double; export function triple(n) { … }`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "server.js": "// ESM: default + named exports\n\n// TODO: function double(n) { … }  +  export default double;\n// TODO: export function triple(n) { … }\n"
+    },
+    "tests": [
+      {
+        "name": "default export double",
+        "code": "assert(typeof window.__userModule.default === 'function', \"expected a default export\"); assert(window.__userModule.default(4) === 8, \"double(4) must be 8\");"
+      },
+      {
+        "name": "named export triple",
+        "code": "assert(typeof window.__userModule.triple === 'function', \"expected named export triple\"); assert(window.__userModule.triple(5) === 15, \"triple(5) must be 15\");"
+      }
+    ],
+    "hint": {
+      "en": "One module — one default export and any number of named ones. The sandbox keeps the module in `window.__userModule`.",
+      "ru": "В одном модуле — один default-экспорт и сколько угодно именованных. Песочница держит модуль в `window.__userModule`."
+    },
+    "solution": "function double(n) {\n  return n * 2;\n}\n\nexport function triple(n) {\n  return n * 3;\n}\n\nexport default double;",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "node-002",
+    "track": "node",
+    "category": "async",
+    "categoryI18n": {
+      "en": "Async",
+      "ru": "Async"
+    },
+    "order": 2,
+    "title": {
+      "en": "Top-level Await",
+      "ru": "Top-level await"
+    },
+    "prompt": {
+      "en": "In an ES module you can `await` at the top level. Export a `loadUsers` function: it calls the starter's `dbFetch()` (resolves with an array of names after 40ms), then stores the result in an exported `let users` (reassign it) and returns it. Export the binding: `export let users = []`. After your module loads, `users` must already contain the fetched names (top-level await in the module).",
+      "ru": "В ES-модуле можно `await` на верхнем уровне. Экспортируй функцию `loadUsers`: она вызывает `dbFetch()` из стартового файла (резолвится с массивом имён через 40мс), сохраняет результат в экспортируемый `let users` (переприсваивает) и возвращает его. Экспортируй связь: `export let users = []`. После загрузки модуля `users` должен уже содержать загруженные имена (top-level await в модуле)."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "server.js": "// Top-level await в ES-модуле\n\nasync function dbFetch() {\n  await new Promise((r) => setTimeout(r, 40));\n  return [\"ada\", \"linus\"];\n}\n\n// TODO: export let users = [];\n// TODO: export async function loadUsers() { users = await dbFetch(); return users; }\n// TODO: в конце файла — top-level await: users = await loadUsers();\n"
+    },
+    "tests": [
+      {
+        "name": "users populated on load",
+        "code": "await new Promise((r) => setTimeout(r, 200)); const u = window.__userModule.users; assert(Array.isArray(u) && u.length === 2 && u.includes('ada'), \"expected users [ada, linus], got \" + JSON.stringify(u));"
+      },
+      {
+        "name": "loadUsers works",
+        "code": "const v = await window.__userModule.loadUsers(); assert(Array.isArray(v) && v.includes('linus'), \"loadUsers must return the list\");"
+      }
+    ],
+    "hint": {
+      "en": "`export let users = []` — the binding is live: reassigning it inside the module updates the importer's view.",
+      "ru": "`export let users = []` — связь «живая»: переприсваивание в модуле обновляет вид импортера."
+    },
+    "solution": "async function dbFetch() {\n  await new Promise((r) => setTimeout(r, 40));\n  return [\"ada\", \"linus\"];\n}\n\nexport let users = [];\n\nexport async function loadUsers() {\n  users = await dbFetch();\n  return users;\n}\n\nusers = await loadUsers();",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "node-003",
+    "track": "node",
+    "category": "cli",
+    "categoryI18n": {
+      "en": "CLI",
+      "ru": "CLI"
+    },
+    "order": 3,
+    "title": {
+      "en": "CLI Argument Parser",
+      "ru": "Парсер аргументов CLI"
+    },
+    "prompt": {
+      "en": "Write `parseArgs(argv)` for a CLI: `argv` is the full process.argv (first two items are node and the script). It returns `{ command, flags, positionals }`: the first bare argument is `command`, arguments starting with `-` are `flags` (without the dash, in an object: `{ verbose: true }`), the rest are `positionals` (array). Example: `parseArgs(['node', 'app.js', 'deploy', '--verbose', 'staging'])` → `{ command: 'deploy', flags: { verbose: true }, positionals: ['staging'] }`.",
+      "ru": "Напиши `parseArgs(argv)` для CLI: `argv` — полный process.argv (первые два элемента — node и скрипт). Функция возвращает `{ command, flags, positionals }`: первый «голый» аргумент — `command`, аргументы, начинающиеся с `-`, — `flags` (без дефиса, объектом: `{ verbose: true }`), остальные — `positionals` (массив). Пример: `parseArgs(['node', 'app.js', 'deploy', '--verbose', 'staging'])` → `{ command: 'deploy', flags: { verbose: true }, positionals: ['staging'] }`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "server.js": "// CLI argument parser\n\n// TODO: export function parseArgs(argv) { … }\n"
+    },
+    "tests": [
+      {
+        "name": "basic",
+        "code": "const r = window.__userModule.parseArgs(['node', 'app.js', 'deploy', '--verbose', 'staging']); assert(r.command === 'deploy', \"command must be 'deploy'\"); assert(r.flags.verbose === true, \"--verbose must set flags.verbose\"); assert(JSON.stringify(r.positionals) === JSON.stringify(['staging']), \"expected positionals ['staging']\");"
+      },
+      {
+        "name": "multiple flags",
+        "code": "const r = window.__userModule.parseArgs(['node', 'x', 'run', '-a', '-b', 'p1', 'p2']); assert(r.command === 'run' && r.flags.a === true && r.flags.b === true, \"flags a and b\"); assert(JSON.stringify(r.positionals) === JSON.stringify(['p1', 'p2']), \"two positionals\");"
+      },
+      {
+        "name": "no args",
+        "code": "const r = window.__userModule.parseArgs(['node', 'x']); assert(r.command === undefined || r.command === null, \"no command expected\"); assert(r.positionals.length === 0, \"no positionals\");"
+      }
+    ],
+    "hint": {
+      "en": "Skip the first two items, then loop: starts with '-' → flags[name] = true; otherwise the first bare word is command, the rest — positionals.",
+      "ru": "Пропускай первые два элемента, потом цикл: начинается с '-' → flags[name] = true; иначе первое «голое» слово — command, остальные — positionals."
+    },
+    "solution": "export function parseArgs(argv) {\n  const args = argv.slice(2);\n  const out = { command: undefined, flags: {}, positionals: [] };\n  for (const a of args) {\n    if (a.startsWith('-')) out.flags[a.replace(/^-+/, '')] = true;\n    else if (out.command === undefined) out.command = a;\n    else out.positionals.push(a);\n  }\n  return out;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "node-004",
+    "track": "node",
+    "category": "http",
+    "categoryI18n": {
+      "en": "HTTP",
+      "ru": "HTTP"
+    },
+    "order": 4,
+    "title": {
+      "en": "First Express Route",
+      "ru": "Первый маршрут Express"
+    },
+    "prompt": {
+      "en": "Create an Express app: `const app = express()` with a `GET /hello` route that responds with JSON `{ msg: 'hi' }`. Export the app (`export default app`) and start it: `app.listen(3000)` (the sandbox captures the listener — no real port). The sandbox's `window.__request('GET', '/hello')` must return status 200 and the JSON body.",
+      "ru": "Создай Express-приложение: `const app = express()` с маршрутом `GET /hello`, отвечающим JSON `{ msg: 'hi' }`. Экспортируй app (`export default app`) и запусти: `app.listen(3000)` (песочница перехватывает listener — реального порта нет). `window.__request('GET', '/hello')` в песочнице должен вернуть статус 200 и JSON-тело."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "server.js": "import express from \"express\";\n\n// TODO: const app = express();\n// TODO: app.get('/hello', (req, res) => { res.json({ msg: 'hi' }); });\n// TODO: app.listen(3000);\n// TODO: export default app;\n"
+    },
+    "tests": [
+      {
+        "name": "GET /hello",
+        "code": "const r = await window.__request('GET', '/hello'); assert(r.status === 200, \"expected 200, got \" + r.status);\nassert(r.body && r.body.msg === 'hi', \"expected { msg: 'hi' }, got \" + JSON.stringify(r.body));"
+      },
+      {
+        "name": "unknown route is 404",
+        "code": "const r = await window.__request('GET', '/nope'); assert(r.status === 404, \"expected 404, got \" + r.status);"
+      }
+    ],
+    "hint": {
+      "en": "app.get(path, handler) + res.json(obj). In the sandbox listen() is captured, not bound.",
+      "ru": "app.get(path, handler) + res.json(obj). В песочнице listen() перехватывается, а не привязывает порт."
+    },
+    "solution": "import express from \"express\";\n\nconst app = express();\n\napp.get('/hello', (req, res) => {\n  res.json({ msg: 'hi' });\n});\n\napp.listen(3000);\n\nexport default app;",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "node-005",
+    "track": "node",
+    "category": "modules",
+    "categoryI18n": {
+      "en": "Modules",
+      "ru": "Модули"
+    },
+    "order": 5,
+    "title": {
+      "en": "Barrel File",
+      "ru": "Barrel-файл"
+    },
+    "prompt": {
+      "en": "Organize the module as a barrel: create two internal (non-exported) functions `add(a, b)` and `sub(a, b)` in server.js, and re-export them in a single group: `export { add, sub };`. Also export a `sum` constant equal to 10 (a named export). The sandbox checks the module's exports.",
+      "ru": "Организуй модуль как barrel: создай в server.js две внутренние (не экспортируемые отдельно) функции `add(a, b)` и `sub(a, b)`, и переэкспортируй их одной группой: `export { add, sub };`. Также экспортируй константу `sum`, равную 10 (именованный экспорт). Песочница проверяет экспорты модуля."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "server.js": "// Barrel: сгруппированные экспорты\n\n// TODO: function add(a, b) { … }\n// TODO: function sub(a, b) { … }\n// TODO: export const sum = 10;\n// TODO: export { add, sub };\n"
+    },
+    "tests": [
+      {
+        "name": "add/sub",
+        "code": "assert(window.__userModule.add(2, 3) === 5, \"add(2,3) must be 5\"); assert(window.__userModule.sub(5, 3) === 2, \"sub(5,3) must be 2\");"
+      },
+      {
+        "name": "sum export",
+        "code": "assert(window.__userModule.sum === 10, \"expected sum === 10, got \" + window.__userModule.sum);"
+      }
+    ],
+    "hint": {
+      "en": "function add(a, b) { return a + b; } … and at the end: export { add, sub };",
+      "ru": "function add(a, b) { return a + b; } … и в конце: export { add, sub };"
+    },
+    "solution": "function add(a, b) {\n  return a + b;\n}\n\nfunction sub(a, b) {\n  return a - b;\n}\n\nexport const sum = 10;\n\nexport { add, sub };",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "node-006",
+    "track": "node",
+    "category": "async",
+    "categoryI18n": {
+      "en": "Async",
+      "ru": "Async"
+    },
+    "order": 6,
+    "title": {
+      "en": "Promise Pool",
+      "ru": "Пул промисов"
+    },
+    "prompt": {
+      "en": "Implement `poolMap(items, limit, fn)`: it runs `fn(item)` over the array with at most `limit` concurrent calls (a promise pool) and returns results in the original order. The starter exports `slowDouble(x)` for tests: it awaits 20ms and returns x * 2. `poolMap([1,2,3,4,5], 2, slowDouble)` must return [2,4,6,8,10] and take noticeably less than 5 * 20ms of pure serial time… (the test only checks the result and order).",
+      "ru": "Реализуй `poolMap(items, limit, fn)`: выполняет `fn(item)` по массиву с максимум `limit` одновременных вызовами (пул промисов) и возвращает результаты в исходном порядке. Стартовый файл экспортирует `slowDouble(x)` для тестов: ждёт 20мс и возвращает x * 2. `poolMap([1,2,3,4,5], 2, slowDouble)` должен вернуть [2,4,6,8,10] (тест проверяет результат и порядок)."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "server.js": "export function slowDouble(x) {\n  return new Promise((r) => setTimeout(() => r(x * 2), 20));\n}\n\n// TODO: export async function poolMap(items, limit, fn) { … }\n"
+    },
+    "tests": [
+      {
+        "name": "result and order",
+        "code": "const r = await window.__userModule.poolMap([1, 2, 3, 4, 5], 2, window.__userModule.slowDouble); assert(JSON.stringify(r) === JSON.stringify([2, 4, 6, 8, 10]), \"expected [2,4,6,8,10], got \" + JSON.stringify(r));"
+      },
+      {
+        "name": "limit respected (max 2 concurrent)",
+        "code": "let active = 0; let maxActive = 0; const fn = (x) => { active += 1; maxActive = Math.max(maxActive, active); return new Promise((res) => setTimeout(() => { active -= 1; res(x); }, 30)); }; await window.__userModule.poolMap([1, 2, 3, 4], 2, fn); assert(maxActive <= 2, \"expected at most 2 concurrent, got \" + maxActive);\nassert(maxActive === 2, \"pool must actually parallelize (2 at a time), got \" + maxActive);"
+      },
+      {
+        "name": "empty",
+        "code": "const r = await window.__userModule.poolMap([], 3, () => 1); assert(JSON.stringify(r) === '[]', \"expected []\");"
+      }
+    ],
+    "hint": {
+      "en": "A cursor over the array + `limit` workers: each worker takes the next index until the cursor reaches the end. Write results by index to keep the order.",
+      "ru": "Курсор по массиву + `limit` воркеров: каждый воркер берёт следующий индекс, пока курсор не дойдёт до конца. Результаты пиши по индексу — порядок сохранится."
+    },
+    "solution": "export function slowDouble(x) {\n  return new Promise((r) => setTimeout(() => r(x * 2), 20));\n}\n\nexport async function poolMap(items, limit, fn) {\n  const out = new Array(items.length);\n  let cursor = 0;\n  async function worker() {\n    while (cursor < items.length) {\n      const i = cursor++;\n      out[i] = await fn(items[i], i);\n    }\n  }\n  const workers = [];\n  for (let i = 0; i < Math.min(limit, items.length); i++) workers.push(worker());\n  await Promise.all(workers);\n  return out;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "node-007",
+    "track": "node",
+    "category": "cli",
+    "categoryI18n": {
+      "en": "CLI",
+      "ru": "CLI"
+    },
+    "order": 7,
+    "title": {
+      "en": "Command Dispatch",
+      "ru": "Диспетчер команд"
+    },
+    "prompt": {
+      "en": "Build a mini CLI dispatcher: export `runCommand(input)` where `input` is a string like `\"status --full\"`. It splits the string into command + flags, and: `\"help\"` (or no command) → `\"Usage: app <command>\"`, `\"status\"` → `\"ok\"` (or `\"ok --full\"` with the `--full` flag), any other command → `\"unknown: <command>\"`. Flags are appended to the result with a space in the order they appear.",
+      "ru": "Сделай мини-диспетчер CLI: экспортируй `runCommand(input)`, где `input` — строка вида `\"status --full\"`. Функция разбивает строку на команду + флаги: `\"help\"` (или нет команды) → `\"Usage: app <command>\"`, `\"status\"` → `\"ok\"` (с флагом `--full` — `\"ok --full\"`), любая другая команда → `\"unknown: <command>\"`. Флаги дописываются к результату через пробел в порядке появления."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "server.js": "// Mini CLI dispatcher\n\n// TODO: export function runCommand(input) { … }\n"
+    },
+    "tests": [
+      {
+        "name": "status",
+        "code": "assert(window.__userModule.runCommand('status') === 'ok', \"expected 'ok'\");"
+      },
+      {
+        "name": "status --full",
+        "code": "assert(window.__userModule.runCommand('status --full') === 'ok --full', \"expected 'ok --full'\");"
+      },
+      {
+        "name": "help and empty",
+        "code": "assert(window.__userModule.runCommand('help') === 'Usage: app <command>', \"help text\"); assert(window.__userModule.runCommand('') === 'Usage: app <command>', \"empty → usage\");"
+      },
+      {
+        "name": "unknown",
+        "code": "assert(window.__userModule.runCommand('frobnicate') === 'unknown: frobnicate', \"unknown command\");"
+      },
+      {
+        "name": "several flags",
+        "code": "assert(window.__userModule.runCommand('status --full --json') === 'ok --full --json', \"flags in order\");"
+      }
+    ],
+    "hint": {
+      "en": "Split by space; first token = command, the rest (those starting with -) = flags joined back to the base result.",
+      "ru": "Разбей по пробелу; первый токен — команда, остальные (начинающиеся с -) — флаги, приклеиваются к базовому результату."
+    },
+    "solution": "export function runCommand(input) {\n  const tokens = String(input).trim().split(/\\s+/).filter(Boolean);\n  const command = tokens[0];\n  const flags = tokens.slice(1).filter((t) => t.startsWith('-'));\n  let base;\n  if (!command || command === 'help') base = 'Usage: app <command>';\n  else if (command === 'status') base = 'ok';\n  else base = 'unknown: ' + command;\n  return flags.length ? base + ' ' + flags.join(' ') : base;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "node-008",
+    "track": "node",
+    "category": "http",
+    "categoryI18n": {
+      "en": "HTTP",
+      "ru": "HTTP"
+    },
+    "order": 8,
+    "title": {
+      "en": "In-Memory REST API",
+      "ru": "REST API в памяти"
+    },
+    "prompt": {
+      "en": "Build a tiny REST API for notes with an in-memory array: `GET /notes` → `{ notes: […] }` (all), `POST /notes` → creates a note `{ id, text }` (id = next number), responds 201 with the note, `GET /notes/:id` → the note or 404 `{ error: 'not found' }`. Use express.json() for the body. Seed the storage with one note `{ id: 1, text: 'first' }`. Export the app and call `app.listen(3000)`.",
+      "ru": "Сделай крошечный REST API для заметок с хранилищем в памяти: `GET /notes` → `{ notes: […] }` (все), `POST /notes` → создаёт заметку `{ id, text }` (id = следующий номер), отвечает 201 с заметкой, `GET /notes/:id` → заметка или 404 `{ error: 'not found' }`. Для тела — express.json(). Хранилище посеять одной заметкой `{ id: 1, text: 'first' }`. Экспортируй app и вызови `app.listen(3000)`."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "server.js": "import express from \"express\";\n\nconst notes = [{ id: 1, text: 'first' }];\n\n// TODO: const app = express(); app.use(express.json());\n// TODO: GET /notes, POST /notes (201), GET /notes/:id (404)\n// TODO: app.listen(3000); export default app;\n"
+    },
+    "tests": [
+      {
+        "name": "list",
+        "code": "const r = await window.__request('GET', '/notes'); assert(r.status === 200 && Array.isArray(r.body.notes) && r.body.notes.length === 1, \"expected one note initially, got \" + JSON.stringify(r.body));"
+      },
+      {
+        "name": "create",
+        "code": "const r = await window.__request('POST', '/notes', { body: { text: 'second' } }); assert(r.status === 201, \"expected 201, got \" + r.status);\nassert(r.body && r.body.id === 2 && r.body.text === 'second', \"expected { id: 2, text: 'second' }, got \" + JSON.stringify(r.body));"
+      },
+      {
+        "name": "get by id",
+        "code": "const r = await window.__request('GET', '/notes/1'); assert(r.status === 200 && r.body.text === 'first', \"note 1 must be 'first'\");"
+      },
+      {
+        "name": "404",
+        "code": "const r = await window.__request('GET', '/notes/999'); assert(r.status === 404 && r.body && r.body.error === 'not found', \"expected 404 not found\");"
+      }
+    ],
+    "hint": {
+      "en": "The route /notes/:id is registered after the collection routes; the id comes from req.params.id (a string — convert it).",
+      "ru": "Маршрут /notes/:id регистрируется после маршрутов коллекции; id приходит в req.params.id (строка — конвертируй)."
+    },
+    "solution": "import express from \"express\";\n\nconst notes = [{ id: 1, text: 'first' }];\n\nconst app = express();\napp.use(express.json());\n\napp.get('/notes', (req, res) => res.json({ notes }));\n\napp.post('/notes', (req, res) => {\n  const note = { id: notes.length + 1, text: req.body.text };\n  notes.push(note);\n  res.status(201).json(note);\n});\n\napp.get('/notes/:id', (req, res) => {\n  const note = notes.find((n) => n.id === Number(req.params.id));\n  if (!note) return res.status(404).json({ error: 'not found' });\n  res.json(note);\n});\n\napp.listen(3000);\n\nexport default app;",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "node-009",
+    "track": "node",
+    "category": "async",
+    "categoryI18n": {
+      "en": "Async",
+      "ru": "Async"
+    },
+    "order": 9,
+    "title": {
+      "en": "Retry with Timeout",
+      "ru": "Retry с таймаутом"
+    },
+    "prompt": {
+      "en": "Implement `withRetry(fn, { tries = 3, delay = 10, timeout = 500 } = {})`: calls the async `fn`, retries on rejection up to `tries` times with a `delay` ms pause; every attempt is wrapped in a timeout (rejects with `new Error('timeout')` if `fn` hangs longer than `timeout` ms). If everything fails — throw the last error. Export the function.",
+      "ru": "Реализуй `withRetry(fn, { tries = 3, delay = 10, timeout = 500 } = {})`: вызывает async `fn`, при reject повторяет до `tries` попыток с паузой `delay` мс; каждая попытка обёрнута в таймаут (reject с `new Error('timeout')`, если `fn` висит дольше `timeout` мс). Если всё упало — бросает последнюю ошибку. Экспортируй функцию."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "server.js": "// Retry + timeout\n\n// TODO: export async function withRetry(fn, { tries = 3, delay = 10, timeout = 500 } = {}) { … }\n"
+    },
+    "tests": [
+      {
+        "name": "succeeds on 3rd try",
+        "code": "let n = 0; const flaky = () => { n += 1; if (n < 3) return Promise.reject(new Error('f' + n)); return Promise.resolve('ok'); }; const v = await window.__userModule.withRetry(flaky, { tries: 5, delay: 5 }); assert(v === 'ok' && n === 3, \"expected 3 attempts, got \" + n);"
+      },
+      {
+        "name": "exhausts tries",
+        "code": "let n = 0; const bad = () => { n += 1; return Promise.reject(new Error('x' + n)); }; let msg = ''; try { await window.__userModule.withRetry(bad, { tries: 3, delay: 5 }); } catch (e) { msg = e.message; } assert(n === 3 && msg === 'x3', \"3 attempts, last error, got n=\" + n + \" msg=\" + msg);"
+      },
+      {
+        "name": "timeout on hang",
+        "code": "const hang = () => new Promise(() => {}); let msg = ''; try { await window.__userModule.withRetry(hang, { tries: 2, delay: 5, timeout: 30 }); } catch (e) { msg = e.message; } assert(msg === 'timeout', \"expected 'timeout', got \" + msg);"
+      }
+    ],
+    "hint": {
+      "en": "Per attempt: `await Promise.race([fn(), timeoutReject])`; on failure — sleep and continue; after the last attempt — throw the last error.",
+      "ru": "На каждую попытку: `await Promise.race([fn(), timeoutReject])`; при ошибке — пауза и дальше; после последней попытки — throw последней ошибки."
+    },
+    "solution": "export async function withRetry(fn, { tries = 3, delay = 10, timeout = 500 } = {}) {\n  let lastErr;\n  for (let i = 1; i <= tries; i++) {\n    try {\n      return await Promise.race([\n        fn(),\n        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), timeout)),\n      ]);\n    } catch (e) {\n      lastErr = e;\n      if (i < tries) await new Promise((r) => setTimeout(r, delay));\n    }\n  }\n  throw lastErr;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "node-010",
+    "track": "node",
+    "category": "modules",
+    "categoryI18n": {
+      "en": "Modules",
+      "ru": "Модули"
+    },
+    "order": 10,
+    "title": {
+      "en": "Plugin Registry",
+      "ru": "Регистратор плагинов"
+    },
+    "prompt": {
+      "en": "Build a plugin registry pattern: export `createRegistry()` — returns `{ register(name, handler), run(name, ...args), names() }`. `register` stores the handler by name (re-registering replaces), `run` calls the handler with the args and returns its result (throws `new Error('no plugin: ' + name)` if missing), `names()` returns sorted plugin names. One registry instance is enough — create it inside the module and export its API directly.",
+      "ru": "Сделай паттерн реестра плагинов: экспортируй `createRegistry()` — возвращает `{ register(name, handler), run(name, ...args), names() }`. `register` сохраняет обработчик по имени (повторная регистрация заменяет), `run` вызывает обработчик с аргументами и возвращает результат (бросает `new Error('no plugin: ' + name)`, если нет), `names()` — отсортированные имена. Один экземпляр реестра достаточно — создай его внутри модуля и экспортируй его API напрямую (объект `registry`)."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "server.js": "// Plugin registry\n\n// TODO: export function createRegistry() { … }\n// TODO: const registry = createRegistry(); export { registry };\n"
+    },
+    "tests": [
+      {
+        "name": "register and run",
+        "code": "const { registry } = window.__userModule; registry.register('echo', (x) => 'echo: ' + x); assert(registry.run('echo', 42) === 'echo: 42', \"echo must work\");"
+      },
+      {
+        "name": "names sorted",
+        "code": "const { registry } = window.__userModule; registry.register('zeta', () => 1); registry.register('alpha', () => 2); assert(JSON.stringify(registry.names()) === JSON.stringify(['alpha', 'echo', 'zeta']), \"expected sorted names, got \" + JSON.stringify(registry.names()));"
+      },
+      {
+        "name": "replace handler",
+        "code": "const { registry } = window.__userModule; registry.register('echo', () => 'v2'); assert(registry.run('echo') === 'v2', \"re-registration must replace\");"
+      },
+      {
+        "name": "missing plugin",
+        "code": "const { registry } = window.__userModule; let msg = ''; try { registry.run('ghost'); } catch (e) { msg = e.message; } assert(msg === 'no plugin: ghost', \"expected 'no plugin: ghost', got \" + msg);"
+      }
+    ],
+    "hint": {
+      "en": "A Map (or a plain object) of name → handler. run: if (!map.has(name)) throw …; return map.get(name)(...args).",
+      "ru": "Map (или обычный объект) имя → обработчик. run: if (!map.has(name)) throw …; return map.get(name)(...args)."
+    },
+    "solution": "export function createRegistry() {\n  const plugins = new Map();\n  return {\n    register(name, handler) {\n      plugins.set(name, handler);\n    },\n    run(name, ...args) {\n      if (!plugins.has(name)) throw new Error('no plugin: ' + name);\n      return plugins.get(name)(...args);\n    },\n    names() {\n      return [...plugins.keys()].sort();\n    },\n  };\n}\n\nconst registry = createRegistry();\nexport { registry };",
+    "dailyChallenge": false,
+    "status": "published"
+  }
+]

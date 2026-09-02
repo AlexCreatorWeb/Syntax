@@ -1,6 +1,8 @@
 import { useT } from "../../i18n/useT";
+import { useLanguage } from "../../context/useLanguage";
 import { getTech } from "../../lib/techs";
 import { getCompleted } from "../../lib/progress";
+import { localizedLessonTitle } from "../../lib/lessonTitles";
 import TechSwitch from "../TechSwitch";
 
 // Дорожная карта = карта РЕАЛЬНОГО курса активного трека:
@@ -31,8 +33,9 @@ function RoadmapNode({ status, big }) {
   );
 }
 
-function LessonRow({ lesson, i, status, onOpen }) {
+function LessonRow({ lesson, i, status, onOpen, techId }) {
   const t = useT();
+  const { langCode } = useLanguage();
   const isCurrent = status === "current";
   const isDone = status === "done";
   const isLocked = status === "locked";
@@ -58,7 +61,7 @@ function LessonRow({ lesson, i, status, onOpen }) {
       >
         <div className="roadmap__card-head">
           <span className="roadmap__num">{String(i + 1).padStart(2, "0")}</span>
-          <strong className="roadmap__title">{lesson.title}</strong>
+          <strong className="roadmap__title">{localizedLessonTitle(techId, i + 1, lesson.title, langCode)}</strong>
           <span className={`roadmap__chip roadmap__chip--${status === "done" ? "done" : status}`}>{statusLabel}</span>
         </div>
         {isCurrent && <p className="roadmap__desc">{t("roadmap.currentHint")}</p>}
@@ -188,7 +191,7 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
           return (
             <div key={lesson.id}>
               {showUpNext && <p className="roadmap__group-label">{t("roadmap.upNext")}</p>}
-              <LessonRow lesson={lesson} i={i} status={status} onOpen={openLessonRow} />
+              <LessonRow lesson={lesson} i={i} status={status} onOpen={openLessonRow} techId={tech.id} />
             </div>
           );
         })}

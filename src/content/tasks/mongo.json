@@ -1,1 +1,420 @@
-[]
+[
+  {
+    "id": "mongo-001",
+    "track": "mongo",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 1,
+    "title": {
+      "en": "Connect and Insert",
+      "ru": "Подключение и вставка"
+    },
+    "prompt": {
+      "en": "The sandbox has an in-memory MongoDB. In script.js: import `{ MongoClient }` from \"mongodb\", connect to `mongodb://localhost:27017/syntax`, and insert two documents into the `todos` collection of the `app` database: `{ text: 'write code', done: false }` and `{ text: 'review', done: false }`. Store the count of documents in the collection after the insert in `globalThis.result` (use `countDocuments()`).",
+      "ru": "В песочнице есть в-memory MongoDB. В script.js: импортируй `{ MongoClient }` из \"mongodb\", подключись к `mongodb://localhost:27017/syntax` и вставь два документа в коллекцию `todos` базы `app`: `{ text: 'write code', done: false }` и `{ text: 'review', done: false }`. Сохрани количество документов в коллекции после вставки в `globalThis.result` (через `countDocuments()`)."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: const client = new MongoClient(\"mongodb://localhost:27017/syntax\");\n// TODO: await client.connect();\n// TODO: insert 2 документа в app.todos + globalThis.result = countDocuments()\n"
+    },
+    "tests": [
+      {
+        "name": "result is 2",
+        "code": "assert(globalThis.result === 2, \"expected globalThis.result === 2, got \" + globalThis.result);"
+      },
+      {
+        "name": "documents stored",
+        "code": "const docs = window.__db.mongo['todos'] || []; assert(Array.isArray(docs) && docs.length === 2, \"expected 2 docs in the 'todos' collection, got \" + docs.length);"
+      }
+    ],
+    "hint": {
+      "en": "const coll = client.db('app').collection('todos'); await coll.insertMany([...]); const n = await coll.countDocuments();",
+      "ru": "const coll = client.db('app').collection('todos'); await coll.insertMany([...]); const n = await coll.countDocuments();"
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('todos');\nawait coll.insertMany([\n  { text: 'write code', done: false },\n  { text: 'review', done: false },\n]);\nglobalThis.result = await coll.countDocuments();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "mongo-002",
+    "track": "mongo",
+    "category": "query",
+    "categoryI18n": {
+      "en": "Query",
+      "ru": "Запросы"
+    },
+    "order": 2,
+    "title": {
+      "en": "Find with Filter",
+      "ru": "Поиск с фильтром"
+    },
+    "prompt": {
+      "en": "The `users` collection is pre-populated in the sandbox (5 users with `name`, `age`, `city`). Find all users from \"Berlin\" and store them in `globalThis.result` sorted by age ascending (use `find(filter).sort({ age: 1 }).toArray()`).",
+      "ru": "Коллекция `users` посеяна в песочнице (5 пользователей с `name`, `age`, `city`). Найди всех пользователей из \"Berlin\" и сохрани в `globalThis.result` отсортированными по возрасту по возрастанию (используй `find(filter).sort({ age: 1 }).toArray()`)."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('users'); await coll.insertMany([{ name: 'Anna', age: 34, city: 'Berlin' }, { name: 'Ben', age: 28, city: 'Berlin' }, { name: 'Cara', age: 41, city: 'Paris' }, { name: 'Dan', age: 25, city: 'Berlin' }, { name: 'Eva', age: 30, city: 'Rome' }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: подключись к app, найди users c city 'Berlin', sort по age (1),\n// TODO: globalThis.result = массив документов\n"
+    },
+    "tests": [
+      {
+        "name": "3 berlin users sorted by age",
+        "code": "const r = globalThis.result; assert(Array.isArray(r) && r.length === 3, \"expected 3 users, got \" + (r && r.length));\nassert(JSON.stringify(r.map((u) => u.age)) === JSON.stringify([25, 28, 34]), \"expected ages [25, 28, 34] in order, got \" + JSON.stringify(r && r.map((u) => u.age)));"
+      },
+      {
+        "name": "all from Berlin",
+        "code": "assert(globalThis.result.every((u) => u.city === 'Berlin'), \"all results must be from Berlin\");"
+      }
+    ],
+    "hint": {
+      "en": "find({ city: 'Berlin' }).sort({ age: 1 }) — 1 = ascending.",
+      "ru": "find({ city: 'Berlin' }).sort({ age: 1 }) — 1 = по возрастанию."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('users');\nglobalThis.result = await coll.find({ city: 'Berlin' }).sort({ age: 1 }).toArray();",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "mongo-003",
+    "track": "mongo",
+    "category": "query",
+    "categoryI18n": {
+      "en": "Query",
+      "ru": "Запросы"
+    },
+    "order": 3,
+    "title": {
+      "en": "Query Operators",
+      "ru": "Операторы запросов"
+    },
+    "prompt": {
+      "en": "The `products` collection is pre-populated (documents: { name, price, stock }). Find products where `price` is greater than 50 AND `stock` is at least 5: use the `$gt` and `$gte` operators in one filter. Store the result (names only is fine — store the whole documents) in `globalThis.result` sorted by name.",
+      "ru": "Коллекция `products` посеяна (документы: { name, price, stock }). Найди товары, где `price` больше 50 И `stock` не меньше 5: используй операторы `$gt` и `$gte` в одном фильтре. Результат (целиком, документы) — в `globalThis.result`, отсортированный по имени."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('products'); await coll.insertMany([{ name: 'Keyboard', price: 80, stock: 12 }, { name: 'Mouse', price: 30, stock: 40 }, { name: 'Monitor', price: 250, stock: 3 }, { name: 'Webcam', price: 60, stock: 5 }, { name: 'Hub', price: 25, stock: 8 }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: find({ price: { $gt: 50 }, stock: { $gte: 5 } }).sort({ name: 1 })\n// TODO: globalThis.result = …\n"
+    },
+    "tests": [
+      {
+        "name": "filter correct",
+        "code": "const names = (globalThis.result || []).map((p) => p.name); assert(JSON.stringify(names) === JSON.stringify(['Keyboard', 'Webcam']), \"expected ['Keyboard','Webcam'], got \" + JSON.stringify(names));"
+      },
+      {
+        "name": "monitor excluded (stock)",
+        "code": "const r = globalThis.result; assert(!r.some((p) => p.name === 'Monitor'), \"Monitor must be excluded (stock < 5)\");"
+      }
+    ],
+    "hint": {
+      "en": "Filter operators: { price: { $gt: 50 }, stock: { $gte: 5 } } — AND between fields.",
+      "ru": "Операторы фильтра: { price: { $gt: 50 }, stock: { $gte: 5 } } — AND между полями."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('products');\nglobalThis.result = await coll.find({ price: { $gt: 50 }, stock: { $gte: 5 } }).sort({ name: 1 }).toArray();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "mongo-004",
+    "track": "mongo",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 4,
+    "title": {
+      "en": "Update One with $set",
+      "ru": "Обновление одного через $set"
+    },
+    "prompt": {
+      "en": "In the pre-populated `tasks` collection (3 tasks with `title` and `status: 'open'`) mark the task with title \"Ship it\" as done: `updateOne({ title: 'Ship it' }, { $set: { status: 'done' } })`. Store in `globalThis.result` the `status` of that task after the update (read it back with `findOne`).",
+      "ru": "В посеянной коллекции `tasks` (3 задачи с `title` и `status: 'open'`) пометь задачу с title \"Ship it\" как выполненную: `updateOne({ title: 'Ship it' }, { $set: { status: 'done' } })`. В `globalThis.result` сохрани `status` этой задачи после обновления (прочитай через `findOne`)."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('tasks'); await coll.insertMany([{ title: 'Design', status: 'open' }, { title: 'Ship it', status: 'open' }, { title: 'Review', status: 'open' }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: updateOne({ title: 'Ship it' }, { $set: { status: 'done' } })\n// TODO: globalThis.result = (await findOne({ title: 'Ship it' })).status\n"
+    },
+    "tests": [
+      {
+        "name": "status updated",
+        "code": "assert(globalThis.result === 'done', \"expected 'done', got \" + globalThis.result);"
+      },
+      {
+        "name": "others untouched",
+        "code": "const others = (window.__db.mongo['tasks'] || []).filter((d) => d.title === 'Design'); assert(others.length === 1 && others[0].status === 'open', \"other tasks must stay 'open'\");"
+      }
+    ],
+    "hint": {
+      "en": "$set updates only the given fields — the document keeps the rest.",
+      "ru": "$set обновляет только указанные поля — документ сохраняет остальное."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('tasks');\nawait coll.updateOne({ title: 'Ship it' }, { $set: { status: 'done' } });\nglobalThis.result = (await coll.findOne({ title: 'Ship it' })).status;",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "mongo-005",
+    "track": "mongo",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 5,
+    "title": {
+      "en": "Delete and Count",
+      "ru": "Удаление и подсчёт"
+    },
+    "prompt": {
+      "en": "The `logs` collection is pre-populated with 6 documents: 2 with `level: 'error'`, 4 with `level: 'info'`. Delete all error logs (`deleteMany`) and store in `globalThis.result` the remaining document count (it must be 4, all 'info').",
+      "ru": "Коллекция `logs` посеяна 6 документами: 2 с `level: 'error'` и 4 с `level: 'info'`. Удали все error-логи (`deleteMany`) и сохрани в `globalThis.result` количество оставшихся документов (должно быть 4, все 'info')."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('logs'); await coll.insertMany([{ level: 'info', msg: 'a' }, { level: 'error', msg: 'b' }, { level: 'info', msg: 'c' }, { level: 'error', msg: 'd' }, { level: 'info', msg: 'e' }, { level: 'info', msg: 'f' }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: deleteMany({ level: 'error' }) + globalThis.result = countDocuments()\n"
+    },
+    "tests": [
+      {
+        "name": "4 left",
+        "code": "assert(globalThis.result === 4, \"expected 4 documents left, got \" + globalThis.result);"
+      },
+      {
+        "name": "no errors left",
+        "code": "const errs = (window.__db.mongo['logs'] || []).filter((d) => d.level === 'error'); assert(errs.length === 0, \"expected 0 error logs\");"
+      }
+    ],
+    "hint": {
+      "en": "deleteMany(filter) — removes all matching documents; countDocuments() after.",
+      "ru": "deleteMany(filter) — удаляет все подходящие документы; после — countDocuments()."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('logs');\nawait coll.deleteMany({ level: 'error' });\nglobalThis.result = await coll.countDocuments();",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "mongo-006",
+    "track": "mongo",
+    "category": "aggregation",
+    "categoryI18n": {
+      "en": "Aggregation",
+      "ru": "Агрегация"
+    },
+    "order": 6,
+    "title": {
+      "en": "Sum with $sum",
+      "ru": "Сумма через $sum"
+    },
+    "prompt": {
+      "en": "The `orders` collection is pre-populated with 4 documents { amount, status: 'paid' | 'open' }. Build an aggregation pipeline: group by `status` and sum `amount` ($sum: '$amount'), output `{ _id: status, total: … }`. Store the result of the paid group (its `total`) in `globalThis.result`.",
+      "ru": "Коллекция `orders` посеяна 4 документами { amount, status: 'paid' | 'open' }. Собери агрегационный конвейер: сгруппируй по `status` и посуммируй `amount` ($sum: '$amount'), вывод `{ _id: status, total: … }`. В `globalThis.result` сохрани `total` для группы paid."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('orders'); await coll.insertMany([{ amount: 100, status: 'paid' }, { amount: 50, status: 'paid' }, { amount: 30, status: 'open' }, { amount: 20, status: 'open' }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: aggregation: [ { $group: { _id: '$status', total: { $sum: '$amount' } } } ]\n// TODO: globalThis.result = total группы 'paid'\n"
+    },
+    "tests": [
+      {
+        "name": "paid total is 150",
+        "code": "assert(globalThis.result === 150, \"expected 150, got \" + globalThis.result);"
+      },
+      {
+        "name": "open group total is 50",
+        "code": "const orders = (window.__db.mongo['orders'] || []).filter((d) => d.status === 'open'); assert(orders.reduce((s, o) => s + o.amount, 0) === 50, \"sanity: open orders sum to 50\");"
+      }
+    ],
+    "hint": {
+      "en": "coll.aggregate([{ $group: { _id: '$status', total: { $sum: '$amount' } } }]).toArray() — then find the group with _id 'paid'.",
+      "ru": "coll.aggregate([{ $group: { _id: '$status', total: { $sum: '$amount' } } }]).toArray() — потом бери группу с _id 'paid'."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('orders');\nconst groups = await coll.aggregate([\n  { $group: { _id: '$status', total: { $sum: '$amount' } } },\n]).toArray();\nglobalThis.result = groups.find((g) => g._id === 'paid').total;",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "mongo-007",
+    "track": "mongo",
+    "category": "aggregation",
+    "categoryI18n": {
+      "en": "Aggregation",
+      "ru": "Агрегация"
+    },
+    "order": 7,
+    "title": {
+      "en": "Top 3 by Count",
+      "ru": "Топ-3 по числу"
+    },
+    "prompt": {
+      "en": "The `events` collection is pre-populated (documents { type, user }). Find the 3 most frequent event `type`s: pipeline — group by `type` counting (`_id: '$type', n: { $sum: 1 }`), sort by `n` descending, limit to 3. Store in `globalThis.result` an array of the types in that order (e.g. `['click', 'view', 'like']`).",
+      "ru": "Коллекция `events` посеяна (документы { type, user }). Найди 3 самых частых `type` событий: конвейер — группируй по `type` со счётчиком (`_id: '$type', n: { $sum: 1 }`), сортируй по `n` по убыванию, ограничение 3. В `globalThis.result` — массив типов в этом порядке (например, `['click', 'view', 'like']`)."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('events'); await coll.insertMany([{ type: 'click' }, { type: 'click' }, { type: 'click' }, { type: 'view' }, { type: 'view' }, { type: 'like' }, { type: 'share' }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: aggregate: $group (счётчик) → $sort { n: -1 } → $limit 3\n// TODO: globalThis.result = массив типов по убыванию частоты\n"
+    },
+    "tests": [
+      {
+        "name": "top 3 in order",
+        "code": "assert(JSON.stringify(globalThis.result) === JSON.stringify(['click', 'view', 'like']), \"expected ['click','view','like'], got \" + JSON.stringify(globalThis.result));"
+      },
+      {
+        "name": "top list is at most 3",
+        "code": "const r = globalThis.result; assert(Array.isArray(r) && r.length <= 3 && r[0] === 'click', \"top must start with 'click' and be <= 3, got \" + JSON.stringify(r));"
+      }
+    ],
+    "hint": {
+      "en": "$sum: 1 counts documents in the group; $sort { n: -1 }; $limit 3; then map _id.",
+      "ru": "$sum: 1 считает документы в группе; $sort { n: -1 }; $limit 3; потом мапишь _id."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('events');\nconst top = await coll.aggregate([\n  { $group: { _id: '$type', n: { $sum: 1 } } },\n  { $sort: { n: -1 } },\n  { $limit: 3 },\n]).toArray();\nglobalThis.result = top.map((g) => g._id);",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "mongo-008",
+    "track": "mongo",
+    "category": "query",
+    "categoryI18n": {
+      "en": "Query",
+      "ru": "Запросы"
+    },
+    "order": 8,
+    "title": {
+      "en": "Nested Fields and $in",
+      "ru": "Вложенные поля и $in"
+    },
+    "prompt": {
+      "en": "The `posts` collection is pre-populated: documents { title, author: { name }, tags: [ … ] }. Find posts where the author's name is \"Ada\" or \"Linus\" (`$in` on the nested field `author.name`) AND the tags contain \"web\" (use the array containment: `tags: 'web'`). Store the titles in `globalThis.result` sorted alphabetically.",
+      "ru": "Коллекция `posts` посеяна: документы { title, author: { name }, tags: [ … ] }. Найди посты, где имя автора (вложенное поле `author.name`) — \"Ada\" или \"Linus\" (`$in`) И теги содержат \"web\" (содержание в массиве: `tags: 'web'`). Заголовки — в `globalThis.result`, отсортированные по алфавиту."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('posts'); await coll.insertMany([{ title: 'Web perf', author: { name: 'Ada' }, tags: ['web', 'perf'] }, { title: 'Databases', author: { name: 'Ada' }, tags: ['db'] }, { title: 'CSS grid', author: { name: 'Linus' }, tags: ['css', 'web'] }, { title: 'Kernels', author: { name: 'Linus' }, tags: ['os'] }, { title: 'Intro', author: { name: 'Grace' }, tags: ['web'] }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: find({ 'author.name': { $in: ['Ada', 'Linus'] }, tags: 'web' }).sort({ title: 1 })\n// TODO: globalThis.result = массив заголовков\n"
+    },
+    "tests": [
+      {
+        "name": "correct titles",
+        "code": "assert(JSON.stringify(globalThis.result) === JSON.stringify(['CSS grid', 'Web perf']), \"expected ['CSS grid','Web perf'], got \" + JSON.stringify(globalThis.result));"
+      },
+      {
+        "name": "Grace excluded",
+        "code": "const r = globalThis.result || []; assert(!r.includes('Intro'), \"Grace's post must not match (author not in list)\");"
+      }
+    ],
+    "hint": {
+      "en": "Dotted notation for nested fields: 'author.name'. `tags: 'web'` matches arrays that contain 'web'.",
+      "ru": "Точечная нотация для вложенных полей: 'author.name'. `tags: 'web'` матчит массивы, содержащие 'web'."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('posts');\nconst posts = await coll.find({ 'author.name': { $in: ['Ada', 'Linus'] }, tags: 'web' }).sort({ title: 1 }).toArray();\nglobalThis.result = posts.map((p) => p.title);",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "mongo-009",
+    "track": "mongo",
+    "category": "crud",
+    "categoryI18n": {
+      "en": "CRUD",
+      "ru": "CRUD"
+    },
+    "order": 9,
+    "title": {
+      "en": "Upsert with $inc",
+      "ru": "Upsert с $inc"
+    },
+    "prompt": {
+      "en": "The `counters` collection starts empty. Use `updateOne` with `upsert: true` to set the counter: `updateOne({ key: 'visits' }, { $setOnInsert: { key: 'visits' }, $inc: { count: 1 } }, { upsert: true })` — run this update three times, then read the counter and store its `count` in `globalThis.result` (it must be 3).",
+      "ru": "Коллекция `counters` пуста. Используй `updateOne` с `upsert: true`, чтобы завести счётчик: `updateOne({ key: 'visits' }, { $setOnInsert: { key: 'visits' }, $inc: { count: 1 } }, { upsert: true })` — выполни это обновление три раза, затем прочитай счётчик и сохрани его `count` в `globalThis.result` (должно быть 3)."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: подключись к app, 3 × updateOne upsert с $inc: { count: 1 }\n// TODO: globalThis.result = count счётчика 'visits'\n"
+    },
+    "tests": [
+      {
+        "name": "count is 3",
+        "code": "assert(globalThis.result === 3, \"expected 3, got \" + globalThis.result);"
+      },
+      {
+        "name": "one document",
+        "code": "const docs = await (await (window.__db.mongo['counters'].find({})).toArray()); assert(docs.length === 1, \"expected exactly 1 counter doc, got \" + docs.length);"
+      }
+    ],
+    "hint": {
+      "en": "upsert: true creates the document on the first $inc (count: undefined + 1 = 1), subsequent updates increment it.",
+      "ru": "upsert: true создаёт документ при первом $inc (count: undefined + 1 = 1), следующие обновления увеличивают."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('counters');\nfor (let i = 0; i < 3; i++) {\n  await coll.updateOne(\n    { key: 'visits' },\n    { $setOnInsert: { key: 'visits' }, $inc: { count: 1 } },\n    { upsert: true }\n  );\n}\nglobalThis.result = (await coll.findOne({ key: 'visits' })).count;",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "mongo-010",
+    "track": "mongo",
+    "category": "aggregation",
+    "categoryI18n": {
+      "en": "Aggregation",
+      "ru": "Агрегация"
+    },
+    "order": 10,
+    "title": {
+      "en": "Filter → Group → Average",
+      "ru": "Фильтр → группировка → среднее"
+    },
+    "prompt": {
+      "en": "The `scores` collection is pre-populated: { student, score }. Build a pipeline: `$match` score ≥ 70, then `$group` by `student` with the average (`avg: { $avg: '$score' }`), then `$sort` by `avg` descending. Store in `globalThis.result` the best student's name (the first document's `student`).",
+      "ru": "Коллекция `scores` посеяна: { student, score }. Собери конвейер: `$match` score ≥ 70, затем `$group` по `student` со средним (`avg: { $avg: '$score' }`), затем `$sort` по `avg` по убыванию. В `globalThis.result` — имя лучшего студента (первый документ, поле `student`)."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('scores'); await coll.insertMany([{ student: 'Ada', score: 90 }, { student: 'Ada', score: 80 }, { student: 'Ben', score: 75 }, { student: 'Ben', score: 60 }, { student: 'Cara', score: 40 }]);",
+    "files": {
+      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: aggregate: $match { score: { $gte: 70 } } → $group (avg) → $sort { avg: -1 }\n// TODO: globalThis.result = student из первого документа\n"
+    },
+    "tests": [
+      {
+        "name": "best student is Ada",
+        "code": "assert(globalThis.result === 'Ada', \"expected 'Ada', got \" + globalThis.result);"
+      },
+      {
+        "name": "Ben average sanity",
+        "code": "const scores = (window.__db.mongo['scores'] || []).filter((s) => s.student === 'Ben' && s.score >= 70); assert(scores.length === 1 && scores[0].score === 75, \"sanity: Ben's only passing score is 75\");"
+      }
+    ],
+    "hint": {
+      "en": "Cara is filtered out (40 < 70); Ben's average over the remaining (75) is less than Ada's (85).",
+      "ru": "Cara отфильтрована (40 < 70); среднее Ben по оставшимся (75) меньше среднего Ada (85)."
+    },
+    "solution": "import { MongoClient } from \"mongodb\";\n\nconst client = new MongoClient(\"mongodb://localhost:27017/syntax\");\nawait client.connect();\nconst coll = client.db('app').collection('scores');\nconst top = await coll.aggregate([\n  { $match: { score: { $gte: 70 } } },\n  { $group: { _id: '$student', avg: { $avg: '$score' } }, student: { $first: '$student' } },\n  { $sort: { avg: -1 } },\n]).toArray();\nglobalThis.result = top[0].student || top[0]._id;",
+    "dailyChallenge": true,
+    "status": "published"
+  }
+]

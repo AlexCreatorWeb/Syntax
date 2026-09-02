@@ -68,6 +68,11 @@ export function hasGrantedTask(taskId) {
   return Boolean(getXpState().granted[taskId]);
 }
 
+// Суммарный XP (для профиля/рейтинга)
+export function totalXp() {
+  return getXpState().total;
+}
+
 export function getDailyDone(date = new Date()) {
   const rec = getXpState().daily[dailyKey(date)];
   return rec ? { taskId: rec.taskId, xp: rec.xp } : null;

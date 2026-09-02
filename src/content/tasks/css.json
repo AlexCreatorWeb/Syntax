@@ -1,1 +1,561 @@
-[]
+[
+  {
+    "id": "css-001",
+    "track": "css",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 1,
+    "title": {
+      "en": "Box Color and Size",
+      "ru": "Цвет и размер блока"
+    },
+    "prompt": {
+      "en": "Style the `.box` element in styles.css: background color `rgb(255, 0, 0)` (red), width `200px`, height `100px`. The preview shows the box — after your styles it must be a red 200×100 square. Make the tests green.",
+      "ru": "Стилизуи `.box` в styles.css: цвет фона `rgb(255, 0, 0)` (красный), ширина `200px`, высота `100px`. В превью виден блок — после стилей он должен стать красным квадратом 200×100. Сделай тесты зелёными."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>CSS Box</title>\n</head>\n<body>\n  <div class=\"box\">box</div>\n</body>\n</html>",
+      "styles.css": "/* TODO: .box — background rgb(255, 0, 0), width 200px, height 100px */"
+    },
+    "tests": [
+      {
+        "name": "red background",
+        "code": "const s = getComputedStyle(document.querySelector('.box')); assert(s.backgroundColor === 'rgb(255, 0, 0)', \"expected rgb(255, 0, 0), got \" + s.backgroundColor);"
+      },
+      {
+        "name": "200x100",
+        "code": "const s = getComputedStyle(document.querySelector('.box')); assert(s.width === '200px' && s.height === '100px', \"expected 200px x 100px, got \" + s.width + \" x \" + s.height);"
+      }
+    ],
+    "hint": {
+      "en": "A simple rule: `.box { background: …; width: …; height: …; }`.",
+      "ru": "Простое правило: `.box { background: …; width: …; height: …; }`."
+    },
+    "solution": ".box {\n  background: rgb(255, 0, 0);\n  width: 200px;\n  height: 100px;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "css-002",
+    "track": "css",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 2,
+    "title": {
+      "en": "Padding and Margin",
+      "ru": "Отступы: padding и margin"
+    },
+    "prompt": {
+      "en": "Apply to `.box`: `padding: 20px` and `margin: 40px`. Then, in the test expectations: the element's content-box padding must be 20px on all sides and margin 40px. Do not touch the element's width/height.",
+      "ru": "Примени к `.box`: `padding: 20px` и `margin: 40px`. В элементах должны быть внутренние отступы 20px со всех сторон и внешние 40px. Ширина/высоту не трогай."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Spacing</title>\n</head>\n<body>\n  <div class=\"box\">box</div>\n</body>\n</html>",
+      "styles.css": "/* TODO: .box — padding 20px, margin 40px */"
+    },
+    "tests": [
+      {
+        "name": "padding 20px",
+        "code": "const s = getComputedStyle(document.querySelector('.box')); assert(s.paddingTop === '20px' && s.paddingRight === '20px' && s.paddingBottom === '20px' && s.paddingLeft === '20px', \"expected 20px padding on all sides\");"
+      },
+      {
+        "name": "margin 40px",
+        "code": "const s = getComputedStyle(document.querySelector('.box')); assert(s.marginTop === '40px' && s.marginRight === '40px' && s.marginBottom === '40px' && s.marginLeft === '40px', \"expected 40px margin on all sides\");"
+      }
+    ],
+    "hint": {
+      "en": "padding — внутри рамки (между контентом и бордером), margin — снаружи (между элементами).",
+      "ru": "padding — внутри рамки (между контентом и бордером), margin — снаружи (между элементами)."
+    },
+    "solution": ".box {\n  padding: 20px;\n  margin: 40px;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "css-003",
+    "track": "css",
+    "category": "typography",
+    "categoryI18n": {
+      "en": "Typography",
+      "ru": "Типографика"
+    },
+    "order": 3,
+    "title": {
+      "en": "Heading Type",
+      "ru": "Типографика заголовка"
+    },
+    "prompt": {
+      "en": "Style the `h1` on the page: `font-size: 32px`, `font-weight: 700`, `color: rgb(17, 24, 39)` (near-black), `text-align: center`. And the paragraphs: `font-size: 16px`, `line-height: 1.6`.",
+      "ru": "Стилизуи `h1` на странице: `font-size: 32px`, `font-weight: 700`, `color: rgb(17, 24, 39)` (почти чёрный), `text-align: center`. И параграфы: `font-size: 16px`, `line-height: 1.6`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Typography</title>\n</head>\n<body>\n  <h1>Hello, typography</h1>\n  <p>Paragraph with some text to measure line height and size.</p>\n</body>\n</html>",
+      "styles.css": "/* TODO: h1 — 32px/700/rgb(17,24,39)/center; p — 16px, line-height 1.6 */"
+    },
+    "tests": [
+      {
+        "name": "h1 styles",
+        "code": "const s = getComputedStyle(document.querySelector('h1')); assert(s.fontSize === '32px' && s.fontWeight === '700' && s.color === 'rgb(17, 24, 39)' && s.textAlign === 'center', \"check h1: got \" + s.fontSize + \" / \" + s.fontWeight + \" / \" + s.color + \" / \" + s.textAlign);"
+      },
+      {
+        "name": "p styles",
+        "code": "const s = getComputedStyle(document.querySelector('p')); assert(s.fontSize === '16px' && s.lineHeight === '25.6px', \"expected 16px font and line-height 1.6 (= 25.6px), got \" + s.fontSize + \" / \" + s.lineHeight);"
+      }
+    ],
+    "hint": {
+      "en": "line-height: 1.6 is a unitless multiplier: for a 16px font the browser computes 25.6px.",
+      "ru": "line-height: 1.6 — безразмерный множитель: для шрифта 16px браузер считает 25.6px."
+    },
+    "solution": "h1 {\n  font-size: 32px;\n  font-weight: 700;\n  color: rgb(17, 24, 39);\n  text-align: center;\n}\np {\n  font-size: 16px;\n  line-height: 1.6;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "css-004",
+    "track": "css",
+    "category": "basics",
+    "categoryI18n": {
+      "en": "Basics",
+      "ru": "Основы"
+    },
+    "order": 4,
+    "title": {
+      "en": "Borders and Shadows",
+      "ru": "Бордеры и тени"
+    },
+    "prompt": {
+      "en": "Give `.card` a modern look: `border-radius: 12px`, `border: 1px solid rgb(229, 231, 235)`, `box-shadow: 0 4px 12px rgb(0 0 0 / 0.08)`, `padding: 24px`. All four properties are checked by tests.",
+      "ru": "Сделай `.card` в современном стиле: `border-radius: 12px`, `border: 1px solid rgb(229, 231, 235)`, `box-shadow: 0 4px 12px rgb(0 0 0 / 0.08)`, `padding: 24px`. Все четыре свойства проверяются тестами."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Card</title>\n</head>\n<body>\n  <div class=\"card\">Card</div>\n</body>\n</html>",
+      "styles.css": "/* TODO: .card — radius 12px, border 1px solid rgb(229,231,235), shadow 0 4px 12px rgba(0,0,0,0.08), padding 24px */"
+    },
+    "tests": [
+      {
+        "name": "radius and padding",
+        "code": "const s = getComputedStyle(document.querySelector('.card')); assert(s.borderRadius === '12px' && s.padding === '24px', \"expected radius 12px + padding 24px, got \" + s.borderRadius + \" / \" + s.padding);"
+      },
+      {
+        "name": "border",
+        "code": "const s = getComputedStyle(document.querySelector('.card')); assert(s.borderTopWidth === '1px' && s.borderTopColor === 'rgb(229, 231, 235)' && s.borderTopStyle === 'solid', \"expected 1px solid rgb(229,231,235)\");"
+      },
+      {
+        "name": "shadow",
+        "code": "const s = getComputedStyle(document.querySelector('.card')); assert(/0px 4px 12px/.test(s.boxShadow) && s.boxShadow !== 'none', \"expected shadow 0 4px 12px, got \" + s.boxShadow);"
+      }
+    ],
+    "hint": {
+      "en": "box-shadow: offset-x offset-y blur color — the color can be rgba or rgb(... / 0.08).",
+      "ru": "box-shadow: offset-x offset-y blur цвет — цвет можно rgba или rgb(... / 0.08)."
+    },
+    "solution": ".card {\n  border-radius: 12px;\n  border: 1px solid rgb(229, 231, 235);\n  box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);\n  padding: 24px;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "css-005",
+    "track": "css",
+    "category": "flexbox",
+    "categoryI18n": {
+      "en": "Flexbox",
+      "ru": "Flexbox"
+    },
+    "order": 5,
+    "title": {
+      "en": "Centered Row",
+      "ru": "Центрированный ряд"
+    },
+    "prompt": {
+      "en": "Make `.row` a flex container: items in one horizontal row, centered on both axes (`justify-content: center` + `align-items: center`), with `gap: 12px` between items and `height: 120px`. The three child `.item` divs must sit in the middle of the row.",
+      "ru": "Сделай `.row` flex-контейнером: элементы в один горизонтальный ряд, по центру по обеим осям (`justify-content: center` + `align-items: center`), `gap: 12px` между элементами, `height: 120px`. Три дочерних div `.item` должны оказаться посередине ряда."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Flex row</title>\n</head>\n<body>\n  <div class=\"row\">\n    <div class=\"item\">1</div>\n    <div class=\"item\">2</div>\n    <div class=\"item\">3</div>\n  </div>\n</body>\n</html>",
+      "styles.css": ".item {\n  width: 60px;\n  height: 40px;\n  background: rgb(59, 130, 246);\n  color: white;\n}\n\n/* TODO: .row — flex, center/center, gap 12px, height 120px */"
+    },
+    "tests": [
+      {
+        "name": "flex center",
+        "code": "const s = getComputedStyle(document.querySelector('.row')); assert(s.display === 'flex' && s.justifyContent === 'center' && s.alignItems === 'center', \"expected display:flex + center/center, got \" + s.display + \" / \" + s.justifyContent + \" / \" + s.alignItems);"
+      },
+      {
+        "name": "gap 12px",
+        "code": "const s = getComputedStyle(document.querySelector('.row')); assert(s.gap === '12px' || s.columnGap === '12px', \"expected gap 12px, got \" + s.gap);"
+      },
+      {
+        "name": "single row",
+        "code": "const items = [...document.querySelectorAll('.item')].map((el) => el.getBoundingClientRect().top); assert(new Set(items).size === 1, \"items must be on one horizontal line\");"
+      },
+      {
+        "name": "vertically centered",
+        "code": "const row = document.querySelector('.row').getBoundingClientRect(); const item = document.querySelector('.item').getBoundingClientRect(); const diff = Math.abs((row.top + row.height / 2) - (item.top + item.height / 2)); assert(diff < 2, \"item must be vertically centered, offset \" + diff + \"px\");"
+      }
+    ],
+    "hint": {
+      "en": "display: flex + justify-content (main axis) + align-items (cross axis).",
+      "ru": "display: flex + justify-content (главная ось) + align-items (поперечная)."
+    },
+    "solution": ".row {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 12px;\n  height: 120px;\n}",
+    "dailyChallenge": true,
+    "lessonId": "css-03",
+    "status": "published"
+  },
+  {
+    "id": "css-006",
+    "track": "css",
+    "category": "flexbox",
+    "categoryI18n": {
+      "en": "Flexbox",
+      "ru": "Flexbox"
+    },
+    "order": 6,
+    "title": {
+      "en": "Space-Between Toolbar",
+      "ru": "Тулбар space-between"
+    },
+    "prompt": {
+      "en": "Turn `.toolbar` into a flex row: `justify-content: space-between`, `align-items: center`, `padding: 8px 16px`. The first child (`.logo`) must sit at the left edge, the last (`.actions`) at the right edge, with the middle item between them.",
+      "ru": "Преврати `.toolbar` в flex-ряд: `justify-content: space-between`, `align-items: center`, `padding: 8px 16px`. Первый элемент (`.logo`) — у левого края, последний (`.actions`) — у правого, средний — между ними."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Toolbar</title>\n</head>\n<body>\n  <div class=\"toolbar\">\n    <span class=\"logo\">Logo</span>\n    <span class=\"mid\">Middle</span>\n    <span class=\"actions\">Actions</span>\n  </div>\n</body>\n</html>",
+      "styles.css": "/* TODO: .toolbar — flex, space-between, align center, padding 8px 16px */"
+    },
+    "tests": [
+      {
+        "name": "flex space-between",
+        "code": "const s = getComputedStyle(document.querySelector('.toolbar')); assert(s.display === 'flex' && s.justifyContent === 'space-between' && s.alignItems === 'center', \"expected flex space-between center\");"
+      },
+      {
+        "name": "padding",
+        "code": "const s = getComputedStyle(document.querySelector('.toolbar')); assert(s.paddingTop === '8px' && s.paddingLeft === '16px', \"expected padding 8px 16px\");"
+      },
+      {
+        "name": "logo at left edge",
+        "code": "const tb = document.querySelector('.toolbar').getBoundingClientRect(); const logo = document.querySelector('.logo').getBoundingClientRect(); assert(logo.left - tb.left < 20, \"logo must be near the left padding edge, offset \" + (logo.left - tb.left) + \"px\");"
+      },
+      {
+        "name": "actions at right edge",
+        "code": "const tb = document.querySelector('.toolbar').getBoundingClientRect(); const act = document.querySelector('.actions').getBoundingClientRect(); assert(tb.right - act.right < 20, \"actions must be near the right padding edge, offset \" + (tb.right - act.right) + \"px\");"
+      }
+    ],
+    "hint": {
+      "en": "space-between: first and last items on the edges, the rest evenly in between.",
+      "ru": "space-between: первый и последний элементы у краёв, остальные равномерно между ними."
+    },
+    "solution": ".toolbar {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 8px 16px;\n}",
+    "dailyChallenge": true,
+    "lessonId": "css-03",
+    "status": "published"
+  },
+  {
+    "id": "css-007",
+    "track": "css",
+    "category": "grid",
+    "categoryI18n": {
+      "en": "Grid",
+      "ru": "Grid"
+    },
+    "order": 7,
+    "title": {
+      "en": "Three-Column Grid",
+      "ru": "Трёхколоночная сетка"
+    },
+    "prompt": {
+      "en": "Make `.grid` a CSS Grid with three equal columns and `gap: 16px`: use `grid-template-columns: repeat(3, 1fr)`. The six `.cell` children must be laid out in two rows of three.",
+      "ru": "Сделай `.grid` CSS Grid с тремя равными колонками и `gap: 16px`: используй `grid-template-columns: repeat(3, 1fr)`. Шесть детей `.cell` должны встать в два ряда по три."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Grid</title>\n</head>\n<body>\n  <div class=\"grid\">\n    <div class=\"cell\">1</div>\n    <div class=\"cell\">2</div>\n    <div class=\"cell\">3</div>\n    <div class=\"cell\">4</div>\n    <div class=\"cell\">5</div>\n    <div class=\"cell\">6</div>\n  </div>\n</body>\n</html>",
+      "styles.css": ".cell {\n  background: rgb(34, 197, 94);\n  color: white;\n  padding: 16px;\n}\n\n/* TODO: .grid — grid, 3 equal columns, gap 16px */"
+    },
+    "tests": [
+      {
+        "name": "grid template",
+        "code": "const s = getComputedStyle(document.querySelector('.grid')); assert(s.display === 'grid', \"expected display:grid\"); assert(/repeat\\(3, 1fr\\)|1fr 1fr 1fr/.test(s.gridTemplateColumns) || s.gridTemplateColumns.split(' ').filter(Boolean).length === 3, \"expected 3 columns, got \" + s.gridTemplateColumns);"
+      },
+      {
+        "name": "gap 16px",
+        "code": "const s = getComputedStyle(document.querySelector('.grid')); assert(s.gap === '16px' || s.columnGap === '16px', \"expected gap 16px, got \" + s.gap);"
+      },
+      {
+        "name": "2 rows of 3",
+        "code": "const cells = [...document.querySelectorAll('.cell')].map((el) => el.getBoundingClientRect()); const row1 = new Set([0, 1, 2].map((i) => Math.round(cells[i].top / 10))); const row2 = new Set([3, 4, 5].map((i) => Math.round(cells[i].top / 10))); assert(row1.size === 1 && row2.size === 1 && cells[0].top < cells[3].top, \"expected two rows of three cells\");"
+      }
+    ],
+    "hint": {
+      "en": "grid-template-columns: repeat(3, 1fr) — three columns, each takes an equal fraction of the width.",
+      "ru": "grid-template-columns: repeat(3, 1fr) — три колонки, каждая берёт равную долю ширины."
+    },
+    "solution": ".grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 16px;\n}",
+    "dailyChallenge": true,
+    "lessonId": "css-04",
+    "status": "published"
+  },
+  {
+    "id": "css-008",
+    "track": "css",
+    "category": "typography",
+    "categoryI18n": {
+      "en": "Typography",
+      "ru": "Типографика"
+    },
+    "order": 8,
+    "title": {
+      "en": "Readable Text Column",
+      "ru": "Читаемая колонка текста"
+    },
+    "prompt": {
+      "en": "Typography for reading: `p` gets `font-size: 18px`, `line-height: 1.7`, `max-width: 640px`, `margin-left: auto`, `margin-right: auto` (a centered column); `h2` gets `letter-spacing: -0.02em` and `font-weight: 800`. The tests read the computed styles.",
+      "ru": "Типографика для чтения: `p` получает `font-size: 18px`, `line-height: 1.7`, `max-width: 640px`, `margin-left: auto`, `margin-right: auto` (центрированная колонка); `h2` — `letter-spacing: -0.02em` и `font-weight: 800`. Тесты читают вычисленные стили."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Reading</title>\n</head>\n<body>\n  <h2>Long-form article</h2>\n  <p>This paragraph is intentionally long so that the max-width constraint becomes visible in the preview: text that flows into a narrow centered column is much easier to read than a wall of text spanning the whole window. Keep your eyes on the line length.</p>\n</body>\n</html>",
+      "styles.css": "/* TODO: p — 18px, line-height 1.7, max-width 640px, centered (margin auto); h2 — letter-spacing -0.02em, font-weight 800 */"
+    },
+    "tests": [
+      {
+        "name": "p typography",
+        "code": "const s = getComputedStyle(document.querySelector('p')); assert(s.fontSize === '18px' && s.lineHeight === '30.6px' && s.maxWidth === '640px', \"expected 18px / 1.7 (=30.6px) / max-width 640px, got \" + s.fontSize + \" / \" + s.lineHeight + \" / \" + s.maxWidth);"
+      },
+      {
+        "name": "p centered",
+        "code": "const s = getComputedStyle(document.querySelector('p')); assert(s.marginLeft === 'auto' && s.marginRight === 'auto', \"expected margin auto on both sides\");"
+      },
+      {
+        "name": "h2",
+        "code": "const s = getComputedStyle(document.querySelector('h2')); assert(s.fontWeight === '800' && s.letterSpacing === '-0.27px' || s.letterSpacing === '-0.3px' || s.letterSpacing === '-0.28px', \"expected letter-spacing -0.02em (≈ -0.27px), got \" + s.letterSpacing);"
+      }
+    ],
+    "hint": {
+      "en": "Center a block of a given max-width with margin: 0 auto. -0.02em ≈ -0.27px at 13.5px… the test accepts rounding.",
+      "ru": "Блок с max-width центрируется margin: 0 auto. -0.02em ≈ -0.27px… тест допускает округление."
+    },
+    "solution": "p {\n  font-size: 18px;\n  line-height: 1.7;\n  max-width: 640px;\n  margin-left: auto;\n  margin-right: auto;\n}\nh2 {\n  letter-spacing: -0.02em;\n  font-weight: 800;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "css-009",
+    "track": "css",
+    "category": "animation",
+    "categoryI18n": {
+      "en": "Animation",
+      "ru": "Анимация"
+    },
+    "order": 9,
+    "title": {
+      "en": "Pulse Animation",
+      "ru": "Анимация «пульс»"
+    },
+    "prompt": {
+      "en": "Define `@keyframes pulse` (scale from 1 to 1.1 and back: `50% { transform: scale(1.1) }`), and apply it to `.dot`: `animation: pulse 1s infinite`. The computed style of `.dot` must show the animation name, duration 1s, and iteration count infinite.",
+      "ru": "Определи `@keyframes pulse` (масштаб от 1 к 1.1 и обратно: `50% { transform: scale(1.1) }`) и примени к `.dot`: `animation: pulse 1s infinite`. Вычисленный стиль `.dot` должен показывать имя анимации, длительность 1s и повторение infinite."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Animation</title>\n</head>\n<body>\n  <div class=\"dot\"></div>\n</body>\n</html>",
+      "styles.css": ".dot {\n  width: 48px;\n  height: 48px;\n  margin: 80px auto;\n  background: rgb(16, 185, 129);\n  border-radius: 50%;\n}\n\n/* TODO: @keyframes pulse (50% → scale(1.1)) + .dot { animation: pulse 1s infinite } */"
+    },
+    "tests": [
+      {
+        "name": "animation properties",
+        "code": "const s = getComputedStyle(document.querySelector('.dot')); assert(s.animationName === 'pulse', \"expected animation name 'pulse', got \" + s.animationName);\nassert(s.animationDuration === '1s', \"expected duration 1s, got \" + s.animationDuration);\nassert(s.animationIterationCount === 'infinite', \"expected infinite, got \" + s.animationIterationCount);"
+      },
+      {
+        "name": "keyframes exist",
+        "code": "let found = false; for (const sheet of document.styleSheets) { for (const rule of sheet.cssRules || []) { if (rule.type === 7 && rule.name === 'pulse') found = true; } } assert(found, \"expected @keyframes pulse in the styles\");"
+      }
+    ],
+    "hint": {
+      "en": "Shorthand: animation: <name> <duration> <iteration-count>. The 50% keyframe is where the scale peaks.",
+      "ru": "Сокращённо: animation: <имя> <длительность> <повторы>. В keyframe 50% — пик масштаба."
+    },
+    "solution": "@keyframes pulse {\n  0% { transform: scale(1); }\n  50% { transform: scale(1.1); }\n  100% { transform: scale(1); }\n}\n.dot {\n  animation: pulse 1s infinite;\n}",
+    "dailyChallenge": true,
+    "lessonId": "css-05",
+    "status": "published"
+  },
+  {
+    "id": "css-010",
+    "track": "css",
+    "category": "animation",
+    "categoryI18n": {
+      "en": "Animation",
+      "ru": "Анимация"
+    },
+    "order": 10,
+    "title": {
+      "en": "Hover Lift with Transition",
+      "ru": "Приподнимание при ховере"
+    },
+    "prompt": {
+      "en": "Build a hover effect for `.lift`: base state — `transform: translateY(0)`, `box-shadow: 0 2px 4px rgb(0 0 0 / 0.1)`, `transition: transform 0.3s ease, box-shadow 0.3s ease`. On `:hover` — `transform: translateY(-8px)` and a bigger shadow (`0 12px 24px rgb(0 0 0 / 0.15)`). The test reads the base computed style (transition + transform).",
+      "ru": "Сделай hover-эффект для `.lift`: базовое состояние — `transform: translateY(0)`, `box-shadow: 0 2px 4px rgb(0 0 0 / 0.1)`, `transition: transform 0.3s ease, box-shadow 0.3s ease`. При `:hover` — `transform: translateY(-8px)` и большая тень (`0 12px 24px rgb(0 0 0 / 0.15)`). Тест читает базовый вычисленный стиль (transition + transform)."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Lift</title>\n</head>\n<body>\n  <div class=\"lift\">Hover me</div>\n</body>\n</html>",
+      "styles.css": ".lift {\n  width: 220px;\n  margin: 80px auto;\n  padding: 24px;\n  background: white;\n  border-radius: 12px;\n  text-align: center;\n}\n\n/* TODO: базовый transform/box-shadow/transition + :hover (translateY(-8px), большая тень) */"
+    },
+    "tests": [
+      {
+        "name": "transition declared",
+        "code": "const s = getComputedStyle(document.querySelector('.lift')); assert(s.transitionProperty.includes('transform') && s.transitionProperty.includes('box-shadow') && s.transitionDuration.includes('0.3s'), \"expected transition transform+box-shadow 0.3s, got \" + s.transitionProperty + \" / \" + s.transitionDuration);"
+      },
+      {
+        "name": "base transform is identity",
+        "code": "const s = getComputedStyle(document.querySelector('.lift')); assert(s.transform === 'none' || s.transform === 'matrix(1, 0, 0, 1, 0, 0)', \"expected no displacement in base state, got \" + s.transform);"
+      },
+      {
+        "name": "hover rule exists",
+        "code": "let found = false; for (const sheet of document.styleSheets) { for (const rule of sheet.cssRules || []) { if (rule.selectorText && rule.selectorText.includes('.lift:hover')) { found = /translateY\\(-8px\\)/.test(rule.cssText); } } } assert(found, \"expected .lift:hover with translateY(-8px)\");"
+      }
+    ],
+    "hint": {
+      "en": "Transition animates between the base state and the :hover state — declare it on the base rule, not on :hover.",
+      "ru": "Transition анимирует переход между базовым и :hover — объявляется в базовом правиле, не в :hover."
+    },
+    "solution": ".lift {\n  transform: translateY(0);\n  box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);\n  transition: transform 0.3s ease, box-shadow 0.3s ease;\n}\n.lift:hover {\n  transform: translateY(-8px);\n  box-shadow: 0 12px 24px rgb(0 0 0 / 0.15);\n}",
+    "dailyChallenge": false,
+    "lessonId": "css-05",
+    "status": "published"
+  },
+  {
+    "id": "css-011",
+    "track": "css",
+    "category": "grid",
+    "categoryI18n": {
+      "en": "Grid",
+      "ru": "Grid"
+    },
+    "order": 11,
+    "title": {
+      "en": "Named Areas Layout",
+      "ru": "Именованные области"
+    },
+    "prompt": {
+      "en": "Build a page layout with Grid named areas. `.layout`: `display: grid`, `grid-template-areas: \"header header\" \"sidebar main\" \"footer footer\"`, `grid-template-columns: 200px 1fr`, `gap: 12px`. Assign each child its area: `.layout-header { grid-area: header }`, `.layout-sidebar { grid-area: sidebar }`, `.layout-main { grid-area: main }`, `.layout-footer { grid-area: footer }`.",
+      "ru": "Сделай раскладку страницы на Grid с именованными областями. `.layout`: `display: grid`, `grid-template-areas: \"header header\" \"sidebar main\" \"footer footer\"`, `grid-template-columns: 200px 1fr`, `gap: 12px`. Каждому ребёнку — его область: `.layout-header { grid-area: header }`, `.layout-sidebar { grid-area: sidebar }`, `.layout-main { grid-area: main }`, `.layout-footer { grid-area: footer }`."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Layout</title>\n</head>\n<body>\n  <div class=\"layout\">\n    <div class=\"layout-header\">Header</div>\n    <div class=\"layout-sidebar\">Sidebar</div>\n    <div class=\"layout-main\">Main</div>\n    <div class=\"layout-footer\">Footer</div>\n  </div>\n</body>\n</html>",
+      "styles.css": ".layout > div {\n  background: rgb(148, 163, 184);\n  color: white;\n  padding: 12px;\n}\n\n/* TODO: .layout — grid + named areas; каждому .layout-* — grid-area */"
+    },
+    "tests": [
+      {
+        "name": "template areas",
+        "code": "const s = getComputedStyle(document.querySelector('.layout')); assert(s.display === 'grid', \"expected display:grid\"); assert(/header/.test(s.gridTemplateAreas) && /sidebar/.test(s.gridTemplateAreas) && /main/.test(s.gridTemplateAreas), \"expected named areas, got: \" + s.gridTemplateAreas);"
+      },
+      {
+        "name": "columns 200px 1fr",
+        "code": "const s = getComputedStyle(document.querySelector('.layout')); const cols = s.gridTemplateColumns.split(' ').filter(Boolean); assert(cols.length === 2 && cols[0] === '200px', \"expected 200px + 1fr columns, got \" + s.gridTemplateColumns);"
+      },
+      {
+        "name": "areas assigned",
+        "code": "const gs = (c) => getComputedStyle(document.querySelector(c)).gridArea; assert(gs('.layout-header') === 'header' && gs('.layout-sidebar') === 'sidebar' && gs('.layout-main') === 'main' && gs('.layout-footer') === 'footer', \"each block must have its grid-area, got: \" + ['.layout-header', '.layout-sidebar', '.layout-main', '.layout-footer'].map(gs).join(','));"
+      },
+      {
+        "name": "header spans full width",
+        "code": "const hdr = document.querySelector('.layout-header').getBoundingClientRect(); const side = document.querySelector('.layout-sidebar').getBoundingClientRect(); const main = document.querySelector('.layout-main').getBoundingClientRect(); assert(hdr.width >= side.width + main.width - 2, \"header must span both columns\");"
+      }
+    ],
+    "hint": {
+      "en": "grid-template-areas is a mini-map: each string is a row. Child: grid-area: <name>.",
+      "ru": "grid-template-areas — миникарта: каждая строка — ряд. У ребёнка: grid-area: <имя>."
+    },
+    "solution": ".layout {\n  display: grid;\n  grid-template-areas:\n    \"header header\"\n    \"sidebar main\"\n    \"footer footer\";\n  grid-template-columns: 200px 1fr;\n  gap: 12px;\n}\n.layout-header { grid-area: header; }\n.layout-sidebar { grid-area: sidebar; }\n.layout-main { grid-area: main; }\n.layout-footer { grid-area: footer; }",
+    "dailyChallenge": true,
+    "lessonId": "css-04",
+    "status": "published"
+  },
+  {
+    "id": "css-012",
+    "track": "css",
+    "category": "flexbox",
+    "categoryI18n": {
+      "en": "Flexbox",
+      "ru": "Flexbox"
+    },
+    "order": 12,
+    "title": {
+      "en": "Card Stack with Gap and Wrap",
+      "ru": "Стопка карточек с wrap"
+    },
+    "prompt": {
+      "en": "Create a responsive card stack: `.stack` — `display: flex`, `flex-wrap: wrap`, `gap: 16px`, `justify-content: flex-start`; each `.card-in-stack` — `flex: 1 1 160px` (can grow, basis 160px) and `max-width: 220px`. All five cards must be visible (they wrap onto multiple lines).",
+      "ru": "Сделай адаптивную стопку карточек: `.stack` — `display: flex`, `flex-wrap: wrap`, `gap: 16px`, `justify-content: flex-start`; каждая `.card-in-stack` — `flex: 1 1 160px` (может расти, basis 160px) и `max-width: 220px`. Все пять карточек должны быть видны (переносятся на несколько строк)."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Stack</title>\n</head>\n<body>\n  <div class=\"stack\">\n    <div class=\"card-in-stack\">A</div>\n    <div class=\"card-in-stack\">B</div>\n    <div class=\"card-in-stack\">C</div>\n    <div class=\"card-in-stack\">D</div>\n    <div class=\"card-in-stack\">E</div>\n  </div>\n</body>\n</html>",
+      "styles.css": ".card-in-stack {\n  background: rgb(168, 85, 247);\n  color: white;\n  padding: 20px;\n  text-align: center;\n}\n\n/* TODO: .stack — flex, wrap, gap 16px; .card-in-stack — flex 1 1 160px, max-width 220px */"
+    },
+    "tests": [
+      {
+        "name": "stack is wrapping flex",
+        "code": "const s = getComputedStyle(document.querySelector('.stack')); assert(s.display === 'flex' && s.flexWrap === 'wrap' && s.gap === '16px', \"expected flex wrap gap 16px, got \" + s.display + \" / \" + s.flexWrap + \" / \" + s.gap);"
+      },
+      {
+        "name": "card flex-basis",
+        "code": "const s = getComputedStyle(document.querySelector('.card-in-stack')); assert(s.flexBasis === '160px' && s.maxWidth === '220px', \"expected flex-basis 160px + max-width 220px, got \" + s.flexBasis + \" / \" + s.maxWidth);"
+      },
+      {
+        "name": "all cards laid out",
+        "code": "const cards = [...document.querySelectorAll('.card-in-stack')]; assert(cards.length === 5 && cards.every((c) => c.getBoundingClientRect().width > 0 && c.getBoundingClientRect().height > 0), \"all 5 cards must be visible\");"
+      },
+      {
+        "name": "cards wrap",
+        "code": "const cards = [...document.querySelectorAll('.card-in-stack')].map((c) => c.getBoundingClientRect().top); const rows = new Set(cards.map((t) => Math.round(t / 10))); assert(rows.size >= 2, \"cards must wrap onto multiple lines\");"
+      }
+    ],
+    "hint": {
+      "en": "flex: 1 1 160px = grow 1, shrink 1, basis 160px — the card takes at least 160px and stretches to fill the row.",
+      "ru": "flex: 1 1 160px = grow 1, shrink 1, basis 160px — карточка берёт минимум 160px и растёт, заполняя ряд."
+    },
+    "solution": ".stack {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 16px;\n  justify-content: flex-start;\n}\n.card-in-stack {\n  flex: 1 1 160px;\n  max-width: 220px;\n}",
+    "dailyChallenge": false,
+    "lessonId": "css-03",
+    "status": "published"
+  }
+]
