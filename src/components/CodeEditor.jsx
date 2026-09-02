@@ -151,7 +151,7 @@ function buildJsBlocks(files, contents) {
 
 // Собирает превью: HTML-файл + инлайн CSS и JS из соседних вкладок (+ перехват console)
 function buildPreviewDoc(files, contents) {
-  const htmlFile = files.find((f) => f.language === "html");
+  const htmlFile = files.find((f) => f.language === "html" && !/\.vue$/.test(f.name)); // .vue → Vue-раннер
   if (!htmlFile) return null;
 
   const css = files
@@ -170,6 +170,8 @@ function buildPreviewDoc(files, contents) {
 
 // Скрипт для «сухого» запуска JS-файлов без HTML: только console-перехват + JS
 function buildRunnerDoc(files, contents) {
+  const vueFile = files.find((f) => f.language === "html" && /\.vue$/.test(f.name));
+  if (vueFile) return buildVueDoc(contents[vueFile.id] ?? "");
   const jsxFile = files.find((f) => f.language === "javascript" && /\.jsx$/.test(f.name));
   if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "");
   const blocks = buildJsBlocks(files, contents);
@@ -231,6 +233,97 @@ try {
 </body></html>`;
 }
 
+// Vue-раннер: App.vue (SFC) → @vue/compiler-sfc (parse + compileScript + compileTemplate)
+// → единый blob-module (скрипт + render) → createApp + mount. Всё из unpkg esm-bundler
+// (одна копия Vue: bare-импорты vue-router/pinia резолвятся через import map),
+// @vue/compiler-sfc — esm.sh. Контракт урока: SFC с <script setup> и <template>;
+// опционально export const router / export const pinia в обычном <script>-блоке.
+// Номера строк: window.__syntaxOffset = 1 - (строка первой строки <script> в .vue) —
+// e.lineno у blob-module в координатах blob, скрипт студента идёт в начале blob.
+const VUE_IMPORT_MAP = JSON.stringify({
+  imports: {
+    vue: "https://unpkg.com/vue@3.4.38/dist/vue.esm-bundler.js",
+    "@vue/compiler-dom": "https://unpkg.com/@vue/compiler-dom@3.4.38/dist/compiler-dom.esm-bundler.js",
+    "@vue/compiler-core": "https://unpkg.com/@vue/compiler-core@3.4.38/dist/compiler-core.esm-bundler.js",
+    "@vue/runtime-dom": "https://unpkg.com/@vue/runtime-dom@3.4.38/dist/runtime-dom.esm-bundler.js",
+    "@vue/runtime-core": "https://unpkg.com/@vue/runtime-core@3.4.38/dist/runtime-core.esm-bundler.js",
+    "@vue/reactivity": "https://unpkg.com/@vue/reactivity@3.4.38/dist/reactivity.esm-bundler.js",
+    "@vue/shared": "https://unpkg.com/@vue/shared@3.4.38/dist/shared.esm-bundler.js",
+    "vue-router": "https://unpkg.com/vue-router@4.4.3/dist/vue-router.mjs",
+    pinia: "https://unpkg.com/pinia@2.1.7/dist/pinia.mjs",
+    "vue-demi": "https://unpkg.com/vue-demi@0.14.10/lib/index.mjs",
+    "@vue/devtools-api": "https://unpkg.com/@vue/devtools-api@6.6.3/lib/esm/index.js",
+    "@vue/compiler-sfc": "https://esm.sh/@vue/compiler-sfc@3.4.38",
+  },
+});
+
+function buildVueDoc(appCode) {
+  // </script> внутри SFC ломал бы хранилище-тег — экранируем; раннер разэкранирует
+  const src = (appCode || "").replace(/<\/script/gi, "<\\/script");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
+<script>window.process = { env: { NODE_ENV: "development" } };
+window.__VUE_OPTIONS_API__ = true; window.__VUE_PROD_DEVTOOLS__ = false; window.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;</script>
+<script type="importmap">${VUE_IMPORT_MAP}</script>
+</head><body>
+<div id="root"></div>
+${CONSOLE_CAPTURE}
+<script type="text/plain" id="syntax-app-src">
+${src}
+</script>
+<script type="module">
+(async () => {
+  try {
+    const { createApp } = await import("vue");
+    const { parse, compileScript, compileTemplate } = await import("@vue/compiler-sfc");
+    const src = document.getElementById("syntax-app-src").textContent.split("<\\\\/script").join("</scr" + "ipt");
+    // offset: строка (1-indexed) первой строки содержимого <script> в .vue
+    const lines = src.split("\n");
+    let contentStart = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (/^\\s*<script/.test(lines[i])) { contentStart = i + 2; break; }
+    }
+    window.__syntaxOffset = 1 - contentStart;
+    const { descriptor, errors } = parse(src, { filename: "App.vue" });
+    if (errors && errors.length) console.error("App.vue: " + errors[0].message);
+    let code = "";
+    let bindings = undefined;
+    if (descriptor.script || descriptor.scriptSetup) {
+      const script = compileScript(descriptor, { id: "syntax-app" });
+      code += script.content;
+      bindings = script.bindings;
+    }
+    if (descriptor.template) {
+      const tpl = compileTemplate({
+        source: descriptor.template.content,
+        id: "syntax-app",
+        filename: "App.vue",
+        compilerOptions: { mode: "module", bindingMetadata: bindings },
+      });
+      if (tpl.errors && tpl.errors.length) console.error("App.vue template: " + tpl.errors[0].message);
+      code += "\n" + tpl.code; // import {...} from "vue" + export function render(...)
+    }
+    for (const s of descriptor.styles || []) {
+      document.head.insertAdjacentHTML("beforeend", "<style>" + s.content + "</style>");
+    }
+    const blob = new Blob([code], { type: "text/javascript" });
+    const mod = await import(URL.createObjectURL(blob));
+    const App = { ...mod.default, render: mod.render };
+    const app = createApp(App);
+    if (mod.router) app.use(mod.router);
+    if (mod.pinia) app.use(mod.pinia);
+    app.config.warnHandler = (m) => console.warn("Vue warn: " + m);
+    app.config.errorHandler = (e) => console.error("App.vue: " + ((e && e.message) || e));
+    app.mount("#root");
+    console.log("[Syntax] Vue app mounted");
+  } catch (e) {
+    console.error("App.vue: " + String((e && e.message) || e).split("\n")[0]);
+  }
+})();
+</script>
+</body></html>`;
+}
+
 function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate, defaultShowPreview = true }) {
   const t = useT();
 
@@ -273,8 +366,8 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const wrapperRef = useRef(null);
 
   const activeFile = files.find((f) => f.id === activeId) || files[0];
-  const hasHtml = files.some((f) => f.language === "html");
-  const hasJs = files.some((f) => f.language === "javascript");
+  const hasHtml = files.some((f) => f.language === "html" && !/\.vue$/.test(f.name)); // .vue → раннер, не превью
+  const hasJs = files.some((f) => f.language === "javascript" || /\.vue$/.test(f.name));
   const jobTech = job && job.techId ? getTech(job.techId) : null;
 
   // Консоль всегда в кадре + вспышка после Run (аудит #1): цикл «действие → фидбек»

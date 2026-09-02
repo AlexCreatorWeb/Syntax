@@ -6,7 +6,7 @@ import promoStudio from "../assets/promo-studio.png";
 export const PROMOS = {
   book: {
     cover: "flanagan",
-    url: "https://www.amazon.com/dp/1098151219", // JavaScript: The Definitive Guide, 7th ed.
+    url: "https://www.amazon.com/dp/1491952024", // JavaScript: The Definitive Guide, 7th ed. (Flanagan)
     titleKey: "promo.book.title",
     descKey: "promo.book.desc",
     ctaKey: "promo.book.cta",
