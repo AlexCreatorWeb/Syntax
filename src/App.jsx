@@ -230,7 +230,15 @@ function App() {
           onAuth={openAuth}
           onLogout={handleLogout}
         />
-        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={(ctx) => openAuth("signup", ctx)} job={job} activeTech={activeTech} isAuthed={isAuthed} />
+        <WidgetPanel
+          activeTab={activeTab}
+          onNavigate={openTab}
+          onAuth={openAuth}
+          job={job}
+          activeTech={activeTech}
+          isAuthed={isAuthed}
+          dbLessons={dbLessons}
+        />
       </div>
       {authMode && <AuthModal key={authMode} mode={authMode} ctx={authCtx} onClose={closeAuth} onSwitchMode={openAuth} />}
       {newsItem && <NewsModal item={newsItem} onClose={closeNews} />}

@@ -10,7 +10,8 @@ import RankingsView from "./views/RankingsView";
 import CommunityView from "./views/CommunityView";
 import ProfileView from "./views/ProfileView";
 import { useT } from "../i18n/useT";
-import { getCompleted, markComplete } from "../lib/progress";
+import { getCompleted } from "../lib/progress";
+import { lessonJobFor } from "../lib/lessonJob";
 
 // Учебный контекст «урока» (демо-данные; дальше — с бэкенда)
 function lessonJob(t) {
@@ -38,6 +39,15 @@ function taskJob(t, index, techId) {
 function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons, session, userName, onAuth, onLogout }) {
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
+  const isAuthed = Boolean(session);
+
+  // Гостям уроки закрыты (требование приватности): любой переход к уроку —
+  // в auth-модалку с контекстом «lesson» (цель не теряется после входа).
+  const requireAuth = () => {
+    if (isAuthed) return true;
+    onAuth("signup", "lesson");
+    return false;
+  };
 
   // #/lesson без job-контекста (refresh/bookmark): урок живёт в состоянии App,
   // после перезагрузки job=null — вместо белого экрана мягкий редирект на roadmap
@@ -49,25 +59,14 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   // Без techId (демо-урок с главной) — первая строка БД целиком / исходный JavaScript-урок.
   // Приоритет: таблица `lessons` в Supabase (строка с tech = трек) → i18n-статика (fallback).
   const dbLessonsArr = dbLessons || [];
-  const taskFileMap = { javascript: "index.js", python: "main.py", postgres: "queries.sql", html: "index.html", css: "styles.css", node: "server.js", react: "App.jsx", vue: "App.vue", mongo: "models.js" };
   const openDbLesson = (lesson, techId, backTab = "technology") => {
+    if (!requireAuth()) return;
     const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
     // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
-    onNavigate("lesson", {
-      kind: "lesson",
-      title: lesson.title,
-      desc: (staticFor && staticFor.desc) || "",
-      content: typeof lesson.content === "string" ? lesson.content : "",
-      backTab,
-      techId: techId || undefined,
-      file: (techId && taskFileMap[techId]) || "index.js",
-      code: typeof lesson.code === "string" ? lesson.code : undefined,
-      lessonId: lesson.id,
-      onComplete: techId ? () => markComplete(techId, lesson.id) : undefined,
-      fromDb: true,
-    });
+    onNavigate("lesson", lessonJobFor(lesson, techId, backTab, (staticFor && staticFor.desc) || ""));
   };
   const openLesson = (techId) => {
+    if (!requireAuth()) return;
     // Урок трека из БД: первый НЕВЫПОЛНЕННЫЙ (иначе — первый); демо-урок без трека — первая строка
     const completed = getCompleted(techId);
     const techLessons = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];

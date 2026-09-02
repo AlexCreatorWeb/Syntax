@@ -187,21 +187,27 @@ function HeroDemo({ t }) {
 function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
   const t = useT();
 
-  // Дуга donut-индикатора: r=36 => окружность ~226.2. Sweep при mount.
-  const C = 226.2;
-  const successOffset = C * (1 - STATS.success.value / 100);
+  // Success-rate кольцо: r=52 => окружность ~326.7. Sweep при mount (двойной rAF —
+  // transition обязан стартовать от полного C, иначе браузер «догонит» мгновенно),
+  // после sweep'а — дышащее свечение (is-live): блок «живой», а не статичный.
+  const C = 326.7;
   const [ringOffset, setRingOffset] = useState(() =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? successOffset : C
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? C * (1 - STATS.success.value / 100) : C
   );
+  // reduced-motion: сразу в финальном состоянии (без свипа и свечения-таймера)
+  const [ringLive, setRingLive] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
+    if (ringLive) return;
+    let t2;
     const raf = requestAnimationFrame(() =>
-      requestAnimationFrame(() => setRingOffset(successOffset))
+      requestAnimationFrame(() => setRingOffset(C * (1 - STATS.success.value / 100)))
     );
-    return () => cancelAnimationFrame(raf);
-  }, [successOffset]);
+    t2 = setTimeout(() => setRingLive(true), 1500);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t2);
+    };
+  }, [ringLive, C]);
 
   return (
     <div className="home">
@@ -256,26 +262,46 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
 
       {/* 3. Bento-статистика: доказательство (UX-аудит Р9: личное обещание — на 2-й позиции) */}
       <section className="home__stats">
-        <div className="stat-card stat-card--success spotlight">
-          <div className="stat-card__main">
-            <span className="stat-card__label">{t("home.stats.success")}</span>
-            <StatValue stat={STATS.success} className="stat-card__value stat-card__value--xl" />
-          </div>
-          <div className="stat-card__ring">
-            <svg className="ring" viewBox="0 0 96 96" aria-hidden="true">
-              <circle className="ring__track" cx="48" cy="48" r="36" fill="none" strokeWidth="10" />
+        <div className={`stat-card stat-card--success spotlight${ringLive ? " is-live" : ""}`}>
+          {/* Кольцо — центр композиции: число считается В ПУЗЕ, sweep при загрузке,
+              после — мягкое дышащее свечение (живой элемент, не статичный круг) */}
+          <div className="success-ring" role="img" aria-label={`${t("home.stats.success")}: ${STATS.success.value}${STATS.success.suffix}`}>
+            <svg className="ring" viewBox="0 0 120 120" aria-hidden="true">
+              <defs>
+                <linearGradient id="success-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="var(--primary)" />
+                  <stop offset="100%" stopColor="var(--accent-2, #5eead4)" />
+                </linearGradient>
+              </defs>
+              <circle className="ring__track" cx="60" cy="60" r="52" fill="none" strokeWidth="10" />
               <circle
                 className="ring__fill"
-                cx="48"
-                cy="48"
-                r="36"
+                cx="60"
+                cy="60"
+                r="52"
                 fill="none"
                 strokeWidth="10"
                 strokeLinecap="round"
+                stroke="url(#success-ring-grad)"
                 strokeDasharray={C}
                 strokeDashoffset={ringOffset}
               />
             </svg>
+            <div className="success-ring__center">
+              <span className="success-ring__value">
+                <StatValue stat={STATS.success} className="success-ring__num" />
+              </span>
+              <span className="success-ring__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m5 12 5 5 9-10" />
+                </svg>
+                {t("home.stats.successDelta")}
+              </span>
+            </div>
+          </div>
+          <div className="stat-card__main">
+            <span className="stat-card__label">{t("home.stats.success")}</span>
+            <span className="success-ring__sub">{t("home.stats.successSub")}</span>
           </div>
         </div>
         <div className="stat-card spotlight">
@@ -324,21 +350,9 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
         </div>
       </section>
 
-      {/* 4. Social proof: одна цитата-кейс */}
-      <section className="card home__quote">
-        <span className="avatar-dot avatar-dot--lg home__quote-avatar" style={{ background: "linear-gradient(135deg, hsl(152 45% 32%), hsl(152 55% 18%))" }} aria-hidden="true">
-          {t("home.quote.name").charAt(0).toUpperCase()}
-        </span>
-        <div className="home__quote-body">
-          <p className="home__quote-text">&ldquo;{t("home.quote.text")}&rdquo;</p>
-          <span className="home__quote-meta">
-            {t("home.quote.name")} · {t("home.quote.role")}
-          </span>
-        </div>
-      </section>
-
-      {/* 5. Live-preview дашборда: аргумент «что получите» (UX-аудит Р7: в конверсионной зоне перед CTA,
-          без дублирующего primary; единственный выход — «View the roadmap», Р13/Р14) */}
+      {/* 4. Live-preview дашборда: аргумент «что получите» (UX-аудит Р7: в конверсионной зоне перед CTA,
+          без дублирующего primary; единственный выход — «View the roadmap», Р13/Р14)
+          (отзыв-ученика удалён — выглядел неорганично, 2026-09) */}
       <section className="card card--feature home__resume spotlight">
         <span className="home__preview-note">{t("home.preview")}</span>
         <div className="home__resume-head">

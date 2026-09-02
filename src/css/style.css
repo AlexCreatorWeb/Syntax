@@ -1037,30 +1037,6 @@ code {
   margin-bottom: 16px;
 }
 
-.challenge__head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.challenge__icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius);
-  background: var(--primary-soft);
-  color: var(--primary);
-}
-.challenge__icon svg { width: 18px; height: 18px; }
-.challenge__head strong { font-size: 15px; font-weight: 600; }
-.challenge > p {
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-variant);
-  margin-bottom: 16px;
-}
-
 /* Mentor */
 .mentor { display: flex; flex-direction: column; gap: 14px; }
 .mentor__msg {
@@ -2013,6 +1989,8 @@ code {
   color: var(--text-variant);
   margin-bottom: 16px;
 }
+/* Состояние загрузки: скелетон (шиммер общий с roadmap), пока тянется БД */
+.daily-challenge__skel { display: flex; flex-direction: column; gap: 10px; }
 .daily-challenge__reward {
   display: flex;
   align-items: center;
@@ -3023,29 +3001,67 @@ code {
 }
 .stat-card__delta svg { width: 14px; height: 14px; flex: none; color: var(--primary); }
 
-/* Success Rate — широкая: кольцо 120px справа */
+/* Success Rate — широкая карточка. Кольцо с числом в центре (hero композиции):
+   sweep при загрузке (1.4s), после — дышащее свечение (is-live) = живой, не статичный блок */
 .stat-card--success {
   grid-column: 1 / -1;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 28px;
   min-height: 150px;
 }
-.stat-card__ring {
+.success-ring {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   flex: none;
+  transition: transform 0.25s ease;
 }
+.stat-card--success:hover .success-ring { transform: scale(1.04); }
 .ring { position: absolute; inset: 0; transform: rotate(-90deg); }
 .ring__track { stroke: var(--ring-track); }
 .ring__fill {
-  stroke: var(--ring-fill);
-  transition: stroke-dashoffset 1.1s cubic-bezier(0.22, 0.61, 0.36, 1), filter 0.25s ease;
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s;
 }
-.stat-card--success:hover .ring__fill {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--ring-fill) 60%, transparent));
+.stat-card--success.is-live .ring__fill { animation: ring-breathe 3.2s ease-in-out infinite; }
+.stat-card--success.is-live:hover .ring__fill { animation-duration: 1.6s; }
+@keyframes ring-breathe {
+  0%, 100% { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--primary) 35%, transparent)); }
+  50% { filter: drop-shadow(0 0 11px color-mix(in srgb, var(--primary) 70%, transparent)); }
+}
+.success-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.success-ring__num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text);
+}
+.success-ring__icon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+}
+.success-ring__icon svg { width: 12px; height: 12px; }
+.success-ring__sub {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-variant);
+  position: relative;
+  z-index: 1;
 }
 
 /* Sparkline: draw-on при mount + пульс-точка на ховере */
@@ -3072,34 +3088,7 @@ code {
 .stat-card--spark:hover .sparkline__dot { animation: spark-pulse 1.2s ease-in-out infinite; }
 @keyframes spark-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
-/* --- Social proof: цитата-кейс --- */
-.home__quote {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 20px 24px;
-  position: relative;
-  overflow: hidden;
-}
-.home__quote-avatar {
-  width: 44px;
-  height: 44px;
-  flex: none;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 600;
-}
-.home__quote-body { min-width: 0; }
-.home__quote-text {
-  margin: 0 0 6px;
-  font-size: 15px;
-  line-height: 24px;
-  color: var(--text-variant);
-}
-.home__quote-meta { font-size: 13px; color: var(--muted); }
+/* --- Social proof: отзыв-ученика удалён (неорганично на гостевой, 2026-09) --- */
 
 /* --- Final CTA --- */
 .home__final {
@@ -3354,7 +3343,18 @@ code {
   .tech-row { grid-template-columns: 1fr; }
   .tech-card { height: auto; padding: 14px 16px; }
   .home__stats { grid-template-columns: 1fr; }
-  .stat-card--success { grid-column: auto; }
+  .stat-card--success {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 22px 18px;
+  }
+  .stat-card--success .stat-card__main { align-items: center; }
+  .stat-card--success .stat-card__delta { justify-content: center; }
+  .success-ring { width: 120px; height: 120px; }
+  .success-ring__num { font-size: 30px; }
   .home__hero { padding: 28px 20px; flex-direction: column; align-items: flex-start; }
   .home__hero-title { font-size: 32px; line-height: 40px; }
   .home__hero-desc { font-size: 14.5px; margin-bottom: 18px; }

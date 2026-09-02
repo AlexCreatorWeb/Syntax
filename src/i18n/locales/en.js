@@ -287,6 +287,7 @@ export default {
       xpReward: "+500 XP",
       hard: "Hard",
       accept: "Accept Challenge",
+      lessonNote: "Today's pick from the {tech} course — solve it in the editor before the timer ends.",
     },
     analytics: {
       title: "Task Analytics",
@@ -496,6 +497,8 @@ export default {
     tech: { javascript: "JavaScript", python: "Python", html: "HTML", css: "CSS", node: "Node.js", postgres: "PostgreSQL", mongo: "MongoDB", react: "React", vue: "Vue" },
     stats: {
       success: "Success Rate",
+      successSub: "Students finish their first course",
+      successDelta: "+6 pts this month",
       students: "Active Students",
       tasks: "Tasks Solved",
       activeStudents: "Active Students",

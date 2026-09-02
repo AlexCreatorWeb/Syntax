@@ -90,7 +90,7 @@ function setupEmmet(monaco) {
   if (monaco.__syntaxEmmet) return;
   emmetHTML(monaco, ["html"]);
   emmetCSS(monaco, ["css", "scss", "less"]);
-  emmetJSX(monaco, ["javascript", "typescript"]);
+  emmetJSX(monaco, ["javascript", "typescript", "jsx", "tsx"]);
   monaco.__syntaxEmmet = true;
 }
 
@@ -145,7 +145,7 @@ function buildJsBlocks(files, contents) {
   // Смещение в ОТДЕЛЬНОМ <script> перед пользовательским кодом: при SyntaxError
   // сам блок не исполняется, но маркер-тег успевает (аудит #3)
   return files
-    .filter((f) => f.language === "javascript")
+    .filter((f) => f.language === "javascript" && !/\.jsx$/.test(f.name)) // jsx → React-раннер (buildReactDoc)
     .map((f) => `<script>window.__syntaxOffset = 0;</script>\n<script>\n${contents[f.id] ?? ""}\n</script>`);
 }
 
@@ -170,10 +170,65 @@ function buildPreviewDoc(files, contents) {
 
 // Скрипт для «сухого» запуска JS-файлов без HTML: только console-перехват + JS
 function buildRunnerDoc(files, contents) {
+  const jsxFile = files.find((f) => f.language === "javascript" && /\.jsx$/.test(f.name));
+  if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "");
   const blocks = buildJsBlocks(files, contents);
   const js = blocks.join("\n");
   let doc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${CONSOLE_CAPTURE}${js}</body></html>`;
   return fixJsOffsets(doc, blocks, js);
+}
+
+// React-раннер: App.jsx → Babel (JSX, automatic runtime) → blob-module → createRoot.
+// React 18 с esm.sh (одна копия для импортов студента и раннера), Babel — unpkg.
+// Контракт урока: компонент называется App (function App / const App / export default).
+// Номера строк ошибок: маркер-комментарий в начале кода → его строка в ТРАНСФОРМИРОВАННОМ
+// модуле = window.__syntaxOffset (e.lineno у blob-module — в координатах blob, а не документа).
+const REACT_IMPORT_MAP = JSON.stringify({
+  imports: {
+    react: "https://esm.sh/react@18.3.1",
+    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+  },
+});
+
+function buildReactDoc(appCode) {
+  const src = (appCode || "").replace(/<\/script/gi, "<\\/script"); // не рвём тег при </script> в коде
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
+<script type="importmap">${REACT_IMPORT_MAP}</script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+</head><body>
+<div id="root"></div>
+${CONSOLE_CAPTURE}
+<script type="text/plain" id="syntax-app-src">
+${src}
+</script>
+<script type="module">
+import { createRoot } from "react-dom/client";
+import { createElement } from "react";
+window.__syntaxMounted = false;
+window.__SyntaxMount = function (C) {
+  if (!C || window.__syntaxMounted) return;
+  try {
+    createRoot(document.getElementById("root")).render(createElement(C));
+    window.__syntaxMounted = true;
+    console.log("[Syntax] React app mounted");
+  } catch (e) { console.error("mount error: " + (e.message || e)); }
+};
+try {
+  const raw = document.getElementById("syntax-app-src").textContent;
+  const marked = "// __SYNTAX_FILE_START__\\n" + raw + "\\n__SyntaxMount(typeof App !== \\"undefined\\" ? App : undefined);";
+  const out = Babel.transform(marked, { presets: [[Babel.availablePresets.react, { runtime: "automatic" }]], filename: "App.jsx" }).code;
+  const markerLine = (out.slice(0, out.indexOf("// __SYNTAX_FILE_START__")).match(/\\n/g) || []).length + 1;
+  window.__syntaxOffset = markerLine;
+  const url = URL.createObjectURL(new Blob([out], { type: "text/javascript" }));
+  const mod = await import(url);
+  if (!window.__syntaxMounted) window.__SyntaxMount(mod.default);
+} catch (e) {
+  console.error("App.jsx: " + String((e && e.message) || e).split("\\n")[0]);
+}
+</script>
+</body></html>`;
 }
 
 function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate, defaultShowPreview = true }) {
@@ -742,7 +797,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
           <div className="editor-host">
             <Editor
               height="100%"
-              language={activeFile.language}
+              language={activeFile.language === "javascript" && /\.jsx$/.test(activeFile.name) ? "jsx" : activeFile.language}
               theme={theme === "light" ? "syntax-light" : "syntax-dark"}
               beforeMount={(monaco) => {
                 definePlatformThemes(monaco);

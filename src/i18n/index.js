@@ -294,6 +294,7 @@ export const LOCALES = {
         xpReward: "+500 XP",
         hard: "Сложная",
         accept: "Принять вызов",
+        lessonNote: "Сегодняшний выбор из курса {tech} — реши его в редакторе до конца таймера.",
       },
       analytics: {
         title: "Статистика задач",
@@ -504,6 +505,8 @@ export const LOCALES = {
       tech: { javascript: "JavaScript", python: "Python", html: "HTML", css: "CSS", node: "Node.js", postgres: "PostgreSQL", mongo: "MongoDB", react: "React", vue: "Vue" },
       stats: {
         success: "Успешность",
+        successSub: "студентов доводят первый курс до конца",
+        successDelta: "+6 пт за месяц",
         students: "Активные студенты",
         tasks: "Решено задач",
         activeStudents: "Активные студенты",

@@ -155,6 +155,7 @@ export const LOCALES_EXTRA = {
         xpReward: "+500 XP",
         hard: "Складна",
         accept: "Прийняти виклик",
+        lessonNote: "Сьогоднішній вибір із курсу {tech} — виріши його в редакторі, поки не скінчився таймер.",
       },
       analytics: {
         title: "Статистика задач",
@@ -364,6 +365,8 @@ export const LOCALES_EXTRA = {
       tech: { javascript: "JavaScript", python: "Python", html: "HTML", css: "CSS", node: "Node.js", postgres: "PostgreSQL", mongo: "MongoDB", react: "React", vue: "Vue" },
       stats: {
         success: "Рівень успіху",
+        successSub: "студентів завершують перший курс",
+        successDelta: "+6 пт цього місяця",
         students: "Активні студенти",
         tasks: "Вирішено задач",
         activeStudents: "Активні студенти",
@@ -733,6 +736,7 @@ export const LOCALES_EXTRA = {
         xpReward: "+500 XP",
         hard: "Difícil",
         accept: "Aceptar reto",
+        lessonNote: "La selección de hoy del curso de {tech}: resuélvela en el editor antes de que acabe el tiempo.",
       },
       analytics: {
         title: "Estadísticas de tareas",
@@ -942,6 +946,8 @@ export const LOCALES_EXTRA = {
       tech: { javascript: "JavaScript", python: "Python", html: "HTML", css: "CSS", node: "Node.js", postgres: "PostgreSQL", mongo: "MongoDB", react: "React", vue: "Vue" },
       stats: {
         success: "Tasa de éxito",
+        successSub: "de estudiantes completan su primer curso",
+        successDelta: "+6 pts este mes",
         students: "Estudiantes activos",
         tasks: "Tareas resueltas",
         activeStudents: "Estudiantes activos",
@@ -1312,6 +1318,7 @@ export const LOCALES_EXTRA = {
         xpReward: "+500 XP",
         hard: "Schwer",
         accept: "Herausforderung annehmen",
+        lessonNote: "Heutige Auswahl aus dem {tech}-Kurs — löse sie im Editor, bevor die Zeit abläuft.",
       },
       analytics: {
         title: "Aufgaben-Statistik",
@@ -1521,6 +1528,8 @@ export const LOCALES_EXTRA = {
       tech: { javascript: "JavaScript", python: "Python", html: "HTML", css: "CSS", node: "Node.js", postgres: "PostgreSQL", mongo: "MongoDB", react: "React", vue: "Vue" },
       stats: {
         success: "Erfolgsquote",
+        successSub: "der Studierenden schließen ihren ersten Kurs ab",
+        successDelta: "+6 Pkt. diesen Monat",
         students: "Aktive Studierende",
         tasks: "Gelöste Aufgaben",
         activeStudents: "Aktive Lernende",
