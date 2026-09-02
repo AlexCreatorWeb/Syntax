@@ -7,7 +7,7 @@ import flagDe from "flag-icons/flags/4x3/de.svg";
 
 // Позже в этот же файл добавим словари переводов по кодам.
 export const UI_LANGUAGES = [
-  { code: "en", country: "gb", label: "EN", name: "English (UK)", flagSrc: flagGb },
+  { code: "en", country: "gb", label: "EN", name: "English", flagSrc: flagGb },
   { code: "ru", country: "ru", label: "RU", name: "Русский", flagSrc: flagRu },
   { code: "uk", country: "ua", label: "UA", name: "Українська", flagSrc: flagUa },
   { code: "es", country: "es", label: "ES", name: "Español", flagSrc: flagEs },
