@@ -1,20 +1,32 @@
 // Прогресс прохождения курсов: localStorage на трек — массив id уроков из `lessons`.
-// Пока без бэкенда (с ним станет sync на аккаунт). Читается на маунте вьюхи.
-const key = (tech) => `syntax-progress-${tech}`;
+// Именспейс: гость = `syntax-progress-<tech>`, юзер = `syntax-progress-<uid>:<tech>`.
+// Первый маркер юзера сидируется гостевым бакетом — прогресс, накопленный без
+// аккаунта, наследуется при первом Submit после входа (а не теряется).
+import { currentUid } from "./auth";
 
-export function getCompleted(tech) {
-  if (!tech) return [];
+const key = (tech, uid) => `syntax-progress-${uid ? `${uid}:` : ""}${tech}`;
+
+const read = (k) => {
   try {
-    const v = JSON.parse(localStorage.getItem(key(tech)) || "[]");
+    const v = JSON.parse(localStorage.getItem(k) || "[]");
     return Array.isArray(v) ? v : [];
   } catch {
     return [];
   }
+};
+
+export function getCompleted(tech, uid = currentUid()) {
+  if (!tech) return [];
+  if (uid) {
+    const own = read(key(tech, uid));
+    if (own.length) return own;
+  }
+  return read(key(tech, null));
 }
 
-export function markComplete(tech, lessonId) {
+export function markComplete(tech, lessonId, uid = currentUid()) {
   if (!tech || !lessonId) return;
-  const cur = getCompleted(tech).filter((x) => x !== lessonId);
+  const cur = getCompleted(tech, uid).filter((x) => x !== lessonId);
   cur.push(lessonId);
-  localStorage.setItem(key(tech), JSON.stringify(cur));
+  localStorage.setItem(key(tech, uid), JSON.stringify(cur));
 }

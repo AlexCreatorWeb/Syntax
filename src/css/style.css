@@ -4920,3 +4920,34 @@ code {
 @media (hover: none) {
   .file-tab__close { opacity: 1; }
 }
+
+/* ===== Profile (#/profile) ===== */
+.profile { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; padding: 8px 0 40px; }
+.profile__card { text-align: center; padding: 40px 32px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.profile__avatar { margin-bottom: 8px; }
+.profile__name { font-size: 26px; font-weight: 700; margin: 0; }
+.profile__email { color: var(--muted); margin: 0; font-size: 14px; }
+.profile__since { color: var(--muted); font-size: 13px; margin: 0; }
+.profile__desc { color: var(--text-variant); max-width: 440px; margin: 4px 0 8px; line-height: 1.55; }
+.profile__cta { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+.profile__progress { padding: 24px; }
+.profile__progress-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.profile__progress-head h2 { font-size: 17px; margin: 0; }
+.profile__progress-total { font-size: 13px; color: var(--primary); font-weight: 600; white-space: nowrap; }
+.profile__rows { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.profile__row { display: flex; align-items: center; gap: 12px; }
+.profile__row-logo { width: 40px; height: 40px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
+.profile__row-logo svg { width: 22px; height: 22px; }
+.profile__row-body { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.profile__row-name { font-size: 14px; font-weight: 600; }
+.profile__bar { height: 6px; border-radius: 3px; background: var(--ring-track); overflow: hidden; }
+.profile__bar-fill { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--accent-2)); }
+.profile__row-count { font-size: 13px; color: var(--text-variant); font-variant-numeric: tabular-nums; flex: none; }
+.profile__empty { color: var(--text-variant); font-size: 14px; margin: 0 0 16px; line-height: 1.5; }
+.profile__open { margin-bottom: 10px; }
+.profile__logout { width: 100%; }
+.profile__rows .profile__row-logo:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Forgot-password link in the login form */
+.signup__forgot { background: none; border: none; padding: 2px 0; margin: 2px 0 6px; font: inherit; font-size: 13px; color: var(--primary); cursor: pointer; display: block; width: 100%; text-align: center; }
+.signup__forgot:hover { color: var(--primary-hover); text-decoration: underline; }

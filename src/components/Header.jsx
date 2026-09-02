@@ -268,8 +268,10 @@ function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, user
                 type="button"
                 role="menuitem"
                 className="tb-menu__item"
-                title={t("home.soon")}
-                aria-disabled="true"
+                onClick={() => {
+                  onNavigate("profile");
+                  setOpenMenu(null);
+                }}
               >
                 {t("account.profile")}
               </button>

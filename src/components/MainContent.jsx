@@ -8,6 +8,7 @@ import TasksView from "./views/TasksView";
 import DocsView from "./views/DocsView";
 import RankingsView from "./views/RankingsView";
 import CommunityView from "./views/CommunityView";
+import ProfileView from "./views/ProfileView";
 import { useT } from "../i18n/useT";
 import { getCompleted, markComplete } from "../lib/progress";
 
@@ -34,7 +35,7 @@ function taskJob(t, index, techId) {
   };
 }
 
-function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons }) {
+function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons, session, userName, onAuth, onLogout }) {
   const t = useT();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
 
@@ -189,6 +190,17 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
         return renderPlaceholder("settings");
       case "support":
         return renderPlaceholder("support");
+      case "profile":
+        return (
+          <ProfileView
+            session={session}
+            userName={userName}
+            onAuth={onAuth}
+            onNavigate={onNavigate}
+            onLogout={onLogout}
+            dbLessons={dbLessonsArr}
+          />
+        );
       default:
         return renderLessonCard();
     }

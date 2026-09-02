@@ -49,6 +49,22 @@ export async function signOut() {
   if (supabase) await supabase.auth.signOut();
 }
 
+// «Забыли пароль»: письмо со ссылкой на сброс. Успех — даже если email не зарегистрирован
+// (Supabase так делает, чтобы не раскрывать список юзеров) — модалка показывает «ссылку отправили».
+export async function resetPassword(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}${window.location.pathname}`,
+  });
+  if (error) throw mapAuthError(error);
+}
+
+// uid текущего юзера (синхронно из сохранённой сессии) — для имёнспейса прогресса.
+// Гость = null.
+export function currentUid() {
+  const s = readStoredSession();
+  return s && s.user ? s.user.id : null;
+}
+
 // Строка профилей = «кто это» в данных платформы (аватар-монограмма, будущее: прогресс).
 // Сбой некритичен — имя отображается из user_metadata сессии.
 export function syncProfile(user) {

@@ -225,6 +225,10 @@ function App() {
           onSignup={(ctx) => openAuth("signup", ctx)}
           routeParam={routeParam}
           dbLessons={dbLessons}
+          session={session}
+          userName={userName}
+          onAuth={openAuth}
+          onLogout={handleLogout}
         />
         <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={(ctx) => openAuth("signup", ctx)} job={job} activeTech={activeTech} isAuthed={isAuthed} />
       </div>
