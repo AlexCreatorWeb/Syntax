@@ -52,9 +52,9 @@ def get_user(users: dict, name: str):
 
 `with suppress(ValueError): int(x)` — «погасить» указанное (вместо try/except-pass).
 
-TIP: **ловите узкое** (`ValueError`, не `Exception`); **не «глотайте»** молча (хотя бы `logging`/комментарий); **finally** — для «очистки» (закрыть/откатить).
+TIP: ловите узкое (ValueError, не Exception); не «глотайте» молча (хотя бы logging/комментарий); finally — для «очистки» (закрыть/откатить).
 
-NOTE: в песочнице — настоящий CPython: try/except/raise — идентичны терминалу (traceback показывает строку **файла**).
+NOTE: в песочнице — настоящий CPython: try/except/raise — идентичны терминалу (traceback показывает строку файла).
 
 ## Пример
 
@@ -140,13 +140,13 @@ except RuntimeError:
 
 ## Частые ошибки
 
-WARN: **`except:`** (без типа) — ловит **всё** (`KeyboardInterrupt`, `SystemExit`) — «глотает» Ctrl+C/выход. `except Exception` (или конкретные).
+WARN: except: (без типа) — ловит всё (KeyboardInterrupt, SystemExit) — «глотает» Ctrl+C/выход. except Exception (или конкретные).
 
-WARN: **«Глотаете»** исключение (try/except-pass без логирования) — баг «исчезает» (трудно найти). Минимум `logging.exception` или комментарий «почему безопасно».
+WARN: «Глотаете» исключение (try/except-pass без логирования) — баг «исчезает» (трудно найти). Минимум logging.exception или комментарий «почему безопасно».
 
-WARN: **широкий** except «вверху» (ловите `Exception` там, где нужно `ValueError`) — «перекрываете» конкретные (вызывающий не может отреагировать на «свою» ошибку).
+WARN: широкий except «вверху» (ловите Exception там, где нужно ValueError) — «перекрываете» конкретные (вызывающий не может отреагировать на «свою» ошибку).
 
-WARN: **`raise` внутри `except`** без `from` (теряете «причину»). `raise NewError("…") from e` — «цепочка» (отладка).
+WARN: raise внутри except без from (теряете «причину»). raise NewError("…") from e — «цепочка» (отладка).
 
 ## Практическое задание
 

@@ -2,13 +2,13 @@
 
 ## Цель
 
-После урока студент сможет: использовать **httpx** (синхронный **и** **async** клиент; superset requests), применять **async** (`async with httpx.AsyncClient`, `await client.get`), настраивать **retries** (backoff), **base_url**/**headers**/**timeout**, и знать **best practices** REST-клиента (идемпотентность, versioning, pagination, error handling).
+После урока студент сможет: использовать httpx (синхронный и async клиент; superset requests), применять async (`async with httpx.AsyncClient`, `await client.get`), настраивать retries (backoff), base_url/headers/timeout, и знать best practices REST-клиента (идемпотентность, versioning, pagination, error handling).
 
 ## Теория
 
 ### httpx: «requests + async + HTTP/2»
 
-**httpx** — «современный** клиент** (superset **requests**: тот же** API** + **async** + **HTTP/2** + **better** timeouts). Синхронно **и** async:
+httpx — современный клиент (superset requests: тот же API + async + HTTP/2 + better timeouts). Синхронно и async:
 
 ```python
 # Синхронно (как requests)
@@ -27,25 +27,25 @@ async def main():
         r2 = await client.post("/users", json={"name": "Аня"})
 ```
 
-### `base_url` + «относительные** пути**
+### `base_url` + относительные пути
 
-`base_url="https://api.example.com"` → `client.get("/users")` = `https://api.example.com/users` (не «дублируйте** домен** в** каждом** запросе**.
+`base_url="https://api.example.com"` → `client.get("/users")` = `https://api.example.com/users` (не дублируйте домен в каждом запросе.
 
 ### Retries (повторы)
 
-«Сеть** ненадёжна: **повтор** при** 5xx/timeout** (с **backoff**: 0.5с, 1с, 2с…). `httpx` — «вручную** (цикл) или **`tenacity** (библиотека). **Идемпотентность**: **GET/PUT/DELETE** — «безопасно** повторять; **POST** — «осторожно** (дубль).
+Сеть ненадёжна: повтор при 5xx/timeout (с backoff: 0.5с, 1с, 2с…). `httpx` — вручную (цикл) или `tenacity** (библиотека). **Идемпотентность**: **GET/PUT/DELETE** — **безопасно** повторять; **POST** — **осторожно** (дубль).
 
 ### Best practices REST-клиента
 
-- **Versioning**: `/v1/users` (API «меняется»).
-- **Pagination**: `?page=2&limit=50` (или cursor: `?after=…`).
-- **Error handling**: `raise_for_status` + «структурированный** error** (`{"error": {"code": …, "message": …}}`).
-- **Idempotency-Key** (для **POST**): «дубль** при** retry** (сервер «дедуплицирует).
-- **Timeout** (connect/read), **rate limit** (429 + `Retry-After`).
+- Versioning: `/v1/users` (API «меняется»).
+- Pagination: `?page=2&limit=50` (или cursor: `?after=…`).
+- Error handling: `raise_for_status` + структурированный error (`{"error": {"code": …, "message": …}}`).
+- Idempotency-Key (для POST): дубль при retry (сервер «дедуплицирует).
+- Timeout (connect/read), rate limit (429 + `Retry-After`).
 
-TIP: **один** `Client`/`AsyncClient` на «приложение** (не «создавать** на** запрос**; **base_url** + **headers** «один раз**; **timeout** «всегда**.
+TIP: один Client/AsyncClient на «приложение (не «создавать на запрос; base_url + headers «один раз; timeout «всегда.
 
-NOTE: в песочнице (Pyodide) — **httpx не установлен**; «async** часть** работает** через** `pyodide.http.pyfetch`** (CORS** fetch** из** WASM** или **«имитация** (как** урок** 25). В терминале — `pip install httpx`.
+NOTE: в песочнице (Pyodide) — httpx не установлен; «async часть работает через pyodide.http.pyfetch (CORS fetch из WASM или «имитация (как урок 25). В терминале — pip install httpx.
 
 ## Пример
 
@@ -135,18 +135,18 @@ asyncio.run(main())
 
 ## Частые ошибки
 
-WARN: **`httpx` sync-клиент** «в** `async`** (блокирует** loop). В async — **`AsyncClient`** + **`await`.
+WARN: httpx sync-клиент «в async (блокирует loop). В async — AsyncClient + await.
 
-WARN: **создаёте** `Client`** на** каждый** запрос** (пересоединение**. **Один** `Client`** (через** `with`/`async with`), переиспользуйте.
+WARN: создаёте Client на каждый запрос (пересоединение. Один Client (через with/async with), переиспользуйте.
 
-WARN: **POST** «с** retry** без** `Idempotency-Key`** — «дубль** (сервер «создаёт** twice**. Для **POST** — «ключ** идемпотентности» (или **GET** для «чтения»).
+WARN: POST «с retry без Idempotency-Key — «дубль (сервер «создаёт twice. Для POST — «ключ идемпотентности» (или GET для «чтения»).
 
-WARN: **без** `base_url`** (дублируете** домен** в** каждом** URL**. `base_url`** + «относительные** пути.
+WARN: без base_url (дублируете домен в каждом URL. base_url + «относительные пути.
 
 ## Практическое задание
 
 1. `AsyncClient` (имитация): `base_url` + `headers`; `get("/users")`, `post("/users", json=…)`. Выведите статусы.
-2. `get_with_retry`: «API** возвращает** 500** первый** раз**, затем** 200** — выведите «сколько** попыток**. (Имитация: счётчик вызовов.)
-3. `asyncio.gather`: 3 GET «одновременно»; выведите «общее** время** vs «сумма** задержек.
-4. «Pagination**: `fake_get("/users", params={"page": n, "limit": k})` — «страницы** (имитация: 10 «пользователей**, limit=3); выведите «все** страницы**.
-5. В комментарии: что такое `Idempotency-Key` и почему **POST** «с** retry** «опасен** без** него (2 предложения).
+2. `get_with_retry`: API возвращает 500 первый раз, затем 200 — выведите сколько попыток. (Имитация: счётчик вызовов.)
+3. `asyncio.gather`: 3 GET «одновременно»; выведите общее время vs сумма задержек.
+4. Pagination: `fake_get("/users", params={"page": n, "limit": k})` — страницы (имитация: 10 пользователей, limit=3); выведите все страницы.
+5. В комментарии: что такое `Idempotency-Key` и почему POST с retry опасен без него (2 предложения).

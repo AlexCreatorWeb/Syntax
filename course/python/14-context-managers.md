@@ -48,9 +48,9 @@ def timer(label: str):
 - `contextlib.suppress(ValueError): …` — «погасить» указанное исключение (вместо try/except-pass).
 - `contextlib.redirect_stdout(io.StringIO())` — «перехватить» print (в тестирование).
 
-TIP: `with` — для **всего**, что «открыл/закрыл», «включил/выключил», «заблокировал/разблокировал». Не «ручные» try/finally для парных операций.
+TIP: with — для всего, что «открыл/закрыл», «включил/выключил», «заблокировал/разблокировал». Не «ручные» try/finally для парных операций.
 
-NOTE: в песочнице — настоящий CPython: `with`, `__enter__/__exit__`, `contextlib` — идентичны терминалу.
+NOTE: в песочнице — настоящий CPython: with, __enter__/__exit__, contextlib — идентичны терминалу.
 
 ## Пример
 
@@ -101,20 +101,20 @@ print("после suppress, value =", value)
 
 # 4) redirect_stdout (перехват print)
 buffer = io.StringIO()
-with redirect_stdout := contextlib.redirect_stdout(buffer):
+with (redirect_stdout := contextlib.redirect_stdout(buffer)):
     print("это уйдёт в buffer")
 print("перехвачено:", buffer.getvalue().strip())
 ```
 
 ## Частые ошибки
 
-WARN: **`yield` не один** в `@contextmanager` (или `return` вместо `yield`) — «менеджер» не работает (RuntimeError). Один `yield` = «граница» в/выход.
+WARN: yield не один в @contextmanager (или return вместо yield) — «менеджер» не работает (RuntimeError). Один yield = «граница» в/выход.
 
-WARN: «забываете» код **после** `yield` при **ошибке** (он **выполнится** — как `__exit__`). Но если «выход» сам бросает исключение — «перекроется» оригинальное (осторожно).
+WARN: «забываете» код после yield при ошибке (он выполнится — как __exit__). Но если «выход» сам бросает исключение — «перекроется» оригинальное (осторожно).
 
-WARN: `__exit__` **вернул True** «случайно» (подавил ошибку). True = «ошибка обработана, не пробрасывать»; для большинства — `return False` (или ничего).
+WARN: __exit__ вернул True «случайно» (подавил ошибку). True = «ошибка обработана, не пробрасывать»; для большинства — return False (или ничего).
 
-WARN: **ручной** `try/finally` для «открыл/закрыл» вместо `with`. `with` — короче, безопаснее (даже при исключении «внутри»).
+WARN: ручной try/finally для «открыл/закрыл» вместо with. with — короче, безопаснее (даже при исключении «внутри»).
 
 ## Практическое задание
 

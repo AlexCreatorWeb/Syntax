@@ -56,7 +56,7 @@ s1 <= s2                       # подмножество
 
 Ключ dict / элемент set — **хешируемые**: `str`, `int`, `float`, `tuple` (из хешируемых), `frozenset`. **Не** хешируемые: `list`, `dict`, `set` (мутабельные — хеш мог бы «измениться»).
 
-TIP: «сколько раз встретилось» → `dict` (или `collections.Counter`, урок 21); «какие уникальные» → `set`; «список с порядком» → `list`.
+TIP: «сколько раз встретилось» → dict (или collections.Counter, урок 21); «какие уникальные» → set; «список с порядком» → list.
 
 NOTE: в песочнице — настоящий CPython: dict/set — идентичны терминалу (порядок dict — вставка с 3.7).
 
@@ -107,13 +107,13 @@ print("tuple как ключ:", good)
 
 ## Частые ошибки
 
-WARN: доступ `d["нет_ключа"]` → **KeyError**. Если ключ может не быть — `d.get("ключ", default)`.
+WARN: доступ d["нет_ключа"] → KeyError. Если ключ может не быть — d.get("ключ", default).
 
-WARN: **list/dict/set** как ключ dict (или элемент set) → `TypeError: unhashable type`. Ключ — хешируемый (str/int/tuple).
+WARN: list/dict/set как ключ dict (или элемент set) → TypeError: unhashable type. Ключ — хешируемый (str/int/tuple).
 
-WARN: «поиск» в списке (`x in my_list` — O(n)) там, где нужен `set` (O(1)). Для «есть/нет» по большим данным — set.
+WARN: «поиск» в списке (x in my_list — O(n)) там, где нужен set (O(1)). Для «есть/нет» по большим данным — set.
 
-WARN: перебираете dict **и меняете** его размер в цикле (добавляете/удаляете ключи) → `RuntimeError: dictionary changed size`. Собирайте «новый» dict comprehension или меняйте после цикла.
+WARN: перебираете dict и меняете его размер в цикле (добавляете/удаляете ключи) → RuntimeError: dictionary changed size. Собирайте «новый» dict comprehension или меняйте после цикла.
 
 ## Практическое задание
 

@@ -53,7 +53,7 @@ if x is None:        # именно None (is, не ==)
 if x is not None:    # не None
 ```
 
-TIP: «есть/нет» через truthiness (`if data:`), а не `if data == True` (анти-стиль, PEP 8: «Avoid comparing booleans to True/False using ==»).
+TIP: «есть/нет» через truthiness (if data:), а не if data == True (анти-стиль, PEP 8: «Avoid comparing booleans to True/False using ==»).
 
 NOTE: в песочнице — настоящий CPython: условия, логика, truthiness — идентичны терминалу.
 
@@ -113,13 +113,13 @@ print("Питонично:", flag, "| Анти-стиль (не пишите):",
 
 ## Частые ошибки
 
-WARN: сравниваете булевы через `==`: `if x == True:`. Пишите `if x:` (truthiness) / `if x is True:` (если **именно** bool нужен).
+WARN: сравниваете булевы через ==: if x == True:. Пишите if x: (truthiness) / if x is True: (если именно bool нужен).
 
-WARN: `if x = 5:` (присваивание вместо сравнения) → SyntaxError. Сравнение — `==` (или `is` для None).
+WARN: if x = 5: (присваивание вместо сравнения) → SyntaxError. Сравнение — == (или is для None).
 
-WARN: ожидаете скобки вокруг условия: `if (x > 5):` — допустимо, но **не принято** (PEP 8: без лишних скобок).
+WARN: ожидаете скобки вокруг условия: if (x > 5): — допустимо, но не принято (PEP 8: без лишних скобок).
 
-WARN: «проверяете» пустую строку/список через `len(x) > 0`. Пишите `if x:` / `if not x:` (truthiness).
+WARN: «проверяете» пустую строку/список через len(x) > 0. Пишите if x: / if not x: (truthiness).
 
 ## Практическое задание
 

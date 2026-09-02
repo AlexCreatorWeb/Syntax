@@ -2,13 +2,13 @@
 
 ## Цель
 
-После урока студент сможет: объяснять **event loop** и **коаутин** (корутину), писать **`async def`** и вызывать через **`await`**, запускать «параллельно» через **`asyncio.gather`**, понимать разницу «CPU-bound» vs «I/O-bound» (asyncio — для **I/O**) и запускать «входную точку» через **`asyncio.run`**.
+После урока студент сможет: объяснять event loop и коаутин (корутину), писать `async def` и вызывать через `await`, запускать «параллельно» через `asyncio.gather`, понимать разницу «CPU-bound» vs «I/O-bound» (asyncio — для I/O) и запускать «входную точку» через `asyncio.run`.
 
 ## Теория
 
 ### Зачем asyncio
 
-**I/O** (сеть, файлы, БД) — «долго**ждём**» (ответ сервера). «Поток» (thread) на каждое ожидание — «дорого» (память, переключение). **asyncio** — **однопоточный** event loop: «запустил запрос → **отдал управление** другим задачам → вернулся, когда ответ». Тысячи «одновременно» в **одном** потоке.
+I/O (сеть, файлы, БД) — «долго ждём» (ответ сервера). «Поток» (thread) на каждое ожидание — «дорого» (память, переключение). asyncio — однопоточный event loop: «запустил запрос → отдал управление другим задачам → вернулся, когда ответ». Тысячи «одновременно» в одном потоке.
 
 ### Coroutine: `async def` + `await`
 
@@ -26,13 +26,13 @@ async def main() -> None:
 asyncio.run(main())               # запуск (создаёт loop, выполняет, закрывает)
 ```
 
-- **`async def`** — «корута» (вызов → **объект** coroutine, **не** выполняет).
-- **`await`** — «дождаться» (результат) **уступая** loop (другие коруты идут).
-- **`asyncio.run(main())`** — «вход» (создаёт/закрывает loop). **Один раз** (не вложенно).
+- `async def` — «корута» (вызов → объект coroutine, не выполняет).
+- `await` — «дождаться» (результат) уступая loop (другие коруты идут).
+- `asyncio.run(main())` — «вход» (создаёт/закрывает loop). Один раз (не вложенно).
 
 ### `asyncio.gather`: «параллельно»
 
-`await asyncio.gather(c1(), c2(), c3())` — запускает **все** и «ждёт**все»** (результаты в **порядке** вызова). «Параллельно» = **один** event loop, «одновременно» I/O.
+`await asyncio.gather(c1(), c2(), c3())` — запускает все и ждёт все (результаты в порядке вызова). «Параллельно» = один event loop, «одновременно» I/O.
 
 ```python
 async def main():
@@ -41,12 +41,12 @@ async def main():
 
 ### CPU-bound vs I/O-bound
 
-- **I/O-bound** (сеть/файлы) — asyncio (await на «ожидании»).
-- **CPU-bound** (расчёт) — asyncio **не помогает** (однопоточно; «займёт» loop). Для CPU — **процессы** (`multiprocessing`) или C-экстензии.
+- I/O-bound (сеть/файлы) — asyncio (await на «ожидании»).
+- CPU-bound (расчёт) — asyncio не помогает (однопоточно; «займёт» loop). Для CPU — процессы (`multiprocessing`) или C-экстензии.
 
-TIP: `await asyncio.sleep(0)` — «уступить» loop (редко, для «coop»); «длинная**CPU**» задача в async — «запах» (выносите в поток/процесс).
+TIP: await asyncio.sleep(0) — «уступить» loop (редко, для «coop»); «длиннаяCPU» задача в async — «запах» (выносите в поток/процесс).
 
-NOTE: в песочнице (Pyodide) — **asyncio доступен** (CPython): `asyncio.run`, `async def`, `await`, `gather`, `asyncio.sleep` — **работают** (I/O «имитируется» `sleep`; «настоящая» сеть — `pyodide.http.pyfetch`, урок 25–26).
+NOTE: в песочнице (Pyodide) — asyncio доступен (CPython): asyncio.run, async def, await, gather, asyncio.sleep — работают (I/O «имитируется» sleep; «настоящая» сеть — pyodide.http.pyfetch, урок 25–26).
 
 ## Пример
 
@@ -98,18 +98,18 @@ asyncio.run(main())
 
 ## Частые ошибки
 
-WARN: **забываете `await`** (`result = fetch(url)` → coroutine **не** запущена; «never awaited» warning). `await` — **обязателен** (кроме `create_task`).
+WARN: забываете await (result = fetch(url) → coroutine не запущена; «never awaited» warning). await — обязателен (кроме create_task).
 
-WARN: **`asyncio.run` «внутри** `async`» (вложенный loop) → `RuntimeError`. `asyncio.run` — **один раз** («вход»); «внутри» async — `await`/`create_task`.
+WARN: asyncio.run «внутри async» (вложенный loop) → RuntimeError. asyncio.run — один раз («вход»); «внутри» async — await/create_task.
 
-WARN: **CPU-bound** в asyncio (длинный расчёт «заблокирует» loop — другие коруты **ждут**). CPU — `multiprocessing`/поток; asyncio — **I/O**.
+WARN: CPU-bound в asyncio (длинный расчёт «заблокирует» loop — другие коруты ждут). CPU — multiprocessing/поток; asyncio — I/O.
 
-WARN: **`gather` «без** `return_exceptions`**: одно исключение «убивает**всё**» (остальные «отменяются»). Для «независимых» — `return_exceptions=True` (результат/исключение в списке).
+WARN: gather «без return_exceptions: одно исключение «убиваетвсё» (остальные «отменяются»). Для «независимых» — return_exceptions=True (результат/исключение в списке).
 
 ## Практическое задание
 
 1. `async def` «загрузка» (3 «ресурса» с `asyncio.sleep` 0.5/1.0/1.5). Выведите: последовательно (await по одному) vs `gather` (время).
 2. `create_task`: запустите 2 задачи, `await asyncio.sleep(0.3)`, затем `await` обе. Выведите «кто когда».
 3. `as_completed`: 3 задачи (0.5/1.0/0.7) — выведите «по мере готовности» (время каждого).
-4. `gather(return_exceptions=True)`: одна задача «бросает» `ValueError` — выведите результаты (исключение **в** списке, не «падает»).
+4. `gather(return_exceptions=True)`: одна задача «бросает» `ValueError` — выведите результаты (исключение в списке, не «падает»).
 5. В комментарии: почему asyncio «не для CPU-bound» (1–2 предложения), и что вместо него (multiprocessing/поток).

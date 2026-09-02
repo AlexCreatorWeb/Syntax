@@ -32,9 +32,9 @@
 - `datetime.now()`, `date.today()`, `d.strftime("%Y-%m-%d")`, `datetime.strptime("2026-09-02", "%Y-%m-%d")`.
 - `d1 - d2` → `timedelta`; `d + timedelta(days=7)`.
 
-TIP: «сколько раз/суммы» — `Counter`/`defaultdict`; «все комбинации» — `product`; «кэш дорогого» — `lru_cache`; «даты» — `datetime` (не `time`+ручные).
+TIP: «сколько раз/суммы» — Counter/defaultdict; «все комбинации» — product; «кэш дорогого» — lru_cache; «даты» — datetime (не time+ручные).
 
-NOTE: в песочнице — настоящий CPython: stdlib (`collections`, `itertools`, `functools`, `datetime`) — **доступен** (pyodide-stdlib). `lru_cache` — работает.
+NOTE: в песочнице — настоящий CPython: stdlib (collections, itertools, functools, datetime) — доступен (pyodide-stdlib). lru_cache — работает.
 
 ## Пример
 
@@ -102,13 +102,13 @@ print("разница дней:", diff.days)
 
 ## Частые ошибки
 
-WARN: **`groupby` без сортировки** (группирует **по подряд**; дубли «не рядом» → несколько групп). Отсортируйте вход по key (или `Counter`/`defaultdict` для «всех»).
+WARN: groupby без сортировки (группирует по подряд; дубли «не рядом» → несколько групп). Отсортируйте вход по key (или Counter/defaultdict для «всех»).
 
-WARN: **`lru_cache`** на **нечистых** функциях (с состоянием/эффектами) или с **нехешируемыми** аргументами (list) → «кэш» «лежит»/`TypeError`. Только **чистые** + хешируемые.
+WARN: lru_cache на нечистых функциях (с состоянием/эффектами) или с нехешируемыми аргументами (list) → «кэш» «лежит»/TypeError. Только чистые + хешируемые.
 
-WARN: **`Counter` vs `defaultdict(int)`** путаете: `Counter` — «счётчик» (most_common, `+`/`-`); `defaultdict(int)` — «dict с 0» (ручной `d[k] += 1`). Для «частот» — `Counter`.
+WARN: Counter vs defaultdict(int) путаете: Counter — «счётчик» (most_common, +/-); defaultdict(int) — «dict с 0» (ручной d[k] += 1). Для «частот» — Counter.
 
-WARN: **`datetime` vs `date`** (смешиваете): `date - date` → `timedelta`; `datetime` — с временем. Не « date.now()` (нет), а `date.today()` / `datetime.now()`.
+WARN: datetime vs date (смешиваете): date - date → timedelta; datetime — с временем. Не « date.now() (нет), а date.today() / datetime.now().
 
 ## Практическое задание
 

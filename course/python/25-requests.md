@@ -2,20 +2,20 @@
 
 ## Цель
 
-После урока студент сможет: делать **HTTP-запросы** через `requests` (`get`/`post`/`put`/`delete`), работать с **JSON** (`.json()`, `json=`), проверять **статусы** (`raise_for_status`, `status_code`), ставить **`timeout`** (обязательно!), передавать **headers/params**, и понимать **REST** (методы, коды 2xx/4xx/5xx).
+После урока студент сможет: делать HTTP-запросы через `requests` (`get`/`post`/`put`/`delete`), работать с JSON (`.json()`, `json=`), проверять статусы (`raise_for_status`, `status_code`), ставить `timeout` (обязательно!), передавать headers/params, и понимать REST (методы, коды 2xx/4xx/5xx).
 
 ## Теория
 
 ### REST и HTTP-методы
 
-**REST** — «стиль** API** по** HTTP: **ресурсы** (URL) + **глаголы** (методы):
-- **GET** — «получить** (идемпотентно, без «побочного»).
-- **POST** — «создать** (или «отправить»).
-- **PUT** — «заменить** (целиком).
-- **PATCH** — «изменить** (часть).
-- **DELETE** — «удалить».
+REST — стиль API по HTTP: ресурсы (URL) + глаголы (методы):
+- GET — получить (идемпотентно, без «побочного»).
+- POST — создать (или «отправить»).
+- PUT — заменить (целиком).
+- PATCH — изменить (часть).
+- DELETE — «удалить».
 
-**Статусы**: **2xx** (успех: 200 OK, 201 Created, 204 No Content), **4xx** (клиент: 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 422 Unprocessable), **5xx** (сервер: 500, 502, 503).
+Статусы: 2xx (успех: 200 OK, 201 Created, 204 No Content), 4xx (клиент: 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 422 Unprocessable), 5xx (сервер: 500, 502, 503).
 
 ### requests: базовый
 
@@ -37,17 +37,17 @@ r = requests.get(url, params={"page": 1, "q": "x"},
                  headers={"Authorization": "Bearer TOKEN"}, timeout=5)
 ```
 
-### `timeout` — **обязательно**
+### `timeout` — обязательно
 
-Без `timeout` запрос **может** «висеть** бесконечно (сервер «молчит»). `timeout=5` (или `(3.05, 10)` — connect, read).
+Без `timeout` запрос может висеть бесконечно (сервер «молчит»). `timeout=5` (или `(3.05, 10)` — connect, read).
 
 ### Session (соединение)
 
-`requests.Session()` — «соединение** (keep-alive) + «общие** headers**: для «много** запросов** к** одному** API** (быстрее, cookie).
+`requests.Session()` — соединение (keep-alive) + общие headers: для много запросов к одному API (быстрее, cookie).
 
-TIP: **всегда** `timeout`; **всегда** `raise_for_status()` (или проверка `r.ok`); JSON — `r.json()` (не `json.loads(r.text)` руками).
+TIP: всегда timeout; всегда raise_for_status() (или проверка r.ok); JSON — r.json() (не json.loads(r.text) руками).
 
-NOTE: в песочнице (Pyodide) — **`requests` не доступен** (нет «настоящего** HTTP** из** WASM** по** умолчанию). Вместо него — **`pyodide.http.pyfetch`** (async, CORS) или **«имитация** API** функцией** (в уроках 25–26: примеры — `requests` (для терминала), а в песочнице — «обёртка** `fake_api`** (тот же** контракт**: dict «ответа»). В терминале — `pip install requests`.
+NOTE: в песочнице (Pyodide) — requests не доступен (нет «настоящего HTTP из WASM по умолчанию). Вместо него — pyodide.http.pyfetch (async, CORS) или «имитация API функцией (в уроках 25–26: примеры — requests (для терминала), а в песочнице — «обёртка fake_api (тот же контракт: dict «ответа»). В терминале — pip install requests.
 
 ## Пример
 
@@ -125,18 +125,18 @@ print("POST /users:", r.status_code, r.json())
 
 ## Частые ошибки
 
-WARN: **без `timeout`** — запрос «висит** (сервер «молчит»). **Всегда** `timeout=`.
+WARN: без timeout — запрос «висит (сервер «молчит»). Всегда timeout=.
 
-WARN: **не проверяете** статус** (`r.json()` при **404** → «пусто**/ошибка**; «тихий** баг**. `raise_for_status()` (или `if r.ok`).
+WARN: не проверяете статус (r.json() при 404 → «пусто/ошибка; «тихий баг. raise_for_status() (или if r.ok).
 
-WARN: **`params` vs `json`** путаете: `params` — **query string** (`?a=b`), `json=` — **body** (POST/PUT). `data=` — form-encoded (не JSON).
+WARN: params vs json путаете: params — query string (?a=b), json= — body (POST/PUT). data= — form-encoded (не JSON).
 
-WARN: **одноразовый** `requests.get` «для много** запросов** (пересоединение**. `Session()` для «много** (keep-alive, headers).
+WARN: одноразовый requests.get «для много запросов (пересоединение. Session() для «много (keep-alive, headers).
 
 ## Практическое задание
 
-1. «Имитация** API**: `fake_get("/orders")` (список), `fake_post("/orders", {"item": "кофе", "sum": 300})` (201 + id). Выведите.
-2. `FakeResponse.raise_for_status`: обработайте **404** (`/users/999`) через `try/except`.
-3. «Параметры**: `fake_get("/users", params={"age_min": 28})` — отфильтруйте (возраст >= 28).
+1. Имитация API: `fake_get("/orders")` (список), `fake_post("/orders", {"item": "кофе", "sum": 300})` (201 + id). Выведите.
+2. `FakeResponse.raise_for_status`: обработайте 404 (`/users/999`) через `try/except`.
+3. Параметры: `fake_get("/users", params={"age_min": 28})` — отфильтруйте (возраст >= 28).
 4. (Терминал) `pip install requests`; `requests.get("https://httpbin.org/get", timeout=5)` — выведите `status_code`, `json()` (args).
-5. В комментарии: чем `params` отличается от `json`, и когда **каждый** (по 1 примеру).
+5. В комментарии: чем `params` отличается от `json`, и когда каждый (по 1 примеру).

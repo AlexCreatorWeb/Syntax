@@ -2,13 +2,13 @@
 
 ## Цель
 
-После урока студент сможете: управлять задачами (**`create_task`**, `Task`, `cancel`, `done()`), использовать **`asyncio.wait`** / **`wait_for`** (таймаут), применять **`asyncio.Queue`** (продюсер/консьюмер), и понимать **when to async** (I/O-bound, «много**одновременно**»; не «для скорости CPU»).
+После урока студент сможете: управлять задачами (`create_task`, `Task`, `cancel`, `done()`), использовать `asyncio.wait` / `wait_for` (таймаут), применять `asyncio.Queue` (продюсер/консьюмер), и понимать when to async (I/O-bound, многоодновременно; не «для скорости CPU»).
 
 ## Теория
 
 ### `create_task` и `Task`
 
-`asyncio.create_task(coro)` — «запускает**коруту** **в фоне**» (возвращает **`Task`**). `Task` — «обёртка» с состоянием: `done()`, `result()`, `exception()`, `cancel()`. `await task` — «дождаться**результат**».
+`asyncio.create_task(coro)` — запускаеткоруту в фоне (возвращает `Task`). `Task` — «обёртка» с состоянием: `done()`, `result()`, `exception()`, `cancel()`. `await task` — дождатьсярезультат.
 
 ```python
 task = asyncio.create_task(long_io())
@@ -21,24 +21,24 @@ else:
 
 ### `wait_for` (таймаут)
 
-`await asyncio.wait_for(coro, timeout)` — «дождаться** или** `TimeoutError** за**timeout**» (отменяет**коруту**).
+`await asyncio.wait_for(coro, timeout)` — дождаться или `TimeoutError** заtimeout** (отменяет**коруту**).
 
 ### `asyncio.wait`
 
-`await asyncio.wait(tasks, return_when=FIRST_COMPLETED | ALL_COMPLETED | FIRST_EXCEPTION)` — «группа» задач (без `gather` «все**или**ничего»).
+`await asyncio.wait(tasks, return_when=FIRST_COMPLETED | ALL_COMPLETED | FIRST_EXCEPTION)` — «группа» задач (без `gather` всеилиничего»).
 
 ### `asyncio.Queue` (продюсер/консьюмер)
 
-`Queue` — «асинхронная**очередь**: `await q.put(x)`, `await q.get()`, `q.task_done()`, `await q.join()`. Паттерн: **N** продюсеров → очередь → **M** консьюмеров (классический «fan-in/fan-out»).
+`Queue` — асинхроннаяочередь: `await q.put(x)`, `await q.get()`, `q.task_done()`, `await q.join()`. Паттерн: N продюсеров → очередь → M консьюмеров (классический «fan-in/fan-out»).
 
 ### When to async
 
-- **Да**: **I/O-bound** (сеть, БД, файлы), «много**одновременно**» (тысячи соединений), «сервер» (websockets, API).
-- **Нет**: **CPU-bound** (расчёт — `multiprocessing`), «одна**задача**» (async «не ускорит**; обычный синхронный проще), «мало**задач**» (оверхед loop «не окупается»).
+- Да: I/O-bound (сеть, БД, файлы), многоодновременно (тысячи соединений), «сервер» (websockets, API).
+- Нет: CPU-bound (расчёт — `multiprocessing`), одназадача (async «не ускорит; обычный синхронный проще), малозадач (оверхед loop «не окупается»).
 
-TIP: async — **архитектура** (однопоточный loop, «уступки** на** I/O); не «магия** скорости». Начните с **синхронного** (проще); async — когда «много** I/O одновременно».
+TIP: async — архитектура (однопоточный loop, «уступки на I/O); не «магия скорости». Начните с синхронного (проще); async — когда «много I/O одновременно».
 
-NOTE: в песочнице (Pyodide) — asyncio **работает** (CPython): `create_task`, `wait_for`, `Queue`, `wait` — **доступны**. «Настоящая** сеть** — урок 25–26 (`pyfetch`/httpx).
+NOTE: в песочнице (Pyodide) — asyncio работает (CPython): create_task, wait_for, Queue, wait — доступны. «Настоящая сеть — урок 25–26 (pyfetch/httpx).
 
 ## Пример
 
@@ -108,18 +108,18 @@ asyncio.run(main())
 
 ## Частые ошибки
 
-WARN: **`create_task` «и забыли**» (не `await`, не держите ссылку) — задача **может** быть «собрana» (GC) до завершения (RuntimeWarning). Держите `Task` (или `await`).
+WARN: create_task «и забыли» (не await, не держите ссылку) — задача может быть «собрana» (GC) до завершения (RuntimeWarning). Держите Task (или await).
 
-WARN: **`await` « CPU-heavy**» в loop (длинный расчёт «заблокирует** — другие задачи **ждут**). CPU — `loop.run_in_executor` (поток/процесс) или `multiprocessing`.
+WARN: await « CPU-heavy» в loop (длинный расчёт «заблокирует — другие задачи ждут). CPU — loop.run_in_executor (поток/процесс) или multiprocessing.
 
-WARN: **`wait_for` «без** обработки** `TimeoutError`** — «падает** (не «тихий** fallback**. Ловите `except asyncio.TimeoutError`.
+WARN: wait_for «без обработки TimeoutError — «падает (не «тихий fallback. Ловите except asyncio.TimeoutError.
 
-WARN: **async «для одной** задачи**» (оверхед loop «не окупается**; обычный синхронный **проще**. Async — «много** I/O одновременно».
+WARN: async «для одной задачи» (оверхед loop «не окупается; обычный синхронный проще. Async — «много I/O одновременно».
 
 ## Практическое задание
 
 1. `create_task`: 3 задачи (0.2/0.5/0.8с); `await` первую, `cancel` остальные, выведите `done()`/`result()`.
-2. `wait_for`: «запрос** с** timeout=0.3» (задача спит 1.0) → `TimeoutError`; затем timeout=2.0 → результат.
+2. `wait_for`: запрос с timeout=0.3» (задача спит 1.0) → `TimeoutError`; затем timeout=2.0 → результат.
 3. `asyncio.wait`: 4 задачи; `FIRST_COMPLETED` → выведите «кто первый», `cancel` остальные.
 4. `Queue`: 2 продюсера (по 3 item) + 1 консьюмер (6 item); выведите «собранные». (Через `TaskGroup` или `gather`.)
 5. В комментарии: «when to async» — 2 примера «да» и 2 «нет» (по 1 строке).

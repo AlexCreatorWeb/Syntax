@@ -49,7 +49,7 @@ up = [w.upper() for w in words if len(w) > 3]  # + условие
 
 `a, b = 1, 2`; `first, *rest = [1, 2, 3, 4]` (`rest == [2, 3, 4]`); обмен `a, b = b, a`; `_, x, y = coords` (`_` — «не нужно»).
 
-TIP: «список для итерации/изменения» → list; «стабильная кортежная структура» → tuple. Comprehension вместо `for + append` — по умолчанию.
+TIP: «список для итерации/изменения» → list; «стабильная кортежная структура» → tuple. Comprehension вместо for + append — по умолчанию.
 
 NOTE: в песочнице — настоящий CPython: list/tuple/comprehensions — идентичны терминалу.
 
@@ -105,13 +105,13 @@ print("Обмен:", a, b)
 
 ## Частые ошибки
 
-WARN: **изменяете** tuple (`t[0] = 5` → TypeError) или передаёте list там, где нужен «стабильный» набор (ключ dict — только tuple/str, не list).
+WARN: изменяете tuple (t[0] = 5 → TypeError) или передаёте list там, где нужен «стабильный» набор (ключ dict — только tuple/str, не list).
 
-WARN: `remove(x)` vs `pop(i)`: первый — по **значению** (ValueError, если нет), второй — по **индексу** (возвращает элемент). Не путайте.
+WARN: remove(x) vs pop(i): первый — по значению (ValueError, если нет), второй — по индексу (возвращает элемент). Не путайте.
 
-WARN: «копия» через `b = a` для списка — **не копия** (одинаковый объект!). Копия: `b = a.copy()` или `b = a[:]`.
+WARN: «копия» через b = a для списка — не копия (одинаковый объект!). Копия: b = a.copy() или b = a[:].
 
-WARN: comprehension «со side-effect» (`[items.append(f(x)) for x in …]` — возвращает список None). Для «сделать» — цикл; для «создать список» — comprehension.
+WARN: comprehension «со side-effect» ([items.append(f(x)) for x in …] — возвращает список None). Для «сделать» — цикл; для «создать список» — comprehension.
 
 ## Практическое задание
 

@@ -312,9 +312,10 @@ code {
   position: relative;
   padding: 0;
   overflow: hidden;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  /* квадрат со скруглёнными углами — как theme/уведомления (фидбек 2026-09: круглый чужероден) */
+  border-radius: var(--radius);
+  width: 38px;
+  height: 38px;
 }
 
 .lang__flag-img {
@@ -443,6 +444,9 @@ code {
   padding: 16px;
   border-radius: var(--radius-lg);
 }
+/* padding-top — чтобы hover-lift карты прогресса (translateY(-1px)) не клипался
+   верхней границей скролл-контейнера сайдбара (фидбек 2026-09: «рамка прячется вверху») */
+.sidebar { padding-top: 2px; }
 
 .streak__ring {
   position: relative;
