@@ -1,10 +1,12 @@
 import { useT } from "../../i18n/useT";
 import TECHS, { getTech } from "../../lib/techs";
+import { getCompleted } from "../../lib/progress";
 
-// Дорожная карта = трек прохождения курса выбранной технологии (UX-аудит раунд 3):
-// статус (модуль X из 4 · %), таймлайн: завершённые → текущий (доминирующая карточка)
-// → locked → «модули идут дальше». Переключатель треков — пилюли с лого.
-// Данные: i18n `techs.{id}` (modules, progressModule, pct).
+// Дорожная карта = карта РЕАЛЬНОГО курса активного трека:
+// уроки — из таблицы `lessons` (tech = id трека, порядок = порядок id),
+// прогресс — localStorage (lib/progress: отметки ставятся успешным Submit в редакторе).
+// Состояния: null = БД грузится (скелетон) · есть уроки = таймлайн · пусто = empty-state
+// с CTA на курс HTML. Демо-модули i18n (modules) убраны.
 function RoadmapNode({ status, big }) {
   const cls = `roadmap__node roadmap__node--${status} ${big ? "roadmap__node--big" : ""}`;
   if (status === "done") {
@@ -28,18 +30,143 @@ function RoadmapNode({ status, big }) {
   );
 }
 
-function RoadmapView({ activeTech, onSelectTech, onResume }) {
+function LessonRow({ lesson, i, status, onOpen }) {
   const t = useT();
-  const tech = getTech(activeTech) || getTech("javascript");
-  const content = t(`techs.${tech.id}`);
-  const modules = content.modules;
-  const currentIdx = Math.max(0, modules.findIndex((m) => m.status === "current"));
-  const firstLockedIdx = modules.findIndex((m) => m.status === "locked");
+  const isCurrent = status === "current";
+  const isDone = status === "done";
+  const isLocked = status === "locked";
+  const clickable = isCurrent || isDone;
+  const statusLabel = isCurrent
+    ? t("techPage.inProgress")
+    : isLocked
+      ? t("techPage.locked")
+      : t("techPage.completed");
 
-  const continueModule = (e) => {
-    if (e.target.closest("button")) return;
-    onResume(tech.id);
-  };
+  return (
+    <div className={`roadmap__item ${isCurrent ? "roadmap__item--current" : ""}`}>
+      <RoadmapNode status={status} big={isCurrent} />
+      <div
+        className={`card roadmap__card ${isCurrent ? "roadmap__card--current" : ""} ${isLocked ? "roadmap__card--locked" : ""} ${isDone ? "roadmap__card--review" : ""}`}
+        role={clickable ? "button" : undefined}
+        tabIndex={clickable ? 0 : undefined}
+        aria-current={isCurrent ? "step" : undefined}
+        onClick={clickable ? () => onOpen(lesson) : undefined}
+        onKeyDown={clickable ? (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(lesson); }
+        } : undefined}
+      >
+        <div className="roadmap__card-head">
+          <span className="roadmap__num">{String(i + 1).padStart(2, "0")}</span>
+          <strong className="roadmap__title">{lesson.title}</strong>
+          <span className={`roadmap__chip roadmap__chip--${status === "done" ? "done" : status}`}>{statusLabel}</span>
+        </div>
+        {isCurrent && <p className="roadmap__desc">{t("roadmap.currentHint")}</p>}
+      </div>
+    </div>
+  );
+}
+
+function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLesson }) {
+  const t = useT();
+  const tech = getTech(activeTech) || getTech("html");
+  const TechLogo = tech.Logo;
+  const lessons = (dbLessons || []).filter((l) => l.tech === tech.id);
+  const completed = getCompleted(tech.id);
+  const doneCount = lessons.filter((l) => completed.includes(l.id)).length;
+  const currentIdx = lessons.findIndex((l) => !completed.includes(l.id));
+  const allDone = lessons.length > 0 && doneCount === lessons.length;
+  const pct = lessons.length ? Math.round((doneCount / lessons.length) * 100) : 0;
+  const firstLockedIdx = currentIdx < 0 ? lessons.length : currentIdx + 1;
+
+  // БД ещё грузится — скелетон (после загрузки null больше не приходит)
+  if (dbLessons === null) {
+    return (
+      <div className="roadmap-view">
+        <header className="page-head">
+          <h1 className="page-head__title">{t("roadmap.heading")}</h1>
+          <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
+        </header>
+        <div className="tech-switch" role="tablist" aria-label={t("techPage.changeTrack")}>
+          {TECHS.map((tc) => {
+            const TLogo = tc.Logo;
+            return (
+              <button
+                key={tc.id}
+                type="button"
+                role="tab"
+                aria-selected={tc.id === tech.id}
+                className={`tech-switch__item ${tc.id === tech.id ? "tech-switch__item--active" : ""}`}
+                onClick={() => onSelectTech(tc.id)}
+              >
+                <TLogo />
+                <span>{t(tc.label)}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="card roadmap__status spotlight" aria-busy="true">
+          <div className="roadmap__status-text">
+            <div className="roadmap__skel roadmap__skel--title"></div>
+            <div className="roadmap__skel roadmap__skel--sub"></div>
+          </div>
+          <div className="roadmap__skel roadmap__skel--btn"></div>
+        </div>
+        <div className="roadmap">
+          <div className="roadmap__line" aria-hidden="true"></div>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="roadmap__item">
+              <RoadmapNode status="locked" />
+              <div className="card roadmap__card">
+                <div className="roadmap__skel roadmap__skel--row" style={{ animationDelay: `${i * 90}ms` }}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Трека без уроков в БД — честный empty-state (паттерн docs-empty) + CTA на курс HTML
+  if (lessons.length === 0) {
+    return (
+      <div className="roadmap-view">
+        <header className="page-head">
+          <h1 className="page-head__title">{t("roadmap.heading")}</h1>
+          <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
+        </header>
+        <div className="tech-switch" role="tablist" aria-label={t("techPage.changeTrack")}>
+          {TECHS.map((tc) => {
+            const TLogo = tc.Logo;
+            return (
+              <button
+                key={tc.id}
+                type="button"
+                role="tab"
+                aria-selected={tc.id === tech.id}
+                className={`tech-switch__item ${tc.id === tech.id ? "tech-switch__item--active" : ""}`}
+                onClick={() => onSelectTech(tc.id)}
+              >
+                <TLogo />
+                <span>{t(tc.label)}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="docs-empty">
+          <div className="docs-empty__logo"><TechLogo /></div>
+          <h2 className="docs-empty__title">{t("roadmap.emptyTitle", { tech: t(tech.label) })}</h2>
+          <p className="docs-empty__body">{t("roadmap.emptyBody")}</p>
+          <div className="docs-empty__actions">
+            <button type="button" className="btn btn--primary" onClick={() => onSelectTech("html")}>
+              {t("roadmap.emptyCta")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const openLessonRow = (lesson) => onOpenDbLesson(lesson, tech.id, "roadmap");
 
   return (
     <div className="roadmap-view">
@@ -68,11 +195,11 @@ function RoadmapView({ activeTech, onSelectTech, onResume }) {
         })}
       </div>
 
-      {/* Статус прохождения */}
+      {/* Статус прохождения (реальный: localStorage × уроки трека) */}
       <div className="card roadmap__status spotlight">
         <div className="roadmap__status-text">
-          <strong>{content.progressModule}</strong>
-          <span>{t("roadmap.statusLine", { m: currentIdx + 1, n: modules.length })} · {content.pct}%</span>
+          <strong>{allDone ? t("roadmap.courseDone") : t("roadmap.lessonStatus", { m: (currentIdx < 0 ? lessons.length : currentIdx) + 1, n: lessons.length })}</strong>
+          <span>{t("roadmap.doneOf", { a: doneCount, b: lessons.length })} · {pct}%</span>
         </div>
         <button type="button" className="btn btn--primary" onClick={() => onResume(tech.id)}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="m8 6 8 6-8 6V6Z" /></svg>
@@ -80,59 +207,20 @@ function RoadmapView({ activeTech, onSelectTech, onResume }) {
         </button>
       </div>
 
-      {/* Таймлайн трека */}
+      {/* Таймлайн курса: завершённые (кликабельны — повторить) → текущий → locked */}
       <div className="roadmap">
         <div className="roadmap__line" aria-hidden="true"></div>
-        {modules.map((m, i) => {
-          const isCurrent = m.status === "current";
-          const isLocked = m.status === "locked";
-          // Групповая метка «Up next» перед первым locked
-          const showUpNext = isLocked && i === firstLockedIdx;
+        {lessons.map((lesson, i) => {
+          const status =
+            completed.includes(lesson.id) ? "done" : i === currentIdx ? "current" : "locked";
+          const showUpNext = status === "locked" && i === firstLockedIdx;
           return (
-            <div key={i}>
+            <div key={lesson.id}>
               {showUpNext && <p className="roadmap__group-label">{t("roadmap.upNext")}</p>}
-              <RoadmapRow m={m} i={i} isCurrent={isCurrent} isLocked={isLocked} statusLabel={t} continueModule={continueModule} onResume={onResume} techId={tech.id} />
+              <LessonRow lesson={lesson} i={i} status={status} onOpen={openLessonRow} />
             </div>
           );
         })}
-        {/* Честный empty-state: заблокированных модулей нет */}
-        <div className="roadmap__item">
-          <RoadmapNode status="locked" />
-          <div className="card roadmap__ghost">
-            <p className="roadmap__ghost-text">{t("techPage.soon")}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RoadmapRow({ m, i, isCurrent, isLocked, statusLabel, continueModule, onResume, techId }) {
-  const status = isCurrent
-    ? statusLabel("techPage.inProgress")
-    : isLocked
-      ? statusLabel("techPage.locked")
-      : statusLabel("techPage.completed");
-
-  return (
-    <div className={`roadmap__item ${isCurrent ? "roadmap__item--current" : ""}`}>
-      <RoadmapNode status={m.status} big={isCurrent} />
-      <div
-        className={`card roadmap__card ${isCurrent ? "roadmap__card--current" : ""} ${isLocked ? "roadmap__card--locked" : ""}`}
-        role={isCurrent ? "button" : undefined}
-        tabIndex={isCurrent ? 0 : undefined}
-        aria-current={isCurrent ? "step" : undefined}
-        onClick={isCurrent ? continueModule : undefined}
-        onKeyDown={isCurrent ? (e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onResume(techId); }
-        } : undefined}
-      >
-        <div className="roadmap__card-head">
-          <span className="roadmap__num">{i + 1}</span>
-          <strong className="roadmap__title">{m.title}</strong>
-          <span className={`roadmap__chip roadmap__chip--${m.status}`}>{status}</span>
-        </div>
-        <p className="roadmap__desc">{m.desc}</p>
       </div>
     </div>
   );

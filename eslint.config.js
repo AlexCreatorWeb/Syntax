@@ -5,7 +5,8 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // dist + course/** — исходники курсов (скелеты заданий со TODO, не код платформы)
+  globalIgnores(['dist', 'course/**']),
   {
     files: ['**/*.config.js', 'api/**/*.js'],
     languageOptions: { globals: globals.node },

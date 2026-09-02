@@ -49,7 +49,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   // Приоритет: таблица `lessons` в Supabase (строка с tech = трек) → i18n-статика (fallback).
   const dbLessonsArr = dbLessons || [];
   const taskFileMap = { javascript: "index.js", python: "main.py", postgres: "queries.sql", html: "index.html", css: "styles.css", node: "server.js", react: "App.jsx", vue: "App.vue", mongo: "models.js" };
-  const openDbLesson = (lesson, techId) => {
+  const openDbLesson = (lesson, techId, backTab = "technology") => {
     const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
     // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
     onNavigate("lesson", {
@@ -57,7 +57,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
       title: lesson.title,
       desc: (staticFor && staticFor.desc) || "",
       content: typeof lesson.content === "string" ? lesson.content : "",
-      backTab: "technology",
+      backTab,
       techId: techId || undefined,
       file: (techId && taskFileMap[techId]) || "index.js",
       code: typeof lesson.code === "string" ? lesson.code : undefined,
@@ -136,7 +136,11 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
 
   const renderPlaceholder = (tab) => (
     <section className="card">
-      <h1 className="lesson__title">{t(`placeholders.${tab}Title`)}</h1>
+      <div className="placeholders__head">
+        <h1 className="lesson__title">{t(`placeholders.${tab}Title`)}</h1>
+        {/* M2-аудит: заглушки не притворяются готовыми разделами */}
+        <span className="soon-badge">{t("home.soon")}</span>
+      </div>
       <p className="lesson__desc">{t(`placeholders.${tab}Desc`)}</p>
     </section>
   );
@@ -159,6 +163,8 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
             activeTech={activeTech}
             onSelectTech={onSelectTech}
             onResume={(id) => openLesson(id)}
+            dbLessons={dbLessons}
+            onOpenDbLesson={openDbLesson}
           />
         );
       case "technology":

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useT } from "../../i18n/useT";
 import TechCardsGrid from "../TechCardsGrid";
 
@@ -45,34 +45,112 @@ function StatValue({ stat, className }) {
 }
 
 // Mock окна редактора: typing-анимация строк + "tests passed"
+// ch = точная длина строки в символах (моноширинный шрифт) — CSS печатает её за ch*RATE
 const CODE_LINES = [
-  <span className="tk-c">// Your first function</span>,
-  <>
-    <span className="tk-k">const</span> url <span className="tk-p">=</span>{" "}
-    <span className="tk-s">&quot;https://api.syntax.dev&quot;</span>;
-  </>,
-  " ",
-  <>
-    <span className="tk-k">async function</span> <span className="tk-f">fetchStatus</span>(){" "}
-    <span className="tk-p">{"{"}</span>
-  </>,
-  <>
-    {"  "}
-    <span className="tk-k">const</span> res <span className="tk-p">=</span>{" "}
-    <span className="tk-k">await</span> <span className="tk-f">fetch</span>(url);
-  </>,
-  <>
-    {"  "}<span className="tk-k">return</span> (<span className="tk-k">await</span> res.<span className="tk-f">json</span>()).status;
-  </>,
-  <span className="tk-p">{"}"}</span>,
-  <>
-    <span className="tk-f">fetchStatus</span>().<span className="tk-f">then</span>(console.log);
-  </>,
+  { ch: 22, node: <span className="tk-c">// Your first function</span> },
+  {
+    ch: 37,
+    node: (
+      <>
+        <span className="tk-k">const</span> url <span className="tk-p">=</span>{" "}
+        <span className="tk-s">&quot;https://api.syntax.dev&quot;</span>;
+      </>
+    ),
+  },
+  { ch: 1, node: " " },
+  {
+    ch: 30,
+    node: (
+      <>
+        <span className="tk-k">async function</span> <span className="tk-f">fetchStatus</span>(){" "}
+        <span className="tk-p">{"{"}</span>
+      </>
+    ),
+  },
+  {
+    ch: 31,
+    node: (
+      <>
+        {"  "}
+        <span className="tk-k">const</span> res <span className="tk-p">=</span>{" "}
+        <span className="tk-k">await</span> <span className="tk-f">fetch</span>(url);
+      </>
+    ),
+  },
+  {
+    ch: 34,
+    node: (
+      <>
+        {"  "}<span className="tk-k">return</span> (<span className="tk-k">await</span> res.<span className="tk-f">json</span>()).status;
+      </>
+    ),
+  },
+  { ch: 1, node: <span className="tk-p">{"}"}</span> },
+  {
+    ch: 31,
+    node: (
+      <>
+        <span className="tk-f">fetchStatus</span>().<span className="tk-f">then</span>(console.log);
+      </>
+    ),
+  },
 ];
 
+// Тайминг «печати»: ~0.05с на символ, пауза 0.1с между строками → весь блок ~10.4с
+const CODE_RATE = 0.05;
+const CODE_START = 0.3;
+const CODE_PAUSE = 0.1;
+const CODE_TIMING = CODE_LINES.reduce((acc, line, i) => {
+  const d = i === 0 ? CODE_START : acc[i - 1].end + CODE_PAUSE;
+  const dur = line.ch * CODE_RATE;
+  acc[i] = { d, dur, end: d + dur };
+  return acc;
+}, {});
+
 function HeroDemo({ t }) {
+  const rootRef = useRef(null);
+
+  // Время-базовая «печать» на rAF: CSS-анимации с fill в Chrome недёргано теряют
+  // финальное состояние (строки оставались невидимы), а по-времени типинг при любом
+  // сталле часов просто «допрыгивает» до правильного положения.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      root.classList.add("hero-demo--done");
+      return;
+    }
+    const lines = [...root.querySelectorAll(".hero-demo__line")];
+    const codes = lines.map((l) => l.querySelector("code"));
+    const carets = lines.map((l) => l.querySelector(".hero-demo__caret"));
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = () => {
+      const now = (performance.now() - t0) / 1000;
+      let allDone = true;
+      CODE_LINES.forEach((line, i) => {
+        const { d, dur } = CODE_TIMING[i];
+        const p = now < d ? 0 : now >= d + dur ? 1 : (now - d) / dur;
+        if (p < 1) allDone = false;
+        const chars = p >= 1 ? line.ch : Math.floor(p * line.ch + 1e-6);
+        lines[i].style.opacity = p > 0 ? "1" : "0";
+        codes[i].style.width = chars + "ch";
+        const isLast = i === CODE_LINES.length - 1;
+        carets[i].style.visibility = p > 0 && (isLast || now < d + dur + 0.6) ? "visible" : "hidden";
+        carets[i].style.left = `calc(34px + ${chars}ch)`;
+      });
+      if (allDone) {
+        root.classList.add("hero-demo--done");
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   return (
-    <div className="hero-demo" aria-hidden="true">
+    <div ref={rootRef} className="hero-demo" aria-hidden="true">
       <div className="hero-demo__bar">
         <span className="hero-demo__dot" />
         <span className="hero-demo__dot" />
@@ -81,9 +159,10 @@ function HeroDemo({ t }) {
       </div>
       <pre className="hero-demo__code">
         {CODE_LINES.map((line, i) => (
-          <span key={i} className="hero-demo__line" style={{ "--i": i }}>
+          <span key={i} className="hero-demo__line">
             <span className="hero-demo__ln">{i + 1}</span>
-            <code>{line}</code>
+            <code>{line.node}</code>
+            <span className="hero-demo__caret" />
           </span>
         ))}
       </pre>

@@ -31,6 +31,8 @@ function DailyChallenge({ t, onAccept }) {
         <span className="timer-chip" role="timer" aria-label={t("tasks.timerAria")}>
           {formatTime(seconds)}
         </span>
+        {/* L6-аудит: что именно отсчитывает таймер */}
+        <span className="daily-challenge__reset">{t("tasks.resetsDaily")}</span>
       </div>
       <h3 className="daily-challenge__name">
         {t("tasks.daily.name")}

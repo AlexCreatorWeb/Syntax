@@ -111,6 +111,17 @@ function NewsModal({ item, onClose }) {
   }, [articleBlocks, progress, isEn]);
   const translating = !isEn && !!progress && progress.done < totalBlocks;
 
+  // M1-аудит: провайдер перевода лёг посреди статьи → тихий микс RU/EN.
+  // После завершения перевода честно показываем, сколько блоков остались на оригинале.
+  const untranslatedCount = useMemo(() => {
+    if (!articleBlocks || isEn || !progress || progress.done < totalBlocks) return 0;
+    let n = 0;
+    articleBlocks.forEach((b, i) => {
+      if ((b.type === "p" || b.type === "h2" || b.type === "h3" || b.type === "callout") && progress.texts[i] === undefined) n += 1;
+    });
+    return n;
+  }, [articleBlocks, progress, totalBlocks, isEn]);
+
   // «Learn more» показываем, только если статья реально длиннее превью
   const totalLen = useMemo(() => {
     if (!shownBlocks) return 0;
@@ -196,6 +207,11 @@ function NewsModal({ item, onClose }) {
                     <span className="news-modal__progress-label">
                       🌐 {t("news.translatingProgress", { done: progress.done, total: totalBlocks })}
                     </span>
+                  </div>
+                )}
+                {!translating && untranslatedCount > 0 && (
+                  <div className="news-modal__original-note" role="note">
+                    {t("news.originalNote", { n: untranslatedCount })}
                   </div>
                 )}
                 <MdContent blocks={shownBlocks} t={t} limit={expanded ? undefined : PREVIEW_LIMIT} />

@@ -338,6 +338,8 @@ function cleanArticleMarkdown(md) {
       return;
     }
     if (JUNK_LINES.some((re) => re.test(line))) return;
+    // M1-аудит: SEO-абзацы Jina (описание картинки «…thumbnail showing…» не контент статьи
+    if (/thumbnail showing/i.test(line)) return;
     const bullet = line.match(/^[*-]\s+(.*)$/);
     if (bullet) {
       if (out[out.length - 1] !== "") out.push("");
@@ -349,8 +351,14 @@ function cleanArticleMarkdown(md) {
   });
   const fences = (out.join("\n").match(/```/g) || []).length;
   if (fences % 2 === 1) out.push("```");
+  let finalMd = wrapCodeLines(out).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  // M1-аудит: Jina оборачивает ссылки в жирный — **<link>** рендерится звёздами;
+  // оставляем ссылку, жирный вокруг неё теряем
+  finalMd = finalMd.replace(/\*\*\[([^\]\n]+)\]\(([^)\s]+)\)\*\*/g, "[$1]($2)");
+  // Jina-курсив _…_ — markdown-lite понимает только *…*, просто снимаем underscores
+  finalMd = finalMd.replace(/(^|\s)_([^_\n]+?)_(?=\s|$)/gm, "$1$2");
   return {
-    md: wrapCodeLines(out).join("\n").replace(/\n{3,}/g, "\n\n").trim(),
+    md: finalMd,
     avatar,
   };
 }
@@ -433,5 +441,25 @@ export function markLinkSeen(link) {
     }
   } catch {
     /* localStorage может быть недоступен — некритично */
+  }
+}
+
+// M7-аудит: «Прочитать все» — помечаем все ссылки текущего фида прочитанными.
+export function markAllLinksSeen(links) {
+  try {
+    const arr = JSON.parse(localStorage.getItem(SEEN_KEY)) || [];
+    let changed = false;
+    for (const l of links) {
+      if (l && !arr.includes(l)) {
+        arr.push(l);
+        changed = true;
+      }
+    }
+    if (changed) {
+      if (arr.length > SEEN_LIMIT) arr.splice(0, arr.length - SEEN_LIMIT);
+      localStorage.setItem(SEEN_KEY, JSON.stringify(arr));
+    }
+  } catch {
+    /* некритично */
   }
 }

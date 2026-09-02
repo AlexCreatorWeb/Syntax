@@ -151,7 +151,7 @@ export default {
       aiA: "Embed when the data is always read together and bounded in size — it keeps queries to a single round trip. Reference when it grows independently or is shared.",
       lesson: { title: "Queries & Aggregation", desc: "Model a collection, write filtered queries, and build a two-stage aggregation pipeline.", file: "models.js" },
     },
-  },  lessonView: { tabMaterial: "Material", tabTask: "Task", goToTask: "Go to the task" },
+  },  lessonView: { tabMaterial: "Material", tabTask: "Task", goToTask: "Go to the task", courseLang: "RU", courseLangNote: "Course content is in Russian for now — more languages are coming" },
   ai: { thinking: "Thinking…", send: "Send", clear: "Start a new conversation", noKey: "AI is warming up — model key not set yet", errGeneric: "Something went wrong — please try again", errBadKey: "Model key is invalid or expired", errRateLimit: "Too many requests — try again in a minute", errCredits: "Daily AI quota is exhausted — please try again in a while", errModel: "Model is warming up — try again in a few seconds" },
   techPage: {
     live: "Open track",
@@ -187,6 +187,7 @@ export default {
   notifications: {
     title: "Notifications",
     none: "No new notifications",
+    markAllRead: "Mark all as read",
   },
   news: {
     empty: "No new posts yet",
@@ -196,6 +197,7 @@ export default {
     learnMore: "Learn more",
     showLess: "Show less",
     close: "Close",
+    originalNote: "Part of the article is shown in the original ({n} blocks) — translation providers are busy",
   },
   account: {
     profile: "Profile",
@@ -220,9 +222,15 @@ export default {
   },
   roadmap: {
     heading: "Your course track",
-    trackDesc: "{tech} · from the basics to advanced topics · 4 modules",
-    statusLine: "Module {m} of {n}",
+    trackDesc: "{tech} · from the basics to advanced topics",
+    lessonStatus: "Lesson {m} of {n}",
+    doneOf: "{a} of {b} lessons done",
+    courseDone: "Course completed",
+    currentHint: "Open the lesson — theory, an example and a hands-on task in the editor.",
     upNext: "Up next",
+    emptyTitle: "The {tech} course is in development",
+    emptyBody: "The curriculum is being written by our instructors. In the meantime, the HTML course is ready — 16 lessons from zero to a finished project.",
+    emptyCta: "Open the HTML course",
   },
   tasks: {
     title: "Coding Tasks",
@@ -231,6 +239,7 @@ export default {
     allStatuses: "All Statuses",
     search: "Search tasks...",
     timerAria: "Time remaining",
+    resetsDaily: "Resets daily at midnight",
     noResults: "Nothing found",
     trackTitle: "{tech} Tasks",
     generalTitle: "General Tasks",
@@ -474,7 +483,9 @@ export default {
     mentorPlaceholder: "Ask a question...",
     send: "Send",
   },
-  signup: { title: "Create your free account", subtitle: "Two minutes, no card. Your progress is saved.", name: "Name", email: "Email", submit: "Sign up free", guest: "Continue as guest" },
+  signup: { title: "Create your free account", subtitle: "Two minutes, no card. Your progress is saved.", name: "Name", email: "Email", submit: "Sign up free", guest: "Continue as guest", titleChallenge: "Sign up to start the challenge", subtitleChallenge: "Your daily challenge is saved — it opens right after sign up." },
+  auth: { loginTitle: "Welcome back", loginSubtitle: "Log in to continue your course", password: "Password", loginSubmit: "Log in", toLogin: "Already have an account? {action}", toSignup: "New to Syntax? {action}", loginCta: "Log in", signupCta: "Sign up free", emailSentTitle: "Check your inbox", emailSent: "We sent a confirmation link to {email}. Click it, then log in.", emailSentOk: "Got it", errInvalid: "Wrong email or password.", errUnconfirmed: "Email not confirmed — check your inbox for the link.", errExists: "This email is already registered — log in instead.", errWeak: "Password must be at least 6 characters.",
+    errRateLimit: "Too many sign-ups right now — wait a few minutes and try again.", errEmail: "Enter a valid email address.", errNetwork: "No connection — check the network and try again.", errGeneric: "Something went wrong — try again." },
   footer: { product: "Product", company: "Company", legal: "Legal", privacy: "Privacy", terms: "Terms", tagline: "Learn programming by building — right in your browser." },
   home: {
     search: "Search commands, modules...",
@@ -675,6 +686,9 @@ export default {
     submit: "Submit solution",
     submitOk: "✓ Solution accepted: no errors (demo check)",
     submitFail: "Run has errors — check the console",
+    submitTodosLeft: "It runs — but {n} TODOs left. Finish them to complete the lesson",
+    submitUnchanged: "No changes yet — work through the first TODO in the code, then submit again",
+    previewEmpty: "The page is empty — add some content to the HTML file",
     back: "Back",
     lessonLabel: "Lesson",
     dbSource: "From database",

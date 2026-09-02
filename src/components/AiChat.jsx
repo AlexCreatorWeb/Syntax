@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useT } from "../i18n/useT";
-import { isAiConfigured, askAssistant, AI_MODEL, AI_MODEL_SHORT } from "../lib/ai";
+import { isAiConfigured, askAssistant, AI_MODEL } from "../lib/ai";
 import { MdContent } from "../lib/markdown-view";
 
 // Модель иногда пишет открывающий fence в одной строке с кодом («```js function x(){»)
@@ -112,7 +112,7 @@ function AiChat({ techId }) {
           </h2>
         </div>
         {/* Имя модели — под заголовком */}
-        <span className="tech-aside__model-chip" title={AI_MODEL}>{AI_MODEL_SHORT}</span>
+        <span className="tech-aside__model-chip" title={AI_MODEL}>Syntax AI · Flash</span>
       </div>
 
       {/* Кнопка очистки — вверху чата (не при заголовке), всегда на месте, не скроллится */}

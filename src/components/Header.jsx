@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLanguage } from '../context/useLanguage';
 import { UI_LANGUAGES } from '../context/uiLanguages';
 import { useT } from '../i18n/useT';
@@ -6,7 +6,7 @@ import { useT } from '../i18n/useT';
 // Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
 // Лого всегда оригинальный Syntax (тех-лого живёт на странице технологии — UX-фидбек);
 // таб-специфичный контент (заголовки, поиски) — внутри вьюх.
-function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNewsLinks, onOpenNews }) {
+function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, userEmail = null, mediumNews = [], seenNewsLinks, onOpenNews, onMarkAllNewsRead }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +14,14 @@ function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNews
   const langRef = useRef(null);
   const notifRef = useRef(null);
   const accountRef = useRef(null);
+
+  // Hue монограммы-аватара — детерминированно от имени (паттерн аватаров платформы)
+  const nameHue = useMemo(() => {
+    let h = 0;
+    const s = user || "";
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+    return h;
+  }, [user]);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
@@ -191,7 +199,19 @@ function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNews
             />
           </button>
           <div className="tb-menu tb-menu--notif" role="menu" hidden={openMenu !== "notif"}>
-            <span className="tb-menu__title">{t("notifications.title")}</span>
+            <div className="tb-menu__head">
+              <span className="tb-menu__title">{t("notifications.title")}</span>
+              {mediumNews.length > 0 && (
+                <button
+                  type="button"
+                  className="tb-menu__markall"
+                  disabled={!mediumNews.some((n) => seenNewsLinks && !seenNewsLinks.has(n.link))}
+                  onClick={onMarkAllNewsRead}
+                >
+                  {t("notifications.markAllRead")}
+                </button>
+              )}
+            </div>
             {mediumNews.length === 0 ? (
               <span className="tb-menu__empty">{t("news.empty")}</span>
             ) : (
@@ -224,68 +244,70 @@ function Header({ onToggleTheme, onNavigate, onSignup, mediumNews = [], seenNews
           </div>
         </div>
 
-        <div className="auth" >
-          <button type="button" className="auth__login" onClick={onSignup}>
-            {t("header.login")}
-          </button>
-          <button type="button" className="btn btn--primary auth__signup" onClick={onSignup}>
-            {t("header.signup")}
-          </button>
-        </div>
-
-        <div className="tb-menu-wrap" ref={accountRef}>
-          <button
-            className="avatar"
-            type="button"
-            aria-label={t("header.account")}
-            aria-haspopup="true"
-            aria-expanded={openMenu === "account"}
-            onClick={() => setOpenMenu((m) => (m === "account" ? null : "account"))}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6" />
-            </svg>
-          </button>
-          <div className="tb-menu" role="menu" hidden={openMenu !== "account"}>
+        {user ? (
+          // Авторизован: монограмма + меню (Профиль, Settings, Log out)
+          <div className="tb-menu-wrap" ref={accountRef}>
             <button
+              className="avatar avatar--user"
               type="button"
-              role="menuitem"
-              className="tb-menu__item"
-              title={t("home.soon")}
-              aria-disabled="true"
+              aria-label={t("header.account")}
+              aria-haspopup="true"
+              aria-expanded={openMenu === "account"}
+              onClick={() => setOpenMenu((m) => (m === "account" ? null : "account"))}
             >
-              {t("account.profile")}
+              <span className="avatar-dot avatar-dot--sm" style={{ background: `linear-gradient(135deg, hsl(${nameHue} 45% 32%), hsl(${nameHue} 55% 18%))` }}>
+                {user.charAt(0).toUpperCase()}
+              </span>
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="tb-menu__item"
-              onClick={() => {
-                onNavigate("settings");
-                setOpenMenu(null);
-              }}
-            >
-              {t("sidebar.settings")}
+            <div className="tb-menu tb-menu--account" role="menu" hidden={openMenu !== "account"}>
+              <div className="tb-menu__user">
+                <strong>{user}</strong>
+                {userEmail && <span>{userEmail}</span>}
+              </div>
+              <button
+                type="button"
+                role="menuitem"
+                className="tb-menu__item"
+                title={t("home.soon")}
+                aria-disabled="true"
+              >
+                {t("account.profile")}
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="tb-menu__item"
+                onClick={() => {
+                  onNavigate("settings");
+                  setOpenMenu(null);
+                }}
+              >
+                {t("sidebar.settings")}
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="tb-menu__item tb-menu__item--danger"
+                onClick={() => {
+                  setOpenMenu(null);
+                  onLogout();
+                }}
+              >
+                {t("account.logout")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Гость: Log in (ghost) + Sign up free (primary) — модалка в соответствующем режиме
+          <div className="auth">
+            <button type="button" className="auth__login" onClick={() => onAuth("login")}>
+              {t("header.login")}
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="tb-menu__item"
-              title={t("home.soon")}
-              aria-disabled="true"
-            >
-              {t("account.logout")}
+            <button type="button" className="btn btn--primary auth__signup" onClick={() => onAuth("signup")}>
+              {t("header.signup")}
             </button>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );

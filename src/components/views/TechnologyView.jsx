@@ -83,7 +83,11 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
       {/* Lessons: уроки трека из базы (Supabase), кликабельны — открываются в редакторе */}
       {dbTechLessons.length > 0 && (
         <section className="tech-page__dblessons">
-          <h2 className="tech-page__section-title">{t("techPage.dbLessons")}</h2>
+          <div className="tech-page__section-head">
+            <h2 className="tech-page__section-title">{t("techPage.dbLessons")}</h2>
+            {/* H4-аудит: язык курса виден до входа в урок */}
+            <span className="chip lesson-view__lang" title={t("lessonView.courseLangNote")}>{t("lessonView.courseLang")}</span>
+          </div>
           <div className="techmod-list">
             {/* NEW-лейбл: только если урок про НОВУЮ технологию (фича ≤ 3 лет — словарь web-features.js),
                 а не про добавление урока в базу: popover в HTML — NEW, <table> с 2005 года — нет. */}

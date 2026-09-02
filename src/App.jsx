@@ -3,11 +3,12 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
 import WidgetPanel from "./components/WidgetPanel";
-import SignupModal from "./components/SignupModal";
+import AuthModal from "./components/AuthModal";
 import NewsModal from "./components/NewsModal";
 import { getTech } from "./lib/techs";
 import { fetchDbLessons } from "./lib/supabase";
-import { fetchMediumNews, getSeenLinks, markLinkSeen, clearSeenLinks, mediumDayKey } from "./lib/medium";
+import { readStoredSession, getSession, onAuthChange, signOut, syncProfile, displayName } from "./lib/auth";
+import { fetchMediumNews, getSeenLinks, markLinkSeen, clearSeenLinks, mediumDayKey, markAllLinksSeen } from "./lib/medium";
 
 // URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
 // Единственный параметризованный маршрут: #/technology/<techId> (deep-link на трек).
@@ -33,12 +34,13 @@ function App() {
   // URL-параметр вкладки (#/documentation/<slug> — статья; #/technology/<id> — трек)
   const [routeParam, setRouteParam] = useState(() => parseHash().param);
 
-  // Уроки из Supabase (таблица lessons): null = ещё не загрузили, [] = пусто (fallback на i18n)
+  // Уроки из Supabase (таблица lessons): null = ещё грузится, [] = пусто/сбой (fallback на i18n)
   const [dbLessons, setDbLessons] = useState(null);
   useEffect(() => {
     let alive = true;
     fetchDbLessons().then((rows) => {
-      if (alive) setDbLessons(rows);
+      // сбой/таймаут (null) нормализуем в [] — null остаётся только «ещё грузим»
+      if (alive) setDbLessons(rows || []);
     });
     return () => {
       alive = false;
@@ -94,6 +96,11 @@ function App() {
     setSeenNewsLinks(getSeenLinks());
   }, []);
   const closeNews = useCallback(() => setNewsItem(null), []);
+  // M7-аудит: «Прочитать все» — все ссылки текущего фида сразу в seen
+  const markAllNewsRead = useCallback(() => {
+    markAllLinksSeen(mediumNews.map((n) => n.link));
+    setSeenNewsLinks(getSeenLinks());
+  }, [mediumNews]);
 
   const [job, setJob] = useState(null);
   // job, который нужно применить при следующем hashchange (навигация через URL)
@@ -166,15 +173,30 @@ function App() {
   };
 
 
-  // Гостевой sign-up: одна модалка на все гостевые действия (пока без бэкенда)
-  const [signupOpen, setSignupOpen] = useState(false);
-  const openSignup = useCallback(() => setSignupOpen(true), []);
-  const closeSignup = useCallback(() => setSignupOpen(false), []);
+  // Auth (Supabase): сессия — localStorage (readStoredSession синхронно, чтобы не мигать
+  // «гость» при загрузке; асинхронный getSession + onAuthStateChange подтверждают/следят).
+  const [session, setSession] = useState(readStoredSession);
+  useEffect(() => {
+    let unsub = () => {};
+    getSession().then(({ data }) => {
+      if (data && data.session) setSession(data.session);
+    });
+    unsub = onAuthChange((s) => {
+      setSession(s);
+      if (s && s.user) syncProfile(s.user); // SIGNED_IN: строка в profiles (fire-and-forget)
+    });
+    return () => unsub();
+  }, []);
+  const isAuthed = Boolean(session);
+  const userName = displayName(session);
+  const handleLogout = useCallback(() => signOut(), []);
 
-  // Демо-auth: submit формы sign-up «логинит» на время сессии.
-  // Пока без бэкенда — в-memory; с бэкендом станет реальная сессия.
-  const [isAuthed, setIsAuthed] = useState(false);
-  const handleAuthed = useCallback(() => setIsAuthed(true), []);
+  // Модалка auth: null | "signup" | "login" — одна на все гостевые действия и на «Log in» хедера.
+  // ctx: "challenge" — заголовок под контекст тригера (M5-аудит: не терять цель регистрации)
+  const [authMode, setAuthMode] = useState(null);
+  const [authCtx, setAuthCtx] = useState(null);
+  const openAuth = useCallback((mode = "signup", ctx = null) => { setAuthMode(mode); setAuthCtx(ctx); }, []);
+  const closeAuth = useCallback(() => setAuthMode(null), []);
 
   return (
     <div className="app">
@@ -182,10 +204,14 @@ function App() {
       <Header
         onToggleTheme={toggleTheme}
         onNavigate={openTab}
-        onSignup={openSignup}
+        onAuth={openAuth}
+        onLogout={handleLogout}
+        user={userName}
+        userEmail={session && session.user ? session.user.email : null}
         mediumNews={mediumNews}
         seenNewsLinks={seenNewsLinks}
         onOpenNews={openNews}
+        onMarkAllNewsRead={markAllNewsRead}
       />
       <div className="shell">
         <Sidebar activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} onSelectTab={openTab} isAuthed={isAuthed} />
@@ -196,13 +222,13 @@ function App() {
           onNavigate={openTab}
           activeTech={activeTech}
           onSelectTech={selectTech}
-          onSignup={openSignup}
+          onSignup={(ctx) => openAuth("signup", ctx)}
           routeParam={routeParam}
           dbLessons={dbLessons}
         />
-        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={openSignup} job={job} activeTech={activeTech} isAuthed={isAuthed} />
+        <WidgetPanel activeTab={activeTab} onNavigate={openTab} onSignup={(ctx) => openAuth("signup", ctx)} job={job} activeTech={activeTech} isAuthed={isAuthed} />
       </div>
-      <SignupModal open={signupOpen} onClose={closeSignup} onAuthed={handleAuthed} />
+      {authMode && <AuthModal key={authMode} mode={authMode} ctx={authCtx} onClose={closeAuth} onSwitchMode={openAuth} />}
       {newsItem && <NewsModal item={newsItem} onClose={closeNews} />}
     </div>
   );

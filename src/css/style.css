@@ -609,12 +609,84 @@ code {
   flex-direction: column;
 }
 .editor-host { flex: 1; min-height: 0; }
+.editor-preview-wrap {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.editor-preview-wrap--hidden { display: none; }
 .editor-preview {
   flex: 1;
   min-width: 0;
   border: none;
   border-left: 1px solid var(--border);
   background: #f5f4ef; /* «бумажный» фон, как в Claude */
+}
+/* М6: пустая страница в превью — подсказка поверх (не «сбой», а «доскачай TODO») */
+.editor-preview-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  padding: 24px;
+  text-align: center;
+}
+.editor-preview-hint svg { width: 34px; height: 34px; color: var(--muted); opacity: 0.7; }
+.editor-preview-hint span {
+  max-width: 300px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-variant);
+  background: var(--surface, rgba(17, 21, 26, 0.82));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  backdrop-filter: blur(4px);
+}
+
+/* Аудит: новые мелкие элементы */
+/* M2: заглушки Settings/Support — заголовок + SOON-бейдж */
+.placeholders__head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.placeholders__head .lesson__title { margin-bottom: 0; }
+/* H4: чип языка курса */
+.lesson-view__head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.lesson-view__head .lesson-view__title { margin-bottom: 0; }
+.lesson-view__lang { flex: none; }
+.tech-page__section-head { display: flex; align-items: center; gap: 12px; }
+/* M7: «Прочитать все» в дропдауне уведомлений */
+.tb-menu__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tb-menu__markall {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.tb-menu__markall:hover:not(:disabled) { background: var(--primary-soft); }
+.tb-menu__markall:disabled { color: var(--muted); cursor: default; opacity: 0.6; }
+/* M1: часть статьи на оригинале — честная пометка */
+.news-modal__original-note {
+  font-size: 12px;
+  color: var(--text-variant);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  margin-bottom: 14px;
+}
+/* L6: что отсчитывает таймер challenge */
+.daily-challenge__reset {
+  font-size: 10.5px;
+  color: var(--muted);
+  width: 100%;
 }
 .code-card__actions { display: flex; align-items: center; gap: 6px; }
 
@@ -637,6 +709,8 @@ code {
 }
 .editor-status--ok { color: var(--primary-hover); background: var(--primary-soft); }
 .editor-status--fail { color: var(--danger); background: rgba(197, 2, 11, 0.1); }
+/* H3: запущено без ошибок, но TODO-шаги задания не завершены — жёлтый, не зелёный */
+.editor-status--todos { color: var(--warning, #e5a50a); background: rgba(229, 165, 10, 0.12); }
 
 .editor-job {
   padding: 12px 16px;
@@ -1332,8 +1406,22 @@ code {
 .roadmap__card--current .roadmap__title { color: var(--primary); }
 
 /* «Модули идут дальше» */
-.roadmap__ghost { border-style: dashed; opacity: 0.7; padding: 14px 20px; }
-.roadmap__ghost-text { margin: 0; font-size: 13px; color: var(--muted); }
+/* Пройденный урок — кликабелен (повторить) */
+.roadmap__card--review { cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
+.roadmap__card--review:hover { transform: translateY(-2px); border-color: var(--primary); }
+.roadmap__card--review:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Скелетон, пока грузится БД (шиммер общий с news-skeleton) */
+.roadmap__skel {
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 37%, var(--surface-2) 63%);
+  background-size: 300% 100%;
+  animation: news-shimmer 1.3s ease-in-out infinite;
+}
+.roadmap__skel--title { height: 16px; width: 45%; }
+.roadmap__skel--sub { height: 12px; width: 70%; }
+.roadmap__skel--btn { height: 38px; width: 140px; border-radius: var(--radius); }
+.roadmap__skel--row { height: 56px; }
 
 /* ============================================================
    Technology page (страница технологии; макет: technology-page)
@@ -2689,14 +2777,35 @@ code {
   overflow: hidden;
 }
 .hero-demo__line {
+  position: relative;
   display: flex;
   gap: 10px;
   padding: 0 12px;
   white-space: pre;
   opacity: 0;
-  animation: code-line 0.05s steps(1) forwards;
-  animation-delay: calc(0.5s + var(--i, 0) * 0.42s);
 }
+.hero-demo__line code {
+  display: inline-block;
+  flex: none;
+  vertical-align: top;
+  overflow: hidden;
+  white-space: pre;
+  width: 0; /* печатает JS: width = Nch (моношрифт → 1ch = один символ) */
+}
+/* курсор-«печатная каретка»: позиция и видимость задаёт JS-типинг, мигание — CSS */
+.hero-demo__caret {
+  position: absolute;
+  top: 4px;
+  left: 34px; /* padding 12 + номер 12 + gap 10 */
+  width: 7px;
+  height: 13px;
+  background: var(--primary-hover);
+  visibility: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  animation: code-cursor 1s steps(1) infinite;
+}
+@keyframes code-cursor { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .hero-demo__ln {
   width: 12px;
   flex: none;
@@ -2704,19 +2813,6 @@ code {
   color: color-mix(in srgb, var(--muted) 45%, transparent);
   user-select: none;
 }
-.hero-demo__line:last-child code::after {
-  content: "";
-  display: inline-block;
-  width: 7px;
-  height: 13px;
-  margin-left: 4px;
-  vertical-align: -2px;
-  background: var(--primary-hover);
-  animation: code-cursor 1s steps(1) infinite;
-}
-@keyframes code-line { to { opacity: 1; } }
-@keyframes code-cursor { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-/* Синтаксис: One Dark-палитра — читается как «настоящий редактор» */
 .tk-k { color: #c678dd; }
 .tk-f { color: #61afef; }
 .tk-s { color: #98c379; }
@@ -2747,9 +2843,9 @@ code {
   color: var(--primary-hover);
   opacity: 0;
   transform: scale(0.9);
-  animation: pass-pop 0.3s ease-out forwards;
-  animation-delay: 4s;
 }
+/* JS-типинг завершил печать → класс на корне */
+.hero-demo--done .hero-demo__pass { animation: pass-pop 0.3s ease-out forwards; }
 .hero-demo__pass svg { width: 14px; height: 14px; }
 @keyframes pass-pop { to { opacity: 1; transform: scale(1); } }
 
@@ -3185,6 +3281,73 @@ code {
 }
 .signup__guest:hover { color: var(--text-variant); }
 
+/* --- Auth (регистрация/вход): переключатель режимов, ошибки, спиннер, «проверьте почту», меню юзера --- */
+.signup__switch {
+  margin-top: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.signup__switch b { color: var(--primary); font-weight: 600; }
+.signup__switch:hover { color: var(--text-variant); }
+.auth__error {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--danger);
+}
+.auth__spinner {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
+  animation: auth-spin 0.8s linear infinite;
+}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+.auth__sent { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.auth__sent-icon {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+  border-radius: var(--radius);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.auth__sent-icon svg { width: 22px; height: 22px; }
+
+/* Меню аккаунта: шапка (имя + email) и danger-пункт */
+.tb-menu__user {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.tb-menu__user strong { font-size: 13.5px; font-weight: 600; }
+.tb-menu__user span {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+.tb-menu__item--danger { color: var(--danger); }
+.tb-menu__item--danger:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+.avatar--user { padding: 2px; }
+.avatar--user .avatar-dot { width: 100%; height: 100%; font-size: 13px; }
+
 /* --- Мобильная главная (после базовых правил, чтобы переопределяли) --- */
 @media (max-width: 640px) {
   .sidebar .streak { display: none; }
@@ -3213,13 +3376,21 @@ code {
   .tasks-meta-row { flex-direction: column; align-items: flex-start; }
   /* Rankings на мобилке: без горизонтального скролла — скрыты Level/Tasks,
      уровень показан под именем (аудит Rankings #13) */
-  .rankings__table .col-level, .rankings__table .col-tasks { display: none; }
+  .rankings__table .col-level, .rankings__table .col-tasks, .rankings__table .col-streak { display: none; }
   .rankings__user-sub { display: block; }
   .rankings__table { font-size: 12px; table-layout: fixed; width: 100%; }
-  .rankings__table thead th, .rankings__table tbody td { padding-left: 8px; padding-right: 8px; overflow: hidden; text-overflow: ellipsis; }
-  .rankings__table th:nth-child(1), .rankings__table td:nth-child(1) { width: 52px; }
-  .rankings__table th:nth-child(3), .rankings__table td:nth-child(3) { width: 72px; }
-  .rankings__table th:nth-child(5), .rankings__table td:nth-child(5) { width: 44px; }
+  /* Базовый padding 24px объявлен ПОЗЖЕ — побеждает при равной специфичности; повышаем селектор */
+  .rankings__table-scroll .rankings__table th, .rankings__table-scroll .rankings__table td {
+    padding-left: 8px;
+    padding-right: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* H2-аудит: ключевые данные (ранг, XP) читаемы — свои ширины, без обрезки */
+  .rankings__table .col-rank { width: 44px; }
+  .rankings__table .col-xp { width: 86px; white-space: nowrap; font-size: 12px; }
+  /* Дельта ▲/▼ — вторичная метрика: на узком экране уступает место рангу и XP */
+  .rankings__table .rk-delta { display: none; }
   .rankings__total { font-size: 12.5px; }
   .rankings__user { gap: 8px; }
   .rankings__username { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3696,6 +3867,14 @@ code {
   .podium__slot--1 { max-width: 140px; }
   .podium__slot--2 .avatar-dot, .podium__slot--3 .avatar-dot { width: 52px; height: 52px; font-size: 18px; }
   .podium__slot--1 .avatar-dot { width: 68px; height: 68px; font-size: 24px; }
+}
+
+@media (max-width: 560px) {
+  /* H1-аудит: 8 пунктов с подписями на 375px перекрываются («RankingsCommunity…»).
+     На узких экранах bottom-nav — иконки (aria-label сохраняет доступность). */
+  .nav__item span, .settings-menu__chev { display: none; }
+  .nav__item { padding: 10px 6px; }
+  .nav__item svg { width: 21px; height: 21px; }
 }
 
 /* ============================================================
@@ -4730,7 +4909,8 @@ code {
     animation: none !important;
   }
   .hero-demo__line { opacity: 1 !important; animation: none !important; }
-  .hero-demo__line:last-child code::after, .home__preview-note::before { animation: none !important; }
+  .hero-demo__line code { width: auto !important; opacity: 1 !important; animation: none !important; }
+  .hero-demo__caret, .home__preview-note::before { animation: none !important; visibility: hidden; }
   .hero-demo__pass { opacity: 1 !important; transform: none !important; animation: none !important; }
   .sparkline__line { stroke-dashoffset: 0 !important; animation: none !important; }
   .signup__box { animation: none !important; }

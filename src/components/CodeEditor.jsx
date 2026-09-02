@@ -319,6 +319,25 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
 
   const previewDoc = useMemo(() => buildPreviewDoc(files, contents), [files, contents]);
 
+  // M6: превью «белый лист» — подсказка вместо молчащего пустого iframe.
+  // Проверка по реальному HTML: без комментариев и тегов видимого текста нет → страница пуста.
+  const previewBodyEmpty = useMemo(() => {
+    if (!hasHtml) return false;
+    const html = files.filter((f) => f.language === "html").map((f) => contents[f.id] || "").join("");
+    const noComments = html.replace(/<!--[\s\S]*?-->/g, "");
+    // <style>/<script> (baseStyle раннера) — тоже не «видимый текст» страницы
+    const noInert = noComments.replace(/<(style|script)[\s\S]*?<\/\1>/gi, "");
+    const bodyMatch = noInert.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    const inner = (bodyMatch ? bodyMatch[1] : noInert).replace(/<[^>]+>/g, " ");
+    return inner.replace(/\s+/g, " ").trim() === "";
+  }, [files, contents, hasHtml]);
+
+  // H3: сколько TODO-шагов задания осталось в воркспейсе (вердикт Submit без ложного «accepted»)
+  const todosLeft = useMemo(
+    () => files.reduce((n, f) => n + ((contents[f.id] || "").match(/TODO/g) || []).length, 0),
+    [files, contents]
+  );
+
   const collectFrom = (frame) => {
     let logs;
     try {
@@ -340,11 +359,14 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     if (submitPendingRef.current) {
       submitPendingRef.current = false;
       const failed = logs.some((l) => l.type === "error");
-      setSubmitStatus(failed ? "fail" : "ok");
-      // Урок из БД: успешный Submit = отметка выполнения (прогресс курса)
-      if (!failed && job && job.onComplete) job.onComplete();
+      // H3: «accepted» только когда ошибок нет И TODO-шаги задания завершены
+      if (failed) setSubmitStatus("fail");
+      else if (todosLeft > 0) setSubmitStatus("todos");
+      else setSubmitStatus("ok");
+      // Урок из БД: успешный Submit = отметка выполнения (прогресс курса) — только полный успех
+      if (!failed && todosLeft === 0 && job && job.onComplete) job.onComplete();
       // «check the console» должен сопровождаться видимой консолью (аудит #1)
-      scrollConsoleToView(failed);
+      scrollConsoleToView(failed || todosLeft > 0);
     } else {
       scrollConsoleToView(false);
     }
@@ -385,6 +407,17 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     // Без JS/HTML раннера нет — вердикт честный: подсказка в консоли, без «accepted»
     if (!hasHtml && !hasJs) {
       runCode();
+      return;
+    }
+    // H3: код не тронут — вердикта нет, студента ведут к первому TODO
+    const changed = files.some((f) => (contents[f.id] ?? "") !== (initialContentsRef.current[f.id] ?? ""));
+    if (!changed) {
+      const startCode = contents[1] ?? "";
+      const todoLine = startCode.split("\n").findIndex((l) => l.includes("TODO"));
+      setConsoleLogs([{ type: "info", text: t("editor.submitUnchanged") }]);
+      setRanOnce(true);
+      if (todoLine >= 0) setTimeout(() => editorRef.current?.revealLineInCenter(todoLine), 120);
+      scrollConsoleToView(true);
       return;
     }
     submitPendingRef.current = true;
@@ -558,7 +591,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       {/* Статус сдачи решения */}
       {submitStatus && (
         <div className={`editor-status editor-status--${submitStatus}`} role="status">
-          {submitStatus === "ok" ? t("editor.submitOk") : t("editor.submitFail")}
+          {submitStatus === "ok" ? t("editor.submitOk") : submitStatus === "todos" ? t("editor.submitTodosLeft", { n: todosLeft }) : t("editor.submitFail")}
         </div>
       )}
 
@@ -803,21 +836,35 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
             {showPreview && <div className="editor-split-handle" onMouseDown={startSplitDrag} aria-hidden="true"></div>}
             {/* iframe для HTML всегда смонтирован (даже при скрытом превью):
                 именно его onLoad собирает логи — иначе Run/Submit молчат без превью */}
-            <iframe
-              className={`editor-preview ${showPreview ? "" : "editor-preview--hidden"}`}
-              title={t("editor.preview")}
-              srcDoc={previewDoc}
-              key={runToken}
-              ref={previewFrameRef}
-              sandbox="allow-scripts allow-same-origin"
+            <div
+              className={`editor-preview-wrap ${showPreview ? "" : "editor-preview-wrap--hidden"}`}
               style={showPreview ? { flex: `${(1 - split).toFixed(4)} 1 0px` } : undefined}
-              onLoad={() => {
-                if (willCollectRef.current) {
-                  willCollectRef.current = false;
-                  setTimeout(() => collectFrom(previewFrameRef.current), 250);
-                }
-              }}
-            />
+            >
+              <iframe
+                className="editor-preview"
+                title={t("editor.preview")}
+                srcDoc={previewDoc}
+                key={runToken}
+                ref={previewFrameRef}
+                sandbox="allow-scripts allow-same-origin"
+                onLoad={() => {
+                  if (willCollectRef.current) {
+                    willCollectRef.current = false;
+                    setTimeout(() => collectFrom(previewFrameRef.current), 250);
+                  }
+                }}
+              />
+              {/* M6: пустая страница в превью — не «сбой», а ожидание: подсказка поверх */}
+              {showPreview && previewBodyEmpty && (
+                <div className="editor-preview-hint" role="note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v4M12 16h.01" />
+                  </svg>
+                  <span>{t("editor.previewEmpty")}</span>
+                </div>
+              )}
+            </div>
           </>
         )}
         {/* Скрытый раннер для JS-файлов без HTML: результат — в консоли */}

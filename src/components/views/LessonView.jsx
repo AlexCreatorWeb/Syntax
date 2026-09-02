@@ -47,7 +47,11 @@ function LessonView({ job, theme, onNavigate }) {
         </a>
       </nav>
 
-      <h1 className="lesson-view__title">{job.title}</h1>
+      <div className="lesson-view__head">
+        <h1 className="lesson-view__title">{job.title}</h1>
+        {/* H4-аудит: контент курсов сейчас RU-только — студент с другим UI-языком должен это видеть */}
+        <span className="chip lesson-view__lang" title={t("lessonView.courseLangNote")}>{t("lessonView.courseLang")}</span>
+      </div>
 
       {/* Табы: материал / задание (редактор не размонтируется) */}
       <div className="lesson-view__tabs" role="tablist">

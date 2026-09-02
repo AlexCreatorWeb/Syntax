@@ -257,11 +257,11 @@ function RankingsView() {
           <table className="rankings__table">
             <thead>
               <tr>
-                <th className="rk-center">{t("rankings.thRank")}</th>
+                <th className="rk-center col-rank">{t("rankings.thRank")}</th>
                 <th>{t("rankings.thUser")}</th>
-                <th className="rk-right">{t("rankings.thXp")}</th>
+                <th className="rk-right col-xp">{t("rankings.thXp")}</th>
                 <th className="rk-center col-level">{t("rankings.thLevel")}</th>
-                <th className="rk-center">{t("rankings.thStreak")}</th>
+                <th className="rk-center col-streak">{t("rankings.thStreak")}</th>
                 <th className="rk-right col-tasks">{t("rankings.thTasks")}</th>
               </tr>
             </thead>
@@ -305,7 +305,7 @@ function RankingsView() {
                   <td className="rankings__level col-level">
                     {row.members ? t("rankings.members", { n: row.members }) : `Lv. ${row.level}`}
                   </td>
-                  <td className="rk-center">
+                  <td className="rk-center col-streak">
                     <span className={`streak ${row.hot ? "streak--hot" : ""}`}>
                       <FlameIcon hot={row.hot} />
                       {row.streak}

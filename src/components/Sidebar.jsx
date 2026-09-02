@@ -162,6 +162,7 @@ function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab, isAuthed }) {
       key={item.id}
       type="button"
       className={`nav__item ${activeTab === item.id ? "is-active" : ""}`}
+      aria-label={t(`sidebar.${item.id}`)}
       onClick={() => onSelectTab(item.id)}
     >
       {item.icon}

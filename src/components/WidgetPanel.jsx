@@ -47,7 +47,7 @@ function WidgetPanel({ activeTab, onNavigate, onSignup, job, activeTech, isAuthe
                 <strong>{t("widget.dailyName")}</strong>
               </div>
               <p>{t("widget.dailyDesc")}</p>
-              <button type="button" className="btn btn--secondary btn--full" onClick={onSignup}>
+              <button type="button" className="btn btn--secondary btn--full" onClick={() => onSignup("challenge")}>
                 {t("widget.start")}
               </button>
             </div>
