@@ -66,7 +66,7 @@ function mapAuthError(e) {
   const message = e.message || "";
   const err = new Error(message);
   err.raw = e;
-  if (/valid credentials/i.test(message)) err.code = "invalid";
+  if (/invalid (login )?credentials/i.test(message)) err.code = "invalid";
   else if (/not confirmed/i.test(message)) err.code = "unconfirmed";
   else if (/already (been )?registered/i.test(message)) err.code = "exists";
   else if (/password.*(at least|short|weak)|weak password/i.test(message)) err.code = "weak";
