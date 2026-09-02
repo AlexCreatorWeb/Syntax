@@ -1056,6 +1056,7 @@ export const NODE_SHIMS_SRC = `
   function MongoClientCtor(url) {
     if (!(this instanceof MongoClientCtor)) return new MongoClientCtor(url);
     this._url = url;
+    this.connect = function () { console.debug("[mongo:sandbox] connect " + (url || "local")); return Promise.resolve(this); };
     this.db = function (name) { return { collection: function (n) { return coll(n); }, listCollections: function () { return { toArray: function () { return Promise.resolve(Object.keys(mongoCollections).map(function (k) { return { name: k }; })); } }; } }; };
     this.close = function () { return Promise.resolve(); };
     this.connection = { isConnected: function () { return true; } };

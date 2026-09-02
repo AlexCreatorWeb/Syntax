@@ -193,8 +193,8 @@ function buildRunnerDoc(files, contents, job = null) {
   if (vueFile) return buildVueDoc(contents[vueFile.id] ?? "");
   const jsxFile = files.find((f) => f.language === "javascript" && /\.jsx$/.test(f.name));
   if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "");
-  // Node-трехк: server.js → Node-sandbox (ESM + импорты built-ins через import map)
-  const isNodeTrack = Boolean(job && job.techId === "node");
+  // Node/mongo-трехк: .js-файл (server.js / models.js) → Node-sandbox (ESM + import map)
+  const isNodeTrack = Boolean(job && (job.techId === "node" || job.techId === "mongo"));
   if (isNodeTrack) {
     const jsFile = files.find((f) => f.language === "javascript" && /\.js$/.test(f.name));
     if (jsFile) return buildNodeDoc(contents[jsFile.id] ?? "");
