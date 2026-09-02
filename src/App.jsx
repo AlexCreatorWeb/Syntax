@@ -117,6 +117,11 @@ function App() {
   const selectTech = useCallback((id) => {
     setActiveTech(id);
     if (id && id !== "none") localStorage.setItem("syntax-tech", id);
+    // Deep-link согласованность: на странице трека переключение пилюлей обновляет URL,
+    // чтобы refresh вёл на тот же трек (hashchange → onHash → selectTech(id) — идемпотентно)
+    if (id && id !== "none" && window.location.hash.startsWith("#/technology/")) {
+      window.location.hash = `#/technology/${id}`;
+    }
   }, []);
 
   useEffect(() => {

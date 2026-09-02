@@ -1,6 +1,7 @@
 import { useT } from "../../i18n/useT";
-import TECHS, { getTech } from "../../lib/techs";
+import { getTech } from "../../lib/techs";
 import { getCompleted } from "../../lib/progress";
+import TechSwitch from "../TechSwitch";
 
 // Дорожная карта = карта РЕАЛЬНОГО курса активного трека:
 // уроки — из таблицы `lessons` (tech = id трека, порядок = порядок id),
@@ -66,7 +67,7 @@ function LessonRow({ lesson, i, status, onOpen }) {
   );
 }
 
-function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLesson }) {
+function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLesson, onNavigate }) {
   const t = useT();
   const tech = getTech(activeTech) || getTech("html");
   const TechLogo = tech.Logo;
@@ -82,28 +83,16 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
   if (dbLessons === null) {
     return (
       <div className="roadmap-view">
-        <header className="page-head">
+        {/* Хлебные крошки: понятный возврат (Главная → Дорожная карта) */}
+        <nav className="page-crumbs" aria-label={t("roadmap.crumbsLabel")}>
+          <button type="button" onClick={() => onNavigate("home")}>{t("roadmap.backHome")}</button>
+          <span className="page-crumbs__sep" aria-hidden="true">/</span>
+          <span className="page-crumbs__current">{t("roadmap.heading")}</span>
+        </nav>        <header className="page-head">
           <h1 className="page-head__title">{t("roadmap.heading")}</h1>
           <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
         </header>
-        <div className="tech-switch" role="tablist" aria-label={t("techPage.changeTrack")}>
-          {TECHS.map((tc) => {
-            const TLogo = tc.Logo;
-            return (
-              <button
-                key={tc.id}
-                type="button"
-                role="tab"
-                aria-selected={tc.id === tech.id}
-                className={`tech-switch__item ${tc.id === tech.id ? "tech-switch__item--active" : ""}`}
-                onClick={() => onSelectTech(tc.id)}
-              >
-                <TLogo />
-                <span>{t(tc.label)}</span>
-              </button>
-            );
-          })}
-        </div>
+        <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
         <div className="card roadmap__status spotlight" aria-busy="true">
           <div className="roadmap__status-text">
             <div className="roadmap__skel roadmap__skel--title"></div>
@@ -130,28 +119,16 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
   if (lessons.length === 0) {
     return (
       <div className="roadmap-view">
-        <header className="page-head">
+        {/* Хлебные крошки: понятный возврат (Главная → Дорожная карта) */}
+        <nav className="page-crumbs" aria-label={t("roadmap.crumbsLabel")}>
+          <button type="button" onClick={() => onNavigate("home")}>{t("roadmap.backHome")}</button>
+          <span className="page-crumbs__sep" aria-hidden="true">/</span>
+          <span className="page-crumbs__current">{t("roadmap.heading")}</span>
+        </nav>        <header className="page-head">
           <h1 className="page-head__title">{t("roadmap.heading")}</h1>
           <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
         </header>
-        <div className="tech-switch" role="tablist" aria-label={t("techPage.changeTrack")}>
-          {TECHS.map((tc) => {
-            const TLogo = tc.Logo;
-            return (
-              <button
-                key={tc.id}
-                type="button"
-                role="tab"
-                aria-selected={tc.id === tech.id}
-                className={`tech-switch__item ${tc.id === tech.id ? "tech-switch__item--active" : ""}`}
-                onClick={() => onSelectTech(tc.id)}
-              >
-                <TLogo />
-                <span>{t(tc.label)}</span>
-              </button>
-            );
-          })}
-        </div>
+        <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
         <div className="docs-empty">
           <div className="docs-empty__logo"><TechLogo /></div>
           <h2 className="docs-empty__title">{t("roadmap.emptyTitle", { tech: t(tech.label) })}</h2>
@@ -170,30 +147,18 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
 
   return (
     <div className="roadmap-view">
-      <header className="page-head">
+      {/* Хлебные крошки: понятный возврат (Главная → Дорожная карта) */}
+      <nav className="page-crumbs" aria-label={t("roadmap.crumbsLabel")}>
+        <button type="button" onClick={() => onNavigate("home")}>{t("roadmap.backHome")}</button>
+        <span className="page-crumbs__sep" aria-hidden="true">/</span>
+        <span className="page-crumbs__current">{t("roadmap.heading")}</span>
+      </nav>      <header className="page-head">
         <h1 className="page-head__title">{t("roadmap.heading")}</h1>
         <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
       </header>
 
       {/* Переключатель треков: смена активного трека прямо на карте */}
-      <div className="tech-switch" role="tablist" aria-label={t("techPage.changeTrack")}>
-        {TECHS.map((tc) => {
-          const TLogo = tc.Logo;
-          return (
-            <button
-              key={tc.id}
-              type="button"
-              role="tab"
-              aria-selected={tc.id === tech.id}
-              className={`tech-switch__item ${tc.id === tech.id ? "tech-switch__item--active" : ""}`}
-              onClick={() => onSelectTech(tc.id)}
-            >
-              <TLogo />
-              <span>{t(tc.label)}</span>
-            </button>
-          );
-        })}
-      </div>
+      <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
 
       {/* Статус прохождения (реальный: localStorage × уроки трека) */}
       <div className="card roadmap__status spotlight">

@@ -17,7 +17,7 @@ export default {
     groupCommunity: "Community",
     groupResources: "Resources",
   },
-  promo: { book: { title: "JavaScript: The Definitive Guide", desc: "David Flanagan · 7th Edition — the classic JavaScript reference", cta: "View on Amazon" }, studio: { title: "NeoStudio", desc: "High-end Web Design", cta: "Contact Us" } },
+  promo: { book: { title: "JavaScript: The Definitive Guide", desc: "Master the World's Most-Used Programming Language", author: "David Flanagan", cta: "View on Amazon" }, studio: { title: "NeoStudio", desc: "High-end Web Design", cta: "Contact Us" } },
   techs: {
     javascript: {
       desc: "A multiparadigm programming language. Supports object-oriented, imperative, and functional styles. One of the core languages of web development.",
@@ -234,6 +234,8 @@ export default {
     emptyTitle: "The {tech} course is in development",
     emptyBody: "The curriculum is being written by our instructors. In the meantime, the HTML course is ready — 16 lessons from zero to a finished project.",
     emptyCta: "Open the HTML course",
+    backHome: "Home",
+    crumbsLabel: "Breadcrumb",
   },
   tasks: {
     title: "Coding Tasks",

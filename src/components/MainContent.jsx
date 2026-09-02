@@ -135,7 +135,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   );
 
   const renderPlaceholder = (tab) => (
-    <section className="card">
+    <section className="card placeholders">
       <div className="placeholders__head">
         <h1 className="lesson__title">{t(`placeholders.${tab}Title`)}</h1>
         {/* M2-аудит: заглушки не притворяются готовыми разделами */}
@@ -165,11 +165,12 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
             onResume={(id) => openLesson(id)}
             dbLessons={dbLessons}
             onOpenDbLesson={openDbLesson}
+            onNavigate={onNavigate}
           />
         );
       case "technology":
         // job.techId — при клике по карточке; activeTech — при deep-link/refresh (job сбрасывается)
-        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} />;
+        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} onSelectTech={onSelectTech} />;
       case "editor":
         return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
       case "lesson":

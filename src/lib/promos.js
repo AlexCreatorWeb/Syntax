@@ -7,12 +7,14 @@ import promoStudio from "../assets/promo-studio.png";
 export const PROMOS = {
   book: {
     img: bookFlanagan,
-    mediaClass: "promo__media--book",
+    bookLayout: true, // дизайн amazone-widget: наклонная обложка + центр-блок + Buy Now
     url: "https://www.amazon.com/dp/1491952024", // JavaScript: The Definitive Guide, 7th ed.
     titleKey: "promo.book.title",
     descKey: "promo.book.desc",
+    authorKey: "promo.book.author",
     ctaKey: "promo.book.cta",
-    ctaClass: "btn--ghost",
+    ctaClass: "btn--primary",
+    ctaIcon: "cart",
   },
   studio: {
     img: promoStudio,

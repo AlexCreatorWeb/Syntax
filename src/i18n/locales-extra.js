@@ -21,7 +21,7 @@ export const LOCALES_EXTRA = {
       groupCommunity: "Спільнота",
       groupResources: "Ресурси",
     },
-    promo: { book: { title: "JavaScript. Детальний посібник", desc: "Девід Флэнаган · 7-ме видання — класичний довідник з JavaScript", cta: "Переглянути на Amazon" }, studio: { title: "NeoStudio", desc: "Преміальний веб-дизайн", cta: "Зв’яжіться з нами" } },
+    promo: { book: { title: "JavaScript. Детальний посібник", desc: "Опаніть найпопулярнішу мову програмування", author: "Девід Флэнаган", cta: "Переглянути на Amazon" }, studio: { title: "NeoStudio", desc: "Преміальний веб-дизайн", cta: "Зв’яжіться з нами" } },
     lessonView: { tabMaterial: "Матеріал", tabTask: "Завдання", goToTask: "Перейти до завдання", courseLang: "RU", courseLangNote: "Контент курсу поки російською — інші мови скоро" },
     ai: { thinking: "Думаю…", send: "Надіслати", clear: "Нова розмова", noKey: "AI прогрівається — ключ моделі ще не задано", errGeneric: "Щось пішло не так — спробуйте ще раз", errBadKey: "Ключ моделі недієвий або минув", errRateLimit: "Забагато запитів — спробуйте через хвилину", errCredits: "Квота AI на сьогодні вичерпано — спробуйте трохи пізніше", errModel: "Модель прогрівається — повторіть через кілька секунд" },
     techPage: {
@@ -102,6 +102,8 @@ export const LOCALES_EXTRA = {
       emptyTitle: "Курс {tech} ще в розробці",
       emptyBody: "Програму готує методист. Поки можна пройти курс HTML — 16 уроків від нуля до готового проєкту.",
       emptyCta: "Відкрити курс HTML",
+      backHome: "Головна",
+      crumbsLabel: "Хлібні кришки",
     },
     tasks: {
       title: "Практичні завдання",
@@ -605,7 +607,7 @@ export const LOCALES_EXTRA = {
       groupCommunity: "Comunidad",
       groupResources: "Recursos",
     },
-    promo: { book: { title: "JavaScript: Guía definitiva", desc: "David Flanagan · 7.ª edición — el clásico de referencia de JavaScript", cta: "Ver en Amazon" }, studio: { title: "NeoStudio", desc: "Diseño web de gama alta", cta: "Contáctanos" } },
+    promo: { book: { title: "JavaScript: Guía definitiva", desc: "Domina el lenguaje de programación más usado del mundo", author: "David Flanagan", cta: "Ver en Amazon" }, studio: { title: "NeoStudio", desc: "Diseño web de gama alta", cta: "Contáctanos" } },
     lessonView: { tabMaterial: "Material", tabTask: "Tarea", goToTask: "Ir a la tarea", courseLang: "RU", courseLangNote: "El contenido del curso está en ruso por ahora — pronto más idiomas" },
     ai: { thinking: "Pensando…", send: "Enviar", clear: "Nueva conversación", noKey: "AI se está preparando — la clave del modelo aún no está configurada", errGeneric: "Algo salió mal — inténtalo de nuevo", errBadKey: "La clave del modelo no es válida o ha expirado", errRateLimit: "Demasiadas peticiones — prueba en un minuto", errCredits: "La cuota diaria de IA está agotada — inténtalo un poco más tarde", errModel: "El modelo se está preparando — prueba en unos segundos" },
     techPage: {
@@ -686,6 +688,8 @@ export const LOCALES_EXTRA = {
       emptyTitle: "El curso de {tech} está en desarrollo",
       emptyBody: "El plan de estudios está en preparación. Mientras tanto, el curso de HTML está listo: 16 lecciones de cero a un proyecto terminado.",
       emptyCta: "Abrir el curso de HTML",
+      backHome: "Inicio",
+      crumbsLabel: "Migas de pan",
     },
     tasks: {
       title: "Tareas de programación",
@@ -1190,7 +1194,7 @@ export const LOCALES_EXTRA = {
       groupCommunity: "Community",
       groupResources: "Ressourcen",
     },
-    promo: { book: { title: "JavaScript: Das umfassende Handbuch", desc: "David Flanagan · 7. Auflage — das Standardreferenzwerk für JavaScript", cta: "Auf Amazon ansehen" }, studio: { title: "NeoStudio", desc: "High-End-Webdesign", cta: "Kontaktieren Sie uns" } },
+    promo: { book: { title: "JavaScript: Das umfassende Handbuch", desc: "Meistern Sie die meistgenutzte Programmiersprache der Welt", author: "David Flanagan", cta: "Auf Amazon ansehen" }, studio: { title: "NeoStudio", desc: "High-End-Webdesign", cta: "Kontaktieren Sie uns" } },
     lessonView: { tabMaterial: "Material", tabTask: "Aufgabe", goToTask: "Zur Aufgabe", courseLang: "RU", courseLangNote: "Kursinhalte vorerst auf Russisch — weitere Sprachen folgen" },
     ai: { thinking: "Denke nach…", send: "Senden", clear: "Neue Unterhaltung", noKey: "KI wird gestartet — Modell-Key noch nicht gesetzt", errGeneric: "Etwas ist schiefgelaufen — bitte erneut versuchen", errBadKey: "Modell-Key ungültig oder abgelaufen", errRateLimit: "Zu viele Anfragen — versuchen Sie es in einer Minute erneut", errCredits: "Das KI-Tageskontingent ist aufgebraucht — versuchen Sie es gleich erneut", errModel: "Modell wird gestartet — versuchen Sie es in wenigen Sekunden erneut" },
     techPage: {
@@ -1271,6 +1275,8 @@ export const LOCALES_EXTRA = {
       emptyTitle: "Der {tech}-Kurs ist in Entwicklung",
       emptyBody: "Der Lehrplan wird gerade vorbereitet. Schon jetzt ist der HTML-Kurs fertig: 16 Lektionen vom Einstieg bis zum eigenen Projekt.",
       emptyCta: "HTML-Kurs öffnen",
+      backHome: "Start",
+      crumbsLabel: "Brotkrumen",
     },
     tasks: {
       title: "Programmieraufgaben",

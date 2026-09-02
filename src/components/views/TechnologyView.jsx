@@ -3,11 +3,12 @@ import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
 import { getCompleted } from "../../lib/progress";
 import { hasRecentFeature } from "../../lib/web-features";
+import TechSwitch from "../TechSwitch";
 
 // Страница технологии (макет: technology-page).
 // Контент (описание, модули, ресурсы, AI-пример, урок) — в i18n: `techs.{id}`
 // (EN base + RU; uk/es/de откатываются на EN). UI-строки — `techPage.*` (5 языков).
-function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigate }) {
+function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigate, onSelectTech }) {
   const t = useT();
   const tech = getTech(techId) || getTech("javascript");
   const Logo = tech.Logo;
@@ -48,13 +49,9 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
         </div>
       </section>
 
-      {/* Change track: быстрый выход из контекста трека в каталог (UX-аудит п.7) */}
-      <button type="button" className="tech-page__change" onClick={() => onNavigate && onNavigate("roadmap")}>
-        {t("techPage.changeTrack")}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
-      </button>
+      {/* Шапка технологий: единый блок (TechSwitch), как на «Дорожной карте» —
+          пользователь приходит с гостевой карточки и должен видеть тот же верхний блок */}
+      <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
 
       {/* Course Progress: где я + действие */}
       <section className="card tech-page__progress spotlight">
