@@ -3,23 +3,42 @@ import Editor from "@monaco-editor/react";
 import { emmetCSS, emmetHTML, emmetJSX } from "emmet-monaco-es";
 import { useT } from "../i18n/useT";
 import { getTech } from "../lib/techs";
+import { NODE_SHIMS_SRC } from "../lib/node-shims";
 
+// Старт-код редактора: БАЗОВАЯ РАЗМЕТКА/заготовка по языку (фидбек: «код должен быть
+// базовой разметкой или под конкретную задачу»). Урок из БД с колонкой `code` подменяет
+// шаблон задачей; без `code` — базовая заготовка под тип файла.
 const codeTemplates = {
-  javascript: `function greetUser(name = "Developer") {
-  const timeOfDay = new Date().getHours() < 12 ? "morning" : "evening";
-  return \`Good \${timeOfDay}, \${name}! Welcome back to Syntax.\`;
-}
+  javascript: `// Your code here
 
-console.log(greetUser("Alex"));`,
+console.log("Hello, Syntax!");`,
 
-  html: `<h1>Hello, Syntax!</h1>
-<p>Start editing to see changes.</p>`,
+  html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My page</title>
+</head>
+<body>
+  <!-- TODO: your markup here -->
+  <h1>Hello, Syntax!</h1>
+</body>
+</html>`,
 
-  css: `.container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}`,
+  css: `/* Your styles here */
+
+body {
+  margin: 0;
+}`, 
+
+  python: `# Your code here
+
+print("Hello, Syntax!")`,
+
+  sql: `-- Your query here
+
+SELECT 1;`,
 };
 
 const fileNames = {
@@ -169,11 +188,17 @@ function buildPreviewDoc(files, contents) {
 }
 
 // Скрипт для «сухого» запуска JS-файлов без HTML: только console-перехват + JS
-function buildRunnerDoc(files, contents) {
+function buildRunnerDoc(files, contents, job = null) {
   const vueFile = files.find((f) => f.language === "html" && /\.vue$/.test(f.name));
   if (vueFile) return buildVueDoc(contents[vueFile.id] ?? "");
   const jsxFile = files.find((f) => f.language === "javascript" && /\.jsx$/.test(f.name));
   if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "");
+  // Node-трехк: server.js → Node-sandbox (ESM + импорты built-ins через import map)
+  const isNodeTrack = Boolean(job && job.techId === "node");
+  if (isNodeTrack) {
+    const jsFile = files.find((f) => f.language === "javascript" && /\.js$/.test(f.name));
+    if (jsFile) return buildNodeDoc(contents[jsFile.id] ?? "");
+  }
   const blocks = buildJsBlocks(files, contents);
   const js = blocks.join("\n");
   let doc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${CONSOLE_CAPTURE}${js}</body></html>`;
@@ -324,6 +349,66 @@ ${src}
 </body></html>`;
 }
 
+// Node-раннер: server.js (ESM) → blob-module в «Node-sandbox» (браузер):
+// шимы built-ins (globalThis.__shims: fs/path/stream/events-мост, mock http + window.__request,
+// mini-Express, pg/mongodb-моки, JWT HS256, helmet/cors) + import map (data:-модули на __shims,
+// events — настоящий esm.sh). Код студента — чистый Node ESM: в терминале работает без изменений.
+// Номера строк: blob = код как есть → e.lineno = строка файла (offset 0).
+const NODE_SHIM_MODULES = {
+  fs: "const s=globalThis.__shims.fs;export default s;export const readFileSync=(...a)=>s.readFileSync(...a);export const writeFileSync=(...a)=>s.writeFileSync(...a);export const mkdirSync=(...a)=>s.mkdirSync(...a);export const readdirSync=(...a)=>s.readdirSync(...a);export const existsSync=(...a)=>s.existsSync(...a);export const statSync=(...a)=>s.statSync(...a);export const unlinkSync=(...a)=>s.unlinkSync(...a);export const accessSync=(...a)=>s.accessSync(...a);export const readFile=(...a)=>s.readFile(...a);export const writeFile=(...a)=>s.writeFile(...a);export const mkdir=(...a)=>s.mkdir(...a);export const appendFile=(...a)=>s.appendFile(...a);export const createReadStream=(...a)=>s.createReadStream(...a);export const createWriteStream=(...a)=>s.createWriteStream(...a);",
+  path: "export default globalThis.__shims.path;",
+  stream: "const s=globalThis.__shims.stream;export default s;export const Readable=s.Readable;export const Writable=s.Writable;export const Transform=s.Transform;export const PassThrough=s.PassThrough;export const Duplex=s.Duplex;",
+  http: "const s=globalThis.__shims.http;export default s;export const createServer=(...a)=>s.createServer(...a);export const STATUS_CODES=s.STATUS_CODES;export const METHODS=s.METHODS;",
+  express: "const s=globalThis.__shims.express;export default s;export const Router=s.Router;",
+  pg: "export default globalThis.__shims.pg;",
+  mongodb: "const s=globalThis.__shims.mongodb;export default s;export const MongoClient=s.MongoClient;export const ObjectId=s.ObjectId;",
+  jsonwebtoken: "export default globalThis.__shims.jsonwebtoken;",
+  bcrypt: "export default globalThis.__shims.bcrypt;",
+  bcryptjs: "export default globalThis.__shims.bcryptjs;",
+  helmet: "export default globalThis.__shims.helmet;",
+  cors: "export default globalThis.__shims.cors;",
+  dotenv: "export default globalThis.__shims.dotenv;",
+  util: "export default globalThis.__shims.util;",
+  events: "https://esm.sh/events@3.3.0",
+  os: "export default {platform:()=>'linux',cpus:()=>[{model:'sandbox'}],freemem:()=>1073741824,totalmem:()=>2147483648,release:()=>'sandbox'};",
+};
+const NODE_IMPORT_MAP = JSON.stringify({
+  imports: Object.fromEntries(
+    Object.entries(NODE_SHIM_MODULES).flatMap(([k, v]) => {
+      const url = v.startsWith("http") ? v : "data:text/javascript," + encodeURIComponent(v);
+      return [[k, url], ["node:" + k, url]];
+    })
+  ),
+});
+
+function buildNodeDoc(serverCode) {
+  // </script> внутри кода ломал бы хранилище-тег — экранируем; раннер разэкранирует
+  const src = (serverCode || "").replace(/<\/script/gi, "<\\/script");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
+<script>${NODE_SHIMS_SRC}</script>
+<script type="importmap">${NODE_IMPORT_MAP}</script>
+</head><body>
+${CONSOLE_CAPTURE}
+<script type="text/plain" id="syntax-app-src">
+${src}
+</script>
+<script type="module">
+(async () => {
+  try {
+    const src = document.getElementById("syntax-app-src").textContent.split("<\\\\/script").join("</scr" + "ipt");
+    window.__syntaxOffset = 0; // blob = код как есть: e.lineno = строка файла
+    const blob = new Blob([src], { type: "text/javascript" });
+    await import(URL.createObjectURL(blob));
+    console.log("[Syntax] Node sandbox ready");
+  } catch (e) {
+    console.error("server.js: " + String((e && e.message) || e).split("\\n")[0]);
+  }
+})();
+</script>
+</body></html>`;
+}
+
 function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate, defaultShowPreview = true }) {
   const t = useT();
 
@@ -346,7 +431,6 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const [menuPos, setMenuPos] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
   const [split, setSplit] = useState(0.5); // доля ширины: редактор / превью (аудит #6)
-  const [resetConfirm, setResetConfirm] = useState(false);
   const addMenuRef = useRef(null);
 
   // Консоль / запуск / сдача
@@ -383,19 +467,13 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     return () => clearTimeout(id);
   }, [consoleFlash]);
 
-  // Инлайн-подтверждение Reset: 5 секунд без ответа — отмена (аудит #5)
-  useEffect(() => {
-    if (!resetConfirm) return undefined;
-    const id = setTimeout(() => setResetConfirm(false), 5000);
-    return () => clearTimeout(id);
-  }, [resetConfirm]);
-
-  const handleReset = () => {
+  // «Очистить редактор»: активный файл → пустой (одной кнопкой, без подтверждения —
+  // фидбек: инлайн-пара Reset/Cancel «вылетала» и не использовалась)
+  const handleClear = () => {
     setContents((prev) => ({
       ...prev,
-      [activeFile.id]: initialContentsRef.current[activeFile.id] ?? "",
+      [activeFile.id]: "",
     }));
-    setResetConfirm(false);
   };
 
   // Закрытие меню добавления файла кликом вне
@@ -528,7 +606,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       setShowPreview(true);
       setRunToken((v) => v + 1);
     } else if (hasJs) {
-      setRunnerDoc(buildRunnerDoc(files, contents));
+      setRunnerDoc(buildRunnerDoc(files, contents, job));
       setRunnerToken((v) => v + 1);
     } else {
       // Не-JS workspace (Python/SQL/CSS-один): Run не молчит никогда (аудит #2)
@@ -668,38 +746,28 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
               <span className="btn-label btn-label--short">{t("editor.submitShort")}</span>
             </button>
           )}
-          {/* Reset: инлайн-подтверждение вместо dialog (аудит #5) */}
-          {resetConfirm ? (
-            <span className="code-reset-confirm">
-              <button className="btn btn--ghost btn--sm" type="button" onClick={handleReset}>
-                {t("editor.resetYes")}
-              </button>
-              <button className="btn btn--ghost btn--sm" type="button" onClick={() => setResetConfirm(false)}>
-                {t("editor.cancel")}
-              </button>
-            </span>
-          ) : (
-            <button
-              className="icon-btn icon-btn--sm"
-              type="button"
-              aria-label={t("editor.reset")}
-              title={`${t("editor.reset")} — ${t("editor.resetAsk")}`}
-              onClick={() => setResetConfirm(true)}
+          {/* Очистить редактор: одна кнопка, без пары-подтверждения (фидбек 2026-09) */}
+          <button
+            className="icon-btn icon-btn--sm"
+            type="button"
+            aria-label={t("editor.clearCode")}
+            title={t("editor.clearCode")}
+            onClick={handleClear}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
-                <path d="M3 3v5h5" />
-              </svg>
-            </button>
-          )}
+              <path d="M20 20H8.5L3.9 15.4a2 2 0 0 1 0-2.8L13 3.5a2 2 0 0 1 2.8 0l4.7 4.7a2 2 0 0 1 0 2.8L11 20" />
+              <path d="m7 10 5 5" />
+              <path d="M14.5 6.5 19 11" />
+            </svg>
+          </button>
           <button
             className="icon-btn icon-btn--sm"
             type="button"

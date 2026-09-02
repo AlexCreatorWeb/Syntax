@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
 import TECHS from "../../lib/techs";
+import { getDoneTasks } from "../../lib/progress";
 
 // Лого треков на уровне модуля: стабильные ссылки (react-compiler не любит getTech() в рендере)
 const TRACK_LOGOS = Object.fromEntries(TECHS.map((tc) => [tc.id, tc.Logo]));
@@ -43,7 +44,7 @@ function ChevronIcon() {
   );
 }
 
-function TaskCard({ task, t, onSolve }) {
+function TaskCard({ task, t, onSolve, done }) {
   const item = t("tasks.items")[task.id - 1];
   const TrackLogo = TRACK_LOGOS[task.tech];
 
@@ -67,6 +68,12 @@ function TaskCard({ task, t, onSolve }) {
       <div className="task-card__body">
         <div className="task-card__meta-top">
           <span className="chip">{t(`tasks.categories.${task.category}`)}</span>
+          {done && (
+            <span className="chip chip--done">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+              {t("tasks.done")}
+            </span>
+          )}
           <span className={`difficulty difficulty--${task.difficulty}`}>
             {t(`tasks.${task.difficulty}`)}
           </span>
@@ -112,6 +119,10 @@ function TaskCard({ task, t, onSolve }) {
         <button type="button" className="btn btn--secondary task-card__action" disabled>
           {t("tasks.locked")}
         </button>
+      ) : done ? (
+        <button type="button" className="btn btn--ghost task-card__action" onClick={() => onSolve(task.id - 1, task.tech)}>
+          {t("tasks.reopen")}
+        </button>
       ) : (
         <button type="button" className="btn btn--primary task-card__action" onClick={() => onSolve(task.id - 1, task.tech)}>
           {t("tasks.solve")}
@@ -129,6 +140,8 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
   // Tech-фильтр: синхронен с выбранным треком через key-перемонтирование в MainContent
   // (key=activeTech); «General» — локальный просмотр
   const [techFilter, setTechFilter] = useState(() => (getTech(activeTech) ? activeTech : "general"));
+  // Выполненные задания (успешный Submit в редакторе) — ключ `tech:taskId`
+  const doneSet = new Set(getDoneTasks());
 
   const tech = getTech(techFilter);
   const items = t("tasks.items");
@@ -261,7 +274,7 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
 
       <div className="task-list">
         {visible.map((task) => (
-          <TaskCard key={task.id} task={task} t={t} onSolve={onSolve} />
+          <TaskCard key={task.id} task={task} t={t} onSolve={onSolve} done={doneSet.has(`${task.tech}:${task.id}`)} />
         ))}
 
         {/* Tech-empty: задач по треку нет — путь дальше, а не констатация пустоты */}

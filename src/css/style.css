@@ -810,7 +810,6 @@ code {
 .log-line--link:hover { background: rgba(48, 224, 161, 0.09); }
 
 /* Аудит #5: инлайн-подтверждение Reset */
-.code-reset-confirm { display: inline-flex; gap: 4px; }
 .btn--sm { padding: 4px 10px; font-size: 12px; }
 
 /* Аудит #6: разделитель редактор/превью (drag) */
@@ -1201,8 +1200,10 @@ code {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    overflow-x: auto;
   }
+  /* Мобильный bottom-nav: без clip по overflow-x (Settings-дропдаун выходит за полосу);
+     само позиционирование меню — в конце файла, ПОСЛЕ базового .settings-menu */
+  .sidebar > .nav, .sidebar > .nav--bottom { overflow: visible; }
   .streak { display: none; }
   .nav, .nav--bottom {
     flex-direction: row;
@@ -1294,6 +1295,7 @@ code {
 .roadmap__status-text { display: flex; flex-direction: column; gap: 5px; }
 .roadmap__status-text strong { font-size: 16px; font-weight: 600; }
 .roadmap__status-text span { font-size: 13px; color: var(--muted); }
+.roadmap__status-actions { display: flex; align-items: center; gap: 10px; flex: none; }
 
 /* Хлебные крошки (наверх контента вкладки) */
 .page-crumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 13px; }
@@ -1581,6 +1583,8 @@ code {
 /* NEW-лейбл: акцентный красный фон, белый шрифт (три последних урока трека) */
 .chip--new { color: #fff; font-size: 10px; line-height: 12px; padding: 3px 9px; border-radius: 6px; background: var(--danger-strong); border-color: var(--danger-strong); animation: new-pulse 2s ease-in-out infinite; }
 @keyframes new-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(197, 2, 11, 0.35); } 50% { box-shadow: 0 0 10px 3px rgba(197, 2, 11, 0.25); } }
+.chip--done { color: var(--primary); border-color: color-mix(in srgb, var(--primary) 40%, transparent); background: var(--primary-soft); }
+.chip--done svg { width: 12px; height: 12px; }
 
 /* ————— LessonView: урок из БД (Supabase) — крошки, заголовок, табы Материал/Задание —————
    Высота = вьюпорт за вычетом топбара и padding-ов shell: редактор (консоль/превью)
@@ -2695,7 +2699,7 @@ code {
 .spotlight::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 1px; /* не накрывает 1px-бордер: ховер не «обрезает» верхнюю кромку */
   border-radius: inherit;
   pointer-events: none;
   opacity: 0;
@@ -3413,6 +3417,7 @@ code {
   .roadmap__node--big { top: 18px; }
   .roadmap__status { flex-direction: column; align-items: flex-start; gap: 12px; padding: 18px; }
   .roadmap__status .btn { width: 100%; justify-content: center; }
+  .roadmap__status-actions { flex-direction: column; align-items: stretch; width: 100%; }
   .placeholders { padding: 20px; }
   .roadmap__status .btn { width: 100%; justify-content: center; }
   .roadmap__chip { display: none; }
@@ -4610,6 +4615,30 @@ code {
 .settings-menu__item:hover { background: var(--surface-3); }
 .settings-menu__hint { font-size: 12px; color: var(--muted); flex: none; display: inline-flex; }
 .settings-menu__hint svg { width: 16px; height: 16px; }
+
+/* Settings-дропдаун: БЛОК ПОСЛЕ базового .settings-menu — иначе базовые
+   bottom/left/right перебивают (top+bottom вместе схлопывают высоту до 18px).
+   ≤640: нав-полоса вверху → меню вниз, фикс. ширина (не 19px иконки).
+   641–900: сайдбар — колонка иконок 76px → меню вправо. */
+@media (max-width: 640px) {
+  .settings-menu {
+    top: calc(100% + 8px);
+    bottom: auto;
+    left: auto;
+    right: -6px;
+    width: 224px;
+    max-width: calc(100vw - 24px);
+  }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .settings-menu {
+    top: 0;
+    bottom: auto;
+    left: calc(100% + 10px);
+    right: auto;
+    width: 208px;
+  }
+}
 
 /* --- Реклама-виджеты (книга, NeoStudio) в правом rail --- */
 .promo { position: relative; overflow: hidden; display: flex; flex-direction: column; }

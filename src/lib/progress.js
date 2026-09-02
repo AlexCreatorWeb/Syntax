@@ -30,3 +30,31 @@ export function markComplete(tech, lessonId, uid = currentUid()) {
   cur.push(lessonId);
   localStorage.setItem(key(tech, uid), JSON.stringify(cur));
 }
+
+// Задания (Tasks): ключ `tech:taskId` — отдельный бакет от уроков (уроки = id из БД).
+// Статистика: профиль («Tasks completed»), чип Done на карточке задачи.
+const tasksKey = (uid) => `syntax-tasks${uid ? `-${uid}` : ""}`;
+
+export function getDoneTasks(uid = currentUid()) {
+  const read = (k) => {
+    try {
+      const v = JSON.parse(localStorage.getItem(k) || "[]");
+      return Array.isArray(v) ? v : [];
+    } catch {
+      return [];
+    }
+  };
+  if (uid) {
+    const own = read(tasksKey(uid));
+    if (own.length) return own;
+  }
+  return read(tasksKey(null));
+}
+
+export function markTaskDone(tech, taskId, uid = currentUid()) {
+  if (!tech || taskId === undefined) return;
+  const k = `${tech}:${taskId}`;
+  const cur = getDoneTasks(uid).filter((x) => x !== k);
+  cur.push(k);
+  localStorage.setItem(tasksKey(uid), JSON.stringify(cur));
+}

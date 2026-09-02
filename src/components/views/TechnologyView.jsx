@@ -8,7 +8,7 @@ import TechSwitch from "../TechSwitch";
 // Страница технологии (макет: technology-page).
 // Контент (описание, модули, ресурсы, AI-пример, урок) — в i18n: `techs.{id}`
 // (EN base + RU; uk/es/de откатываются на EN). UI-строки — `techPage.*` (5 языков).
-function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigate, onSelectTech }) {
+function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectTech }) {
   const t = useT();
   const tech = getTech(techId) || getTech("javascript");
   const Logo = tech.Logo;
@@ -82,8 +82,6 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onNavigat
         <section className="tech-page__dblessons">
           <div className="tech-page__section-head">
             <h2 className="tech-page__section-title">{t("techPage.dbLessons")}</h2>
-            {/* H4-аудит: язык курса виден до входа в урок */}
-            <span className="chip lesson-view__lang" title={t("lessonView.courseLangNote")}>{t("lessonView.courseLang")}</span>
           </div>
           <div className="techmod-list">
             {/* NEW-лейбл: только если урок про НОВУЮ технологию (фича ≤ 3 лет — словарь web-features.js),

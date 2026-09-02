@@ -5,14 +5,21 @@ import { supabase, supabaseConfigured } from "./supabase";
 
 export const authConfigured = supabaseConfigured;
 
-// Считываем сессию синхронно из localStorage (формат sb-<ref>-auth-token → {current_session})
-// — чтобы не мигать «гость» при загрузке; асинхронный getSession() в App это подтверждает.
+// Считываем сессию синхронно из localStorage (формат sb-<ref>-auth-token)
+// — чтобы не мигать «гость» при загрузке; асинхронный getSession() в App подтверждает.
+// Ловушка: supabase-js может хранить токен БЕЗ current_session (только user +
+// access_token) — такой формат тоже признаём (view-session, для uid/email).
 export function readStoredSession() {
   try {
     const key = Object.keys(localStorage).find((k) => /^sb-.*-auth-token$/.test(k));
     if (!key) return null;
     const parsed = JSON.parse(localStorage.getItem(key) || "null");
-    return (parsed && parsed.current_session) || null;
+    if (!parsed) return null;
+    if (parsed.current_session) return parsed.current_session;
+    if (parsed.user && parsed.access_token) {
+      return { user: parsed.user, access_token: parsed.access_token };
+    }
+    return null;
   } catch {
     return null;
   }

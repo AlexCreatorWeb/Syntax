@@ -10,7 +10,7 @@ import RankingsView from "./views/RankingsView";
 import CommunityView from "./views/CommunityView";
 import ProfileView from "./views/ProfileView";
 import { useT } from "../i18n/useT";
-import { getCompleted } from "../lib/progress";
+import { getCompleted, markTaskDone } from "../lib/progress";
 import { lessonJobFor } from "../lib/lessonJob";
 
 // Учебный контекст «урока» (демо-данные; дальше — с бэкенда)
@@ -33,6 +33,8 @@ function taskJob(t, index, techId) {
     desc: item.desc,
     backTab: "tasks",
     file: taskFile,
+    // Статистика: успешный Submit = задание засчитано (отдельный бакет от уроков)
+    onComplete: () => markTaskDone(techId, index + 1),
   };
 }
 

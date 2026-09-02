@@ -166,10 +166,16 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
           <strong>{allDone ? t("roadmap.courseDone") : t("roadmap.lessonStatus", { m: (currentIdx < 0 ? lessons.length : currentIdx) + 1, n: lessons.length })}</strong>
           <span>{t("roadmap.doneOf", { a: doneCount, b: lessons.length })} · {pct}%</span>
         </div>
-        <button type="button" className="btn btn--primary" onClick={() => onResume(tech.id)}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="m8 6 8 6-8 6V6Z" /></svg>
-          {t("techPage.continue")}
-        </button>
+        <div className="roadmap__status-actions">
+          {/* Переход к урокам трека (список на tech-странице) */}
+          <button type="button" className="btn btn--ghost" onClick={() => onNavigate("technology", { techId: tech.id })}>
+            {t("roadmap.toLessons")}
+          </button>
+          <button type="button" className="btn btn--primary" onClick={() => onResume(tech.id)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="m8 6 8 6-8 6V6Z" /></svg>
+            {t("techPage.continue")}
+          </button>
+        </div>
       </div>
 
       {/* Таймлайн курса: завершённые (кликабельны — повторить) → текущий → locked */}
