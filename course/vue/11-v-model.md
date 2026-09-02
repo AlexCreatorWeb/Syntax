@@ -1,3 +1,5 @@
+# Урок 11. v-model: input, checkbox, select
+
 ## Цель
 
 После урока студент сможет: связывать формы с состоянием через `v-model`, использовать его на `input` (текст, number, range), `textarea`, `checkbox` (один и массив), `radio` и `select`, применять модификаторы `.trim`, `.number`, `.lazy` и понимать, что `v-model` — это синтаксический сахар над `:value` + `@input`.

@@ -4617,9 +4617,28 @@ code {
 }
 .promo__media { position: relative; aspect-ratio: 16 / 9; background: var(--surface-3); }
 .promo__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
-/* Обложка книги: как до (16/9, вдвое ниже портретного 4/5) — кроп держит заголовок и носорога */
-.promo__media--book { aspect-ratio: 16 / 9; }
-.promo__media--book img { object-position: center 12%; }
+/* Книга (портретная обложка с Amazon): горизонтальная компоновка — миниатюра слева,
+   текст справа; оригинал не режется и не растягивается на всю ширину rail */
+.promo--row { display: flex; flex-direction: row; gap: 14px; padding: 16px; }
+.promo--row .promo__media {
+  position: relative;
+  width: 96px;
+  flex: none;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.promo--row .promo__media img { object-position: center; }
+.promo--row .promo__badge {
+  position: absolute;
+  top: 6px;
+  right: -6px;
+  font-size: 8px;
+  padding: 2px 7px;
+}
+.promo--row .promo__body { padding: 0; min-width: 0; }
+.promo--row .promo__title { font-size: 13.5px; line-height: 18px; }
+.promo--row .promo__desc { font-size: 12px; line-height: 17px; }
 .promo__body { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px 16px; }
 .promo__title { font-size: 14px; font-weight: 600; color: var(--text); }
 .promo__desc { font-size: 13px; line-height: 18px; color: var(--muted); margin: 0; }
