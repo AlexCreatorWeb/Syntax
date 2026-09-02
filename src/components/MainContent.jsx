@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CodeEditor from "./CodeEditor";
 import LessonView from "./views/LessonView";
 import MainView from "./views/MainView";
@@ -33,9 +33,27 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   // Перерасчёт taskDone после Complete (job живёт в state App и не пересобирается)
   const [taskTick, setTaskTick] = useState(0);
 
-  // Уроки открыты гостю (фидбек 2026-09: «Try a demo lesson» обязан работать без аккаунта —
-  // обещание «first lesson in 2 minutes»); прогресс гостя живёт в localStorage анонимно.
-  // Auth-гейт остался только у Daily Challenge (там он осмыслен: «вызов дня»).
+  // УЧЕБА ТОЛЬКО ЗА РЕГИСТРАЦИЕЙ (условия платформы, 2026-09): гость листает
+  // roadmap/технологии/tasks, но открыть урок или задачу — только после входа.
+  // requireAuth(action): гость → auth-модалка + pending-action; после успешного
+  // входа (session пришёл) эффект выполняет сохранённое действие — студент
+  // оказывается в том самом уроке/задаче, что нажал до регистрации.
+  const pendingActionRef = useRef(null);
+  const requireAuth = (action) => {
+    if (isAuthed) {
+      action();
+      return;
+    }
+    pendingActionRef.current = action;
+    onAuth("signup", null);
+  };
+  useEffect(() => {
+    if (isAuthed && pendingActionRef.current) {
+      const action = pendingActionRef.current;
+      pendingActionRef.current = null;
+      action();
+    }
+  }, [isAuthed]);
   // #/lesson без job-контекста (refresh/bookmark): урок живёт в состоянии App,
   // после перезагрузки job=null — вместо белого экрана мягкий редирект на roadmap
   useEffect(() => {
@@ -46,7 +64,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   // Без techId (демо-урок с главной) — первая строка БД целиком / исходный JavaScript-урок.
   // Приоритет: таблица `lessons` в Supabase (строка с tech = трек) → i18n-статика (fallback).
   const dbLessonsArr = dbLessons || [];
-  const openDbLesson = (lesson, techId, backTab = "technology") => {
+  const doOpenDbLesson = (lesson, techId, backTab = "technology") => {
     const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
     // n = номер урока в курсе (порядок id) — для EN-локализации заголовка
     const rows = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
@@ -54,7 +72,9 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
     // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
     onNavigate("lesson", lessonJobFor(lesson, techId, backTab, (staticFor && staticFor.desc) || "", n || null, langCode));
   };
-  const openLesson = (techId) => {
+  // Гость → auth-гейт (условия: учебный контент — за регистрацией)
+  const openDbLesson = (lesson, techId, backTab) => requireAuth(() => doOpenDbLesson(lesson, techId, backTab));
+  const doOpenLesson = (techId) => {
     // Урок трека из БД: первый НЕВЫПОЛНЕННЫЙ (иначе — первый); демо-урок без трека — первая строка
     const completed = getCompleted(techId);
     const techLessons = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
@@ -81,12 +101,16 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
     }
     onNavigate("editor", lessonJob(t));
   };
+  // Гость → auth-гейт: после входа «Continue» продолжает с того же урока
+  const openLesson = (techId) => requireAuth(() => doOpenLesson(techId));
   // 2026-09: Tasks = структурированный каталог. openTask(task) — задача из
   // src/content/tasks/*.json (job: файлы, тесты, XP, связь с уроком — в lib/taskJob.js).
-  const openTask = (task) => {
-    const j = taskJobFor(task, { dbLessons: dbLessonsArr, langCode, onCompleted: () => setTaskTick((v) => v + 1) });
-    if (j) onNavigate("editor", j);
-  };
+  // Гость → auth-гейт (условия: задачи — за регистрацией).
+  const openTask = (task) =>
+    requireAuth(() => {
+      const j = taskJobFor(task, { dbLessons: dbLessonsArr, langCode, onCompleted: () => setTaskTick((v) => v + 1) });
+      if (j) onNavigate("editor", j);
+    });
 
   const renderLessonCard = () => (
     <section className="card lesson">
