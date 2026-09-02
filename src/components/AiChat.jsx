@@ -12,7 +12,7 @@ const fixMd = (s) => {
   return out;
 };
 
-// Живой AI-чат (HuggingFace gemma-2-9b-it). techId задаёт контекст в сис-промпте.
+// Живой AI-чат (Google Gemini 3.6 Flash). techId задаёт контекст в сис-промпте.
 // Ответы модели — markdown-lite → рендерим MdContent (код-блоки с Copy, callout'ы).
 function AiChat({ techId }) {
   const t = useT();
@@ -34,6 +34,7 @@ function AiChat({ techId }) {
   const errKey =
     error === "badKey" ? "ai.errBadKey" :
     error === "rateLimit" ? "ai.errRateLimit" :
+    error === "credits" ? "ai.errCredits" :
     error === "modelLoading" ? "ai.errModel" :
     "ai.errGeneric";
 

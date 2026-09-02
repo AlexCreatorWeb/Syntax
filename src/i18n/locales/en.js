@@ -152,7 +152,7 @@ export default {
       lesson: { title: "Queries & Aggregation", desc: "Model a collection, write filtered queries, and build a two-stage aggregation pipeline.", file: "models.js" },
     },
   },  lessonView: { tabMaterial: "Material", tabTask: "Task", goToTask: "Go to the task" },
-  ai: { thinking: "Thinking…", send: "Send", clear: "Start a new conversation", noKey: "AI is warming up — model key not set yet", errGeneric: "Something went wrong — please try again", errBadKey: "Model key is invalid or expired", errRateLimit: "Too many requests — try again in a minute", errModel: "Model is warming up — try again in a few seconds" },
+  ai: { thinking: "Thinking…", send: "Send", clear: "Start a new conversation", noKey: "AI is warming up — model key not set yet", errGeneric: "Something went wrong — please try again", errBadKey: "Model key is invalid or expired", errRateLimit: "Too many requests — try again in a minute", errCredits: "Daily AI quota is exhausted — please try again in a while", errModel: "Model is warming up — try again in a few seconds" },
   techPage: {
     live: "Open track",
     progress: "Course Progress",

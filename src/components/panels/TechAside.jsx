@@ -3,7 +3,7 @@ import { getTech } from "../../lib/techs";
 import AiChat from "../AiChat";
 
 // Правый rail страницы технологии (макет: technology-page):
-// Resources (ссылки-заглушки) + Syntax AI Assistant (gemma-2-9b-it через HuggingFace).
+// Resources (ссылки-заглушки) + Syntax AI Assistant (Google Gemini 3.6 Flash).
 function TechAside({ techId }) {
   const t = useT();
   const tech = getTech(techId) || getTech("javascript");
