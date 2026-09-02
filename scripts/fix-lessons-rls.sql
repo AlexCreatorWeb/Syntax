@@ -33,6 +33,10 @@ create table if not exists public.task_progress (
 alter table public.lesson_progress enable row level security;
 alter table public.task_progress enable row level security;
 
+-- GRANT обязателен: Postgres проверяет привилегии ДО RLS (42501 при их отсутствии)
+grant select, insert, update, delete on public.task_progress to authenticated;
+grant select, insert, update, delete on public.lesson_progress to authenticated;
+
 create policy "lesson_progress_own" on public.lesson_progress
   for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "task_progress_own" on public.task_progress

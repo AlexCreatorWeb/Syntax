@@ -205,9 +205,15 @@ function App() {
   // Прогресс в Supabase (2026-09): при входе — БД → локальный кэш (merge),
   // затем кэш (включая гостевой) → БД. Гость — no-op (только localStorage);
   // каждое выполнение в редакторе сразу upsert-ит свою строку (db-progress.js).
+  // progressTick: после sync — перерендер (страница, открытая в момент входа,
+  // видела пустой кэш; тик обновляет профиль/roadmap без навигации).
+  const [progressTick, setProgressTick] = useState(0);
   useEffect(() => {
     if (!session || !dbLessons) return;
-    syncProgressFromDb(dbLessons).then(() => pushProgressToDb());
+    syncProgressFromDb(dbLessons).then(() => {
+      pushProgressToDb();
+      setProgressTick((v) => v + 1);
+    });
   }, [session, dbLessons]);
   const isAuthed = Boolean(session);
   const userName = displayName(session);
@@ -257,6 +263,7 @@ function App() {
           userName={userName}
           onAuth={openAuth}
           onLogout={handleLogout}
+          progressTick={progressTick}
         />
         <WidgetPanel
           activeTab={activeTab}

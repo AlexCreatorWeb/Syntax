@@ -25,13 +25,16 @@ function lessonJob(t) {
   };
 }
 
-function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons, session, userName, onAuth, onLogout }) {
+function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons, session, userName, onAuth, onLogout, progressTick }) {
   const t = useT();
   const { langCode } = useLanguage();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
   const isAuthed = Boolean(session);
   // Перерасчёт taskDone после Complete (job живёт в state App и не пересобирается)
   const [taskTick, setTaskTick] = useState(0);
+  // progressTick (App): после синка БД→кэш — перерендер вьюх (профиль/roadmap
+  // в момент входа видели пустой кэш; данные уже в localStorage — просто перерисовать)
+  void progressTick;
 
   // УЧЕБА ТОЛЬКО ЗА РЕГИСТРАЦИЕЙ (условия платформы, 2026-09): гость листает
   // roadmap/технологии/tasks, но открыть урок или задачу — только после входа.
