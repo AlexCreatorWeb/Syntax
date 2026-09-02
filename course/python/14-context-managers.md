@@ -61,6 +61,7 @@ NOTE: в песочнице — настоящий CPython: with, __enter__/__ex
 
 import time
 import io
+import contextlib
 from contextlib import contextmanager, suppress
 
 # 1) Класс-менеджер (Timer)
@@ -95,13 +96,14 @@ except RuntimeError:
     print("  (ошибка обработана, выход выполнен)")
 
 # 3) suppress
+value = None
 with suppress(ValueError, KeyError):
     value = int("abc")   # ValueError → подавлен
 print("после suppress, value =", value)
 
 # 4) redirect_stdout (перехват print)
 buffer = io.StringIO()
-with (redirect_stdout := contextlib.redirect_stdout(buffer)):
+with contextlib.redirect_stdout(buffer):
     print("это уйдёт в buffer")
 print("перехвачено:", buffer.getvalue().strip())
 ```

@@ -48,9 +48,13 @@ status = "взрослый" if age >= 18 else "несовершеннолетн�
 Питоничные проверки:
 ```python
 if items:            # не пусто (и не None)
-if not items:        # пусто ИЛИ None
+    pass
+if not items:       # пусто ИЛИ None
+    pass
 if x is None:        # именно None (is, не ==)
+    pass
 if x is not None:    # не None
+    pass
 ```
 
 TIP: «есть/нет» через truthiness (if data:), а не if data == True (анти-стиль, PEP 8: «Avoid comparing booleans to True/False using ==»).
@@ -81,7 +85,8 @@ age = 20
 status = "взрослый" if age >= 18 else "несовершеннолетний"
 print("Статус:", status)
 
-price, discount = 1000, 0.1 if price > 500 else 0.0
+price = 1000
+discount = 0.1 if price > 500 else 0.0
 print("Скидка:", discount, "→", price * (1 - discount))
 
 # Логика + цепочки

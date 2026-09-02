@@ -12,7 +12,7 @@ export function dailyKey(date = new Date()) {
 }
 
 // Сумма строки → 32-bit seed (FNV-1a)
-function hashStr(s) {
+export function hashStr(s) {
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);
@@ -22,7 +22,7 @@ function hashStr(s) {
 }
 
 // mulberry32: быстрый deterministic PRNG, возвращает () => [0, 1)
-function mulberry32(seed) {
+export function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {
     a = (a + 0x6d2b79f5) | 0;

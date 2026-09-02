@@ -792,6 +792,87 @@ code {
   color: var(--text-variant);
 }
 
+/* ===== Тесты задач (2026-09): панель над консолью ===== */
+.editor-tests {
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  flex: none;
+}
+.editor-tests__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+}
+.editor-tests__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.editor-tests__done {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.editor-tests__xp {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--green);
+}
+.editor-tests__complete {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 5px 12px;
+}
+.editor-tests__complete + .editor-tests__xp { margin-left: 0; }
+.editor-tests__body {
+  border-top: 1px solid var(--line);
+  max-height: 132px;
+  overflow-y: auto;
+  padding: 6px 14px 8px;
+}
+.test-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.test-line__icon {
+  width: 14px;
+  flex: none;
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted);
+}
+.test-line--pass .test-line__icon { color: var(--green); }
+.test-line--fail .test-line__icon { color: var(--red); }
+.test-line--pending .test-line__icon { color: var(--accent); animation: spin-pulse 1s ease-in-out infinite; }
+.test-line__name { color: var(--text); word-break: break-word; }
+.test-line--pending .test-line__name,
+.test-line--idle .test-line__name { color: var(--muted); }
+.test-line__err {
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  word-break: break-word;
+}
+@keyframes spin-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
+@media (max-width: 640px) {
+  .editor-tests__body { max-height: 104px; }
+}
+
 .editor-console {
   flex: none;
   height: 148px;
@@ -1713,11 +1794,17 @@ code {
 @keyframes lesson-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.75); } }
 /* Панели: обе смонтированы (состояние Monaco переживает переключение), неактивная скрыта */
 /* Материал: стили внутреннего контента */
-.lesson-view__material .md-h2 { font-size: 19px; font-weight: 700; margin: 22px 0 10px; }
+.lesson-view__material .md-h2 { font-size: 19px; font-weight: 700; margin: 30px 0 12px; }
 .lesson-view__material .md-h2:first-child { margin-top: 0; }
-.lesson-view__material .md-h3 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
-.lesson-view__material .callout { margin: 14px 0; }
-.lesson-view__material .code-block { margin: 14px 0; }
+.lesson-view__material .md-h3 { font-size: 16px; font-weight: 700; margin: 22px 0 10px; }
+.lesson-view__material .callout { margin: 18px 0; }
+.lesson-view__material .code-block { margin: 18px 0; }
+/* Воздух в тексте урока (фидбек 2026-09: «тексты сжаты»): крупнее шрифт, выше line-height,
+   больше отступы между абзацами/заголовками — урок читается, а не сканируется */
+.lesson-view__material .md { font-size: 14.5px; line-height: 1.75; }
+.lesson-view__material .md-p { line-height: 1.75; margin: 0 0 14px; }
+.lesson-view__material .callout__text { line-height: 1.65; }
+.lesson-view__material .md-code, .lesson-view__material .md pre.md-code { line-height: 1.6; margin: 12px 0 14px; }
 .lesson-view__goto { margin-top: 22px; }
 /* Таб «Задание»: редактор во всю высоту панели (head + tabs + wrapper flex:1 —
    ничего не обрезается: консоль и превью всегда в кадре) */

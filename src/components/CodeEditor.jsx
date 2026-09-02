@@ -168,8 +168,60 @@ function buildJsBlocks(files, contents) {
     .map((f) => `<script>window.__syntaxOffset = 0;</script>\n<script>\n${contents[f.id] ?? ""}\n</script>`);
 }
 
+// Тестовый harness для задач (2026-09): тесты бегут в той же песочнице, что и код
+// студента. window.__tests (JSON [{name, code}]) → window.__testResults + флаг
+// window.__testsDone (CodeEditor поллит его после Run). assert(cond, msg) — глобальный.
+const TESTS_HARNESS = (tests) => `<script>
+window.__tests = ${JSON.stringify(tests)};
+window.__testResults = null;
+window.__testsDone = false;
+window.__syntaxRunTests = function () {
+  if (window.__testsDone) return;
+  var assert = function (cond, msg) { if (!cond) throw new Error(msg || "assertion failed"); };
+  window.assert = assert;
+  (async function () {
+    var results = [];
+    for (var i = 0; i < window.__tests.length; i++) {
+      var tst = window.__tests[i];
+      try {
+        var run = new Function("assert", "return (async () => {" + tst.code + "})");
+        await run(assert);
+        results.push({ name: tst.name, pass: true });
+      } catch (e) {
+        results.push({ name: tst.name, pass: false, error: String((e && e.message) || e).split("\\n")[0] });
+      }
+    }
+    window.__testResults = results;
+    window.__testsDone = true;
+  })();
+};
+</script>`;
+
+// Python-вариант: тесты — Python-код, каждый бегут runPythonAsync (та же
+// интерпретация, что и код студента; globals пользователя доступны). Вставляется
+// в buildPythonDoc после выполнения кода студента.
+const TESTS_HARNESS_PY = (tests) => `
+    window.__tests = ${JSON.stringify(tests)};
+    window.__testResults = null;
+    window.__testsDone = false;
+    (async () => {
+      var results = [];
+      for (var i = 0; i < window.__tests.length; i++) {
+        var tst = window.__tests[i];
+        try {
+          await pyodide.runPythonAsync(tst.code);
+          results.push({ name: tst.name, pass: true });
+        } catch (e) {
+          var m = String((e && e.message) || e).split("\\n");
+          results.push({ name: tst.name, pass: false, error: m[m.length - 1].trim() });
+        }
+      }
+      window.__testResults = results;
+      window.__testsDone = true;
+    })();`;
+
 // Собирает превью: HTML-файл + инлайн CSS и JS из соседних вкладок (+ перехват console)
-function buildPreviewDoc(files, contents) {
+function buildPreviewDoc(files, contents, tests = null) {
   const htmlFile = files.find((f) => f.language === "html" && !/\.vue$/.test(f.name)); // .vue → Vue-раннер
   if (!htmlFile) return null;
 
@@ -180,9 +232,10 @@ function buildPreviewDoc(files, contents) {
   const blocks = buildJsBlocks(files, contents);
   const js = blocks.join("\n");
   const baseStyle = `<style>html, body { background-color: ${PREVIEW_BG}; }</style>`;
+  const testsJs = tests && tests.length ? TESTS_HARNESS(tests) + `<script>setTimeout(function(){ window.__syntaxRunTests && window.__syntaxRunTests(); }, 0);</script>` : "";
 
   let doc = contents[htmlFile.id] ?? "";
-  const injection = baseStyle + css + CONSOLE_CAPTURE + js;
+  const injection = baseStyle + css + CONSOLE_CAPTURE + js + testsJs;
   doc = doc.includes("</body>") ? doc.replace("</body>", `${injection}\n</body>`) : doc + injection;
   return fixJsOffsets(doc, blocks, js);
 }
@@ -194,7 +247,7 @@ function buildPreviewDoc(files, contents) {
 // setStdout/setStderr → console-перехват (CONSOLE_CAPTURE). Top-level await поддерживается (asyncio-уроки).
 const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
 
-function buildPythonDoc(pyCode) {
+function buildPythonDoc(pyCode, tests = null) {
   const src = (pyCode || "").replace(/<\/script/gi, "<\\/script");
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
@@ -214,8 +267,10 @@ ${src}
     var code = document.getElementById("syntax-py-src").textContent.replace(/^\\n/, "").split("<\\\\/script").join("</scr" + "ipt");
     await pyodide.runPythonAsync(code);
     console.log("[Syntax] Python sandbox ready (CPython " + pyodide.version + ")");
+${tests && tests.length ? TESTS_HARNESS_PY(tests) : ""}
   } catch (e) {
     console.error(String((e && e.message) || e));
+    window.__testsDone = true;
   }
 })();
 </script>
@@ -223,24 +278,26 @@ ${src}
 }
 
 function buildRunnerDoc(files, contents, job = null) {
+  const tests = job && Array.isArray(job.tests) ? job.tests : null;
   const vueFile = files.find((f) => f.language === "html" && /\.vue$/.test(f.name));
-  if (vueFile) return buildVueDoc(contents[vueFile.id] ?? "");
+  if (vueFile) return buildVueDoc(contents[vueFile.id] ?? "", tests);
   const jsxFile = files.find((f) => f.language === "javascript" && /\.jsx$/.test(f.name));
-  if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "");
+  if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "", tests);
   // Python-трехк: main.py → Pyodide (настоящий CPython в WASM)
   if (job && job.techId === "python") {
     const pyFile = files.find((f) => f.language === "python" && /\.py$/.test(f.name));
-    if (pyFile) return buildPythonDoc(contents[pyFile.id] ?? "");
+    if (pyFile) return buildPythonDoc(contents[pyFile.id] ?? "", tests);
   }
-  // Node/mongo-трехк: .js-файл (server.js / models.js) → Node-sandbox (ESM + import map)
-  const isNodeTrack = Boolean(job && (job.techId === "node" || job.techId === "mongo"));
+  // Node/mongo/postgres-трехк: .js-файл (server.js / query.js / …) → Node-sandbox (ESM + import map)
+  const isNodeTrack = Boolean(job && (job.techId === "node" || job.techId === "mongo" || job.techId === "postgres"));
   if (isNodeTrack) {
     const jsFile = files.find((f) => f.language === "javascript" && /\.js$/.test(f.name));
-    if (jsFile) return buildNodeDoc(contents[jsFile.id] ?? "");
+    if (jsFile) return buildNodeDoc(contents[jsFile.id] ?? "", job);
   }
   const blocks = buildJsBlocks(files, contents);
   const js = blocks.join("\n");
-  let doc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${CONSOLE_CAPTURE}${js}</body></html>`;
+  const testsJs = tests && tests.length ? TESTS_HARNESS(tests) + `<script>setTimeout(function(){ window.__syntaxRunTests && window.__syntaxRunTests(); }, 0);</script>` : "";
+  let doc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${CONSOLE_CAPTURE}${js}${testsJs}</body></html>`;
   return fixJsOffsets(doc, blocks, js);
 }
 
@@ -257,8 +314,9 @@ const REACT_IMPORT_MAP = JSON.stringify({
   },
 });
 
-function buildReactDoc(appCode) {
+function buildReactDoc(appCode, tests = null) {
   const src = (appCode || "").replace(/<\/script/gi, "<\\/script"); // не рвём тег при </script> в коде
+  const testsJs = tests && tests.length ? TESTS_HARNESS(tests) : "";
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
 <script type="importmap">${REACT_IMPORT_MAP}</script>
@@ -266,6 +324,7 @@ function buildReactDoc(appCode) {
 </head><body>
 <div id="root"></div>
 ${CONSOLE_CAPTURE}
+${testsJs}
 <script type="text/plain" id="syntax-app-src">
 ${src}
 </script>
@@ -290,6 +349,7 @@ try {
   const url = URL.createObjectURL(new Blob([out], { type: "text/javascript" }));
   const mod = await import(url);
   if (!window.__syntaxMounted) window.__SyntaxMount(mod.default);
+  if (window.__syntaxRunTests) setTimeout(function () { window.__syntaxRunTests(); }, 400);
 } catch (e) {
   console.error("App.jsx: " + String((e && e.message) || e).split("\\n")[0]);
 }
@@ -321,9 +381,10 @@ const VUE_IMPORT_MAP = JSON.stringify({
   },
 });
 
-function buildVueDoc(appCode) {
+function buildVueDoc(appCode, tests = null) {
   // </script> внутри SFC ломал бы хранилище-тег — экранируем; раннер разэкранирует
   const src = (appCode || "").replace(/<\/script/gi, "<\\/script");
+  const testsJs = tests && tests.length ? TESTS_HARNESS(tests) : "";
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
 <script>window.process = { env: { NODE_ENV: "development" } };
@@ -332,6 +393,7 @@ window.__VUE_OPTIONS_API__ = true; window.__VUE_PROD_DEVTOOLS__ = false; window.
 </head><body>
 <div id="root"></div>
 ${CONSOLE_CAPTURE}
+${testsJs}
 <script type="text/plain" id="syntax-app-src">
 ${src}
 </script>
@@ -380,6 +442,7 @@ ${src}
     app.config.errorHandler = (e) => console.error("App.vue: " + ((e && e.message) || e));
     app.mount("#root");
     console.log("[Syntax] Vue app mounted");
+    if (window.__syntaxRunTests) setTimeout(function () { window.__syntaxRunTests(); }, 400);
   } catch (e) {
     console.error("App.vue: " + String((e && e.message) || e).split("\\n")[0]);
   }
@@ -421,28 +484,39 @@ const NODE_IMPORT_MAP = JSON.stringify({
   ),
 });
 
-function buildNodeDoc(serverCode) {
+function buildNodeDoc(serverCode, job = null) {
   // </script> внутри кода ломал бы хранилище-тег — экранируем; раннер разэкранирует
   const src = (serverCode || "").replace(/<\/script/gi, "<\\/script");
+  const tests = job && Array.isArray(job.tests) ? job.tests : null;
+  const setup = job && typeof job.setup === "string" && job.setup.trim() ? job.setup : null;
+  const testsJs = tests && tests.length ? TESTS_HARNESS(tests) : "";
+  const setupJs = setup
+    ? `<script>window.__setupDone = (async () => { ${setup} })().catch(function (e) { console.error("setup: " + (e && e.message ? e.message : e)); });</script>`
+    : "";
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
 <script>${NODE_SHIMS_SRC}</script>
 <script type="importmap">${NODE_IMPORT_MAP}</script>
 </head><body>
 ${CONSOLE_CAPTURE}
+${setupJs}
+${testsJs}
 <script type="text/plain" id="syntax-app-src">
 ${src}
 </script>
 <script type="module">
 (async () => {
   try {
+    if (window.__setupDone) await window.__setupDone;
     const src = document.getElementById("syntax-app-src").textContent.split("<\\\\/script").join("</scr" + "ipt");
     window.__syntaxOffset = 0; // blob = код как есть: e.lineno = строка файла
     const blob = new Blob([src], { type: "text/javascript" });
-    await import(URL.createObjectURL(blob));
+    window.__userModule = await import(URL.createObjectURL(blob));
     console.log("[Syntax] Node sandbox ready");
+    if (window.__syntaxRunTests) setTimeout(function () { window.__syntaxRunTests(); }, 200);
   } catch (e) {
     console.error("server.js: " + String((e && e.message) || e).split("\\n")[0]);
+    window.__testsDone = true;
   }
 })();
 </script>
@@ -453,17 +527,24 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const t = useT();
 
   // Стартовый файл: у урока с трека — файл урока (main.py, queries.sql, …),
+  // у задачи — files из JSON (может быть несколько: index.html + index.js + styles.css),
   // иначе — дефолтный для языка (K2: имя/расширение соответствуют треку)
   const startFile = job && job.file ? job.file : fileNames[language] || `file.${language}`;
   const startLang = langFromFileName(startFile);
   // Код урока из базы (Supabase): строка `lessons` приходит в job.code и перебивает шаблон
   const jobCode = job && typeof job.code === "string" ? job.code : null;
-  const [files, setFiles] = useState(() => [
-    { id: 1, name: startFile, language: startLang },
-  ]);
-  // Исходный контент файлов (для Reset, аудит #5): код урока из БД / старт-шаблон, новые — пустые
-  const initialContentsRef = useRef({ 1: jobCode ?? (codeTemplates[startLang] || "") });
-  const [contents, setContents] = useState(() => ({ 1: jobCode ?? (codeTemplates[startLang] || "") }));
+  // Мультифайловая задача: job.files = { "index.html": "…", "index.js": "…" }
+  const jobFiles = job && job.files && typeof job.files === "object" ? job.files : null;
+  const initialContents = jobFiles
+    ? Object.fromEntries(Object.entries(jobFiles).map(([, code], i) => [i + 1, code]))
+    : { 1: jobCode ?? (codeTemplates[startLang] || "") };
+  const [files, setFiles] = useState(() => {
+    if (jobFiles) return Object.keys(jobFiles).map((name, i) => ({ id: i + 1, name, language: langFromFileName(name) }));
+    return [{ id: 1, name: startFile, language: startLang }];
+  });
+  // Исходный контент файлов (для Clear, аудит #5): код урока из БД / файлы задачи / старт-шаблон
+  const initialContentsRef = useRef(initialContents);
+  const [contents, setContents] = useState(() => ({ ...initialContents }));
   const [activeId, setActiveId] = useState(1);
   const [copied, setCopied] = useState(false);
   const [showPreview, setShowPreview] = useState(defaultShowPreview);
@@ -480,7 +561,12 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const [runToken, setRunToken] = useState(0);
   const [runnerDoc, setRunnerDoc] = useState("");
   const [runnerToken, setRunnerToken] = useState(0);
-  const [submitStatus, setSubmitStatus] = useState(null); // null | "ok" | "fail"
+  const [submitStatus, setSubmitStatus] = useState(null); // null | "ok" | "fail" | "todos"
+  // Тесты задачи: null = ещё не бежали, иначе массив {name, pass, error?}
+  const [testResults, setTestResults] = useState(null);
+  const [justCompleted, setJustCompleted] = useState(null); // {taskXp, dailyXp} после Complete
+  const jobTests = job && Array.isArray(job.tests) ? job.tests : null;
+  // isTask убран: не использовался (lint no-unused-vars)
   const previewFrameRef = useRef(null);
   const runnerFrameRef = useRef(null);
   const willCollectRef = useRef(false);
@@ -491,7 +577,9 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
 
   const activeFile = files.find((f) => f.id === activeId) || files[0];
   const hasHtml = files.some((f) => f.language === "html" && !/\.vue$/.test(f.name)); // .vue → раннер, не превью
-  const hasJs = files.some((f) => f.language === "javascript" || /\.vue$/.test(f.name));
+  const hasJs = files.some(
+    (f) => f.language === "javascript" || f.language === "python" || /\.vue$/.test(f.name)
+  ); // python (.py) → Pyodide-раннер (buildRunnerDoc)
   const jobTech = job && job.techId ? getTech(job.techId) : null;
 
   // Консоль всегда в кадре + вспышка после Run (аудит #1): цикл «действие → фидбек»
@@ -583,7 +671,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       .catch(() => {});
   };
 
-  const previewDoc = useMemo(() => buildPreviewDoc(files, contents), [files, contents]);
+  const previewDoc = useMemo(() => buildPreviewDoc(files, contents, jobTests), [files, contents, jobTests]);
 
   // M6: превью «белый лист» — подсказка вместо молчащего пустого iframe.
   // Проверка по реальному HTML: без комментариев и тегов видимого текста нет → страница пуста.
@@ -605,41 +693,83 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   );
 
   const collectFrom = (frame) => {
-    let logs;
+    const hasTaskTests = Boolean(jobTests && jobTests.length);
+    const read = () => {
+      let logs;
+      try {
+        logs = frame?.contentWindow?.__logs || [];
+      } catch {
+        logs = [];
+      }
+      // HTML: в консоль — и разметка страницы (что реально собрал браузер), и логи страницы
+      let markup = "";
+      try {
+        if (hasHtml) markup = frame?.contentDocument?.documentElement?.outerHTML || "";
+      } catch {
+        /* iframe недоступен — без разметки */
+      }
+      const entries = [...(logs.length ? logs : hasHtml ? [{ type: "info", text: t("editor.htmlResultHint") }] : [])];
+      if (hasHtml && markup) entries.push({ type: "markup", text: markup });
+      setConsoleLogs(entries);
+      setRanOnce(true);
+      // Тесты: результаты из песочницы (window.__testResults)
+      let taskResults = null;
+      if (hasTaskTests) {
+        try {
+          const w = frame.contentWindow;
+          if (w && w.__testsDone && Array.isArray(w.__testResults)) taskResults = w.__testResults;
+        } catch {
+          /* sandbox-окно недоступно */
+        }
+        setTestResults(taskResults);
+      }
+      const allPass = taskResults && taskResults.length > 0 ? taskResults.every((r) => r.pass) : null;
+      if (submitPendingRef.current) {
+        submitPendingRef.current = false;
+        const failed = logs.some((l) => l.type === "error") || (taskResults ? !allPass : false);
+        // H3: «accepted» только когда ошибок нет И TODO-шаги задания завершены
+        // (у задач с тестами вердикт = тесты; TODO-проверка — только для lessons)
+        if (failed) setSubmitStatus("fail");
+        else if (!hasTaskTests && todosLeft > 0) setSubmitStatus("todos");
+        else setSubmitStatus("ok");
+        // Урок из БД: успешный Submit = отметка выполнения (прогресс курса) — только полный успех
+        if (!failed && !hasTaskTests && todosLeft === 0 && job && job.onComplete) job.onComplete();
+        // «check the console» должен сопровождаться видимой консолью (аудит #1)
+        scrollConsoleToView(failed || (!hasTaskTests && todosLeft > 0));
+      } else {
+        scrollConsoleToView(false);
+      }
+    };
+    // Тесты могут ещё бежать (Pyodide/React-раннеры грузятся 1–5 с) — поллинг до __testsDone
+    let done;
     try {
-      logs = frame?.contentWindow?.__logs || [];
+      done = !hasTaskTests || (frame?.contentWindow?.__testsDone === true);
     } catch {
-      logs = [];
+      done = true; // iframe мёртвый — собираем что есть
     }
-    // HTML: в консоль — и разметка страницы (что реально собрал браузер), и логи страницы
-    let markup = "";
-    try {
-      if (hasHtml) markup = frame?.contentDocument?.documentElement?.outerHTML || "";
-    } catch {
-      /* iframe недоступен — без разметки */
+    if (done) {
+      read();
+      return;
     }
-    const entries = [...(logs.length ? logs : hasHtml ? [{ type: "info", text: t("editor.htmlResultHint") }] : [])];
-    if (hasHtml && markup) entries.push({ type: "markup", text: markup });
-    setConsoleLogs(entries);
-    setRanOnce(true);
-    if (submitPendingRef.current) {
-      submitPendingRef.current = false;
-      const failed = logs.some((l) => l.type === "error");
-      // H3: «accepted» только когда ошибок нет И TODO-шаги задания завершены
-      if (failed) setSubmitStatus("fail");
-      else if (todosLeft > 0) setSubmitStatus("todos");
-      else setSubmitStatus("ok");
-      // Урок из БД: успешный Submit = отметка выполнения (прогресс курса) — только полный успех
-      if (!failed && todosLeft === 0 && job && job.onComplete) job.onComplete();
-      // «check the console» должен сопровождаться видимой консолью (аудит #1)
-      scrollConsoleToView(failed || todosLeft > 0);
-    } else {
-      scrollConsoleToView(false);
-    }
+    let tries = 0;
+    const id = setInterval(() => {
+      tries += 1;
+      let ok;
+      try {
+        ok = frame?.contentWindow?.__testsDone === true;
+      } catch {
+        ok = true;
+      }
+      if (ok || tries > 60) {
+        clearInterval(id);
+        read();
+      }
+    }, 250);
   };
 
   const runCode = () => {
     setSubmitStatus(null);
+    setTestResults(null);
     if (hasHtml) {
       // Run = запустить и показать результат: превью включается само (глазик убран)
       willCollectRef.current = true;
@@ -870,7 +1000,13 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       {/* Статус сдачи решения */}
       {submitStatus && (
         <div className={`editor-status editor-status--${submitStatus}`} role="status">
-          {submitStatus === "ok" ? t("editor.submitOk") : submitStatus === "todos" ? t("editor.submitTodosLeft", { n: todosLeft }) : t("editor.submitFail")}
+          {submitStatus === "ok"
+            ? jobTests && jobTests.length
+              ? t("editor.allTestsPass")
+              : t("editor.submitOk")
+            : submitStatus === "todos"
+              ? t("editor.submitTodosLeft", { n: todosLeft })
+              : t("editor.submitFail")}
         </div>
       )}
 
@@ -1056,6 +1192,57 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
               }}
             />
           </div>
+
+          {/* Тесты задачи (2026-09): панель над консолью, рядом с кодом. Все зелёные →
+              появляется «Complete +N XP» (XP один раз; повтор — practice) */}
+          {jobTests && jobTests.length > 0 && (
+            <div className="editor-tests">
+              <div className="editor-tests__head">
+                <span className="editor-tests__label">
+                  {t("editor.tests")} ·{" "}
+                  {testResults
+                    ? `${testResults.filter((r) => r.pass).length} / ${jobTests.length}`
+                    : ranOnce
+                      ? t("editor.testsRunning")
+                      : `0 / ${jobTests.length}`}
+                </span>
+                {job.taskDone && <span className="editor-tests__done">{t("editor.taskDone")}</span>}
+                {justCompleted && (
+                  <span className="editor-tests__xp">+{justCompleted.taskXp + justCompleted.dailyXp} XP</span>
+                )}
+                {testResults &&
+                  testResults.length === jobTests.length &&
+                  testResults.every((r) => r.pass) &&
+                  !job.taskDone && (
+                    <button
+                      type="button"
+                      className="btn btn--primary editor-tests__complete"
+                      onClick={() => {
+                        const res = job.onTaskComplete && job.onTaskComplete();
+                        if (res) setJustCompleted(res);
+                      }}
+                    >
+                      {t("editor.complete", { xp: job.xp || 0 })}
+                    </button>
+                  )}
+              </div>
+              <div className="editor-tests__body">
+                {jobTests.map((tst, i) => {
+                  const r = testResults && testResults[i];
+                  const state = !r ? (ranOnce ? "pending" : "idle") : r.pass ? "pass" : "fail";
+                  return (
+                    <div key={i} className={`test-line test-line--${state}`} title={r && r.error ? r.error : undefined}>
+                      <span className="test-line__icon" aria-hidden="true">
+                        {state === "pass" ? "✓" : state === "fail" ? "✗" : state === "pending" ? "…" : "•"}
+                      </span>
+                      <span className="test-line__name">{tst.name}</span>
+                      {state === "fail" && r.error && <span className="test-line__err">{r.error}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Консоль ВСЕГДА в кадре (аудит #1): до первого Run — подсказка */}
           <div className={`editor-console ${consoleFlash ? "editor-console--flash" : ""}`} ref={consoleRef}>

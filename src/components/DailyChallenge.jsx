@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useT } from "../i18n/useT";
-import { pickDailyChallenge, secondsToMidnight } from "../lib/daily";
-import { lessonJobFor } from "../lib/lessonJob";
+import { useLanguage } from "../context/useLanguage";
+import { secondsToMidnight } from "../lib/daily";
+import { pickDailyTask, locField, locCategory } from "../lib/tasks";
+import { taskJobFor } from "../lib/taskJob";
 
 function formatTime(total) {
   const h = Math.floor(total / 3600);
@@ -11,42 +13,41 @@ function formatTime(total) {
 }
 
 /**
- * Плашка «Ежедневные испытания».
- * Пул — только технологии с реально опубликованными уроками (dbLessons из БД);
- * выбор детерминирован на день (lib/daily.js): сегодня у всех одно испытание,
- * завтра — другое. dbLessons === null → скелетон, [] → статичный fallback.
+ * Плашка «Ежедневные испытания» (2026-09: реальные задачи из каталога).
+ * Пул — задачи с dailyChallenge=true; сложность по дням: пн–чт easy, пт–сб medium,
+ * вс hard. Выбор детерминирован на день (lib/tasks.js: pickDailyTask) — сегодня у
+ * всех одно испытание, завтра другое. Награда: +500 XP (раз в день) + XP задачи.
  *
  * @param {object} props
- * @param {Array|null} props.dbLessons уроки из БД (null = грузится)
- * @param {boolean} props.isAuthed гость → Start ведёт в auth-модалку (ctx challenge)
+ * @param {boolean} props.isAuthed гость → Accept ведёт в auth-модалку (ctx challenge)
  * @param {Function} props.onAuth (mode, ctx)
  * @param {Function} props.onNavigate (tab, job)
- * @param {string} props.backTab куда «Назад» из урока
+ * @param {string} props.backTab куда «Назад» из задачи
  */
-function DailyChallenge({ dbLessons, isAuthed, onAuth, onNavigate, backTab = "tasks" }) {
+function DailyChallenge({ isAuthed, onAuth, onNavigate, backTab = "tasks" }) {
   const t = useT();
-  // Реальный таймер до полуночи (ранее — фиктивные 14:22:05 «навсегда»)
+  const { langCode } = useLanguage();
+
+  // Реальный таймер до полуночи
   const [seconds, setSeconds] = useState(() => secondsToMidnight());
   useEffect(() => {
     const id = setInterval(() => setSeconds(secondsToMidnight()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  // null = ещё грузим БД; {} = пусто (fallback на статичное); иначе — daily-урок
-  const daily = dbLessons === null ? null : pickDailyChallenge(dbLessons) || {};
-  const isDaily = dbLessons !== null && Boolean(daily && daily.lesson);
-  const techName = isDaily ? t(`home.tech.${daily.tech}`) || daily.tech : t("tasks.general");
+  const task = pickDailyTask();
+  const techName = task ? t(`home.tech.${task.track}`) : t("tasks.general");
 
   const handleAccept = () => {
     if (!isAuthed) {
       onAuth("signup", "challenge");
       return;
     }
-    if (isDaily) {
-      onNavigate("lesson", lessonJobFor(daily.lesson, daily.tech, backTab));
+    if (task) {
+      onNavigate("editor", taskJobFor(task, { langCode, backTab }));
       return;
     }
-    // Fallback-вариант (уроков в БД нет): исходное демо-задание в редакторе
+    // Фолбэк, если каталог пуст (не должно быть: контент в репо)
     onNavigate("editor", {
       kind: "task",
       title: t("tasks.daily.name"),
@@ -74,25 +75,36 @@ function DailyChallenge({ dbLessons, isAuthed, onAuth, onNavigate, backTab = "ta
         </div>
       </div>
 
-      {dbLessons === null ? (
-        // Состояние загрузки: скелетон (шиммер общий с roadmap)
-        <div className="daily-challenge__skel" aria-hidden="true">
-          <div className="roadmap__skel roadmap__skel--title" />
-          <div className="roadmap__skel roadmap__skel--sub" />
-          <div className="roadmap__skel roadmap__skel--btn" />
-        </div>
-      ) : (
+      {task ? (
         <>
           <h3 className="daily-challenge__name">
-            {isDaily ? daily.lesson.title : t("tasks.daily.name")}
+            {locField(task.title, langCode)}
             <span className="chip daily-challenge__general">{techName}</span>
           </h3>
           <p className="daily-challenge__desc">
-            {isDaily ? t("tasks.daily.lessonNote", { tech: techName }) : t("tasks.daily.desc")}
+            {t("tasks.daily.taskNote", {
+              cat: locCategory(task, langCode),
+              min: task.minutes,
+            })}
           </p>
           <div className="daily-challenge__reward">
             <span className="xp">{t("tasks.daily.xpReward")}</span>
-            <span className="badge-hard">{t("tasks.daily.hard")}</span>
+            <span className={`badge-${task.difficulty}`}>{t(`tasks.${task.difficulty}`)}</span>
+          </div>
+          <button type="button" className="btn btn--ghost btn--full" onClick={handleAccept}>
+            {t("tasks.daily.accept")}
+          </button>
+        </>
+      ) : (
+        // Каталог пуст (не должно случиться: задачи — статика в репо)
+        <>
+          <h3 className="daily-challenge__name">
+            {t("tasks.daily.name")}
+            <span className="chip daily-challenge__general">{techName}</span>
+          </h3>
+          <p className="daily-challenge__desc">{t("tasks.daily.desc")}</p>
+          <div className="daily-challenge__reward">
+            <span className="xp">{t("tasks.daily.xpReward")}</span>
           </div>
           <button type="button" className="btn btn--ghost btn--full" onClick={handleAccept}>
             {t("tasks.daily.accept")}

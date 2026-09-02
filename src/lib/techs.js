@@ -14,4 +14,6 @@ const TECHS = [
 
 export const getTech = (id) => TECHS.find((tech) => tech.id === id);
 
+export const TechList = TECHS;
+
 export default TECHS;

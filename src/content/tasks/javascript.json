@@ -1,0 +1,460 @@
+[
+  {
+    "id": "js-001",
+    "track": "javascript",
+    "category": "types",
+    "categoryI18n": { "en": "Types", "ru": "Типы" },
+    "order": 1,
+    "title": { "en": "Precise Type Checker", "ru": "Точный тип-чекер" },
+    "prompt": {
+      "en": "Write a function `typeOf(value)` that returns a precise type name: 'string', 'number', 'boolean', 'array', 'null', 'undefined' or 'object'. The built-in `typeof` returns 'object' for arrays and null — your function must distinguish them. Example: `typeOf([])` → `'array'`, `typeOf(null)` → `'null'`.",
+      "ru": "Напиши функцию `typeOf(value)`, возвращающую точное имя типа: 'string', 'number', 'boolean', 'array', 'null', 'undefined' или 'object'. Встроенный `typeof` возвращает 'object' и для массивов, и для null — твоя функция должна их различать. Пример: `typeOf([])` → `'array'`, `typeOf(null)` → `'null'`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.js": "// Precise Type Checker\n// Точное имя типа значения\n\nfunction typeOf(value) {\n  // TODO: implement\n  return typeof value;\n}"
+    },
+    "tests": [
+      { "name": "primitives", "code": "assert(typeOf('a') === 'string' && typeOf(1) === 'number' && typeOf(true) === 'boolean', \"string/number/boolean\");" },
+      { "name": "array vs object", "code": "assert(typeOf([]) === 'array' && typeOf({}) === 'object', \"array and plain object\");" },
+      { "name": "null and undefined", "code": "assert(typeOf(null) === 'null' && typeOf(undefined) === 'undefined', \"null/undefined\");" }
+    ],
+    "hint": {
+      "en": "Check `Array.isArray(value)` and `value === null` first, then fall back to `typeof`.",
+      "ru": "Сначала проверь `Array.isArray(value)` и `value === null`, дальше — обычный `typeof`."
+    },
+    "solution": "function typeOf(value) {\n  if (Array.isArray(value)) return 'array';\n  if (value === null) return 'null';\n  return typeof value;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "js-002",
+    "track": "javascript",
+    "category": "functions",
+    "categoryI18n": { "en": "Functions", "ru": "Функции" },
+    "order": 2,
+    "title": { "en": "Once", "ru": "Once" },
+    "prompt": {
+      "en": "Write a function `once(fn)` that returns a wrapper calling `fn` only on the first invocation. On every later call the wrapper returns the result of the first call without invoking `fn` again. Example: after `const inc = once(() => ++n); inc(); inc();` — `n` is 1.",
+      "ru": "Напиши функцию `once(fn)`, возвращающую обёртку, которая вызывает `fn` только при первом обращении. При каждом следующем вызове обёртка возвращает результат первого вызова, не вызывая `fn` повторно. Пример: после `const inc = once(() => ++n); inc(); inc();` — `n` равен 1."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.js": "// Once\n// Обёртка: функция вызывается только один раз\n\nfunction once(fn) {\n  // TODO: implement\n  return fn;\n}"
+    },
+    "tests": [
+      { "name": "called only once", "code": "let n = 0; const f = once(() => { n += 1; return n; }); f(); f(); f(); assert(n === 1, \"fn must run once, got \" + n);" },
+      { "name": "returns first result", "code": "let n = 0; const f = once(() => { n += 1; return n * 10; }); const a = f(); const b = f(); assert(a === 10 && b === 10, \"both calls return 10\");" },
+      { "name": "arguments passed through", "code": "const add = once((x, y) => x + y); assert(add(2, 3) === 5, \"expected 5\");" }
+    ],
+    "hint": {
+      "en": "Use a closure with a `called` flag and a stored `result`. If already called — return the stored result.",
+      "ru": "Замыкание с флагом `called` и сохранённым `result`. Если уже вызывалось — верни сохранённый результат."
+    },
+    "solution": "function once(fn) {\n  let called = false;\n  let result;\n  return function (...args) {\n    if (!called) {\n      called = true;\n      result = fn.apply(this, args);\n    }\n    return result;\n  };\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "js-003",
+    "track": "javascript",
+    "category": "functions",
+    "categoryI18n": { "en": "Functions", "ru": "Функции" },
+    "order": 3,
+    "title": { "en": "Curry for Three", "ru": "Куррирование на три" },
+    "prompt": {
+      "en": "Write a function `curry3(fn)` for functions with exactly three arguments. The returned function can be called all at once or one argument at a time: both `curry3(f)(1, 2, 3)` and `curry3(f)(1)(2)(3)` must return the same result. Example: `const add3 = (a, b, c) => a + b + c; curry3(add3)(1)(2)(3)` → `6`.",
+      "ru": "Напиши функцию `curry3(fn)` для функций ровно с тремя аргументами. Возвращаемая функция может вызываться целиком или по одному аргументу: и `curry3(f)(1, 2, 3)`, и `curry3(f)(1)(2)(3)` должны дать тот же результат. Пример: `const add3 = (a, b, c) => a + b + c; curry3(add3)(1)(2)(3)` → `6`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.js": "// Curry for Three\n// curry3(fn): вызов целиком или по одному аргументу\n\nfunction curry3(fn) {\n  // TODO: implement\n  return fn;\n}"
+    },
+    "tests": [
+      { "name": "one at a time", "code": "const add3 = (a, b, c) => a + b + c; assert(curry3(add3)(1)(2)(3) === 6, \"expected 6\");" },
+      { "name": "all at once", "code": "const add3 = (a, b, c) => a + b + c; assert(curry3(add3)(1, 2, 3) === 6, \"expected 6\");" },
+      { "name": "mixed: two then one", "code": "const add3 = (a, b, c) => a * b + c; assert(curry3(add3)(2, 3)(4) === 10, \"expected 10\");" },
+      { "name": "mixed: one then two", "code": "const sub3 = (a, b, c) => a - b - c; assert(curry3(sub3)(10)(3)(2) === 5, \"expected 5\");" }
+    ],
+    "hint": {
+      "en": "Collect arguments until you have 3: if the call provides enough — invoke `fn`; otherwise return a function that merges the new args with the stored ones.",
+      "ru": "Собирай аргументы, пока не наберётся 3: если вызова хватает — вызови `fn`; иначе верни функцию, склеивающую новые аргументы с сохранёнными."
+    },
+    "solution": "function curry3(fn) {\n  return function a(...args) {\n    if (args.length >= 3) return fn(...args);\n    return function (...next) { return a(...args, ...next); };\n  };\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "js-004",
+    "track": "javascript",
+    "category": "arrays-objects",
+    "categoryI18n": { "en": "Arrays & Objects", "ru": "Массивы и объекты" },
+    "order": 4,
+    "title": { "en": "Unique Values", "ru": "Уникальные значения" },
+    "prompt": {
+      "en": "Write a function `unique(arr)` that returns a new array with duplicate values removed, keeping the first occurrence of each value. Order must be preserved. Example: `unique([1, 2, 1, 3, 2])` → `[1, 2, 3]`.",
+      "ru": "Напиши функцию `unique(arr)`, возвращающую новый массив без дубликатов — сохраняется первое вхождение каждого значения. Порядок должен сохраниться. Пример: `unique([1, 2, 1, 3, 2])` → `[1, 2, 3]`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.js": "// Unique Values\n// Убери дубликаты, сохранив порядок\n\nfunction unique(arr) {\n  // TODO: implement\n  return arr;\n}"
+    },
+    "tests": [
+      { "name": "basics", "code": "assert(JSON.stringify(unique([1, 2, 1, 3, 2])) === JSON.stringify([1, 2, 3]), \"expected [1,2,3]\");" },
+      { "name": "strings", "code": "assert(JSON.stringify(unique(['a', 'b', 'a', 'c', 'b'])) === JSON.stringify(['a', 'b', 'c']), \"expected ['a','b','c']\");" },
+      { "name": "no duplicates", "code": "assert(JSON.stringify(unique([1, 2, 3])) === JSON.stringify([1, 2, 3]), \"expected [1,2,3]\");" },
+      { "name": "all same", "code": "assert(JSON.stringify(unique([7, 7, 7])) === JSON.stringify([7]), \"expected [7]\");" }
+    ],
+    "hint": {
+      "en": "Use a `Set` to track what you have already seen, and push a value only the first time.",
+      "ru": "Используй `Set`, чтобы отмечать уже встреченное, и push только при первом вхождении."
+    },
+    "solution": "function unique(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const v of arr) {\n    if (!seen.has(v)) { seen.add(v); out.push(v); }\n  }\n  return out;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "js-005",
+    "track": "javascript",
+    "category": "arrays-objects",
+    "categoryI18n": { "en": "Arrays & Objects", "ru": "Массивы и объекты" },
+    "order": 5,
+    "title": { "en": "Map Values", "ru": "MapValues" },
+    "prompt": {
+      "en": "Write a function `mapValues(obj, fn)` that returns a new object with the same keys, but each value replaced by `fn(value, key)`. Do not mutate the input object. Example: `mapValues({a: 1, b: 2}, (v) => v * 10)` → `{a: 10, b: 20}`.",
+      "ru": "Напиши функцию `mapValues(obj, fn)`, возвращающую новый объект с теми же ключами, но каждым значением, заменённым на `fn(value, key)`. Не мутируй входной объект. Пример: `mapValues({a: 1, b: 2}, (v) => v * 10)` → `{a: 10, b: 20}`."
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.js": "// Map Values\n// Новое значение для каждого ключа: fn(value, key)\n\nfunction mapValues(obj, fn) {\n  // TODO: implement\n  return obj;\n}"
+    },
+    "tests": [
+      { "name": "multiply", "code": "assert(JSON.stringify(mapValues({a: 1, b: 2}, (v) => v * 10)) === JSON.stringify({a: 10, b: 20}), \"expected {a:10,b:20}\");" },
+      { "name": "key is passed", "code": "assert(JSON.stringify(mapValues({x: 1}, (v, k) => k)) === JSON.stringify({x: 'x'}), \"key must be the second argument\");" },
+      { "name": "input not mutated", "code": "const src = {a: 1}; mapValues(src, (v) => v + 1); assert(src.a === 1, \"input must stay {a:1}\");" },
+      { "name": "empty object", "code": "assert(JSON.stringify(mapValues({}, (v) => v)) === '{}', \"expected {}\" );" }
+    ],
+    "hint": {
+      "en": "Loop over `Object.keys(obj)` (or entries) and build a new object: `out[k] = fn(obj[k], k)`.",
+      "ru": "Цикл по `Object.keys(obj)` (или entries) и новый объект: `out[k] = fn(obj[k], k)`."
+    },
+    "solution": "function mapValues(obj, fn) {\n  const out = {};\n  for (const [k, v] of Object.entries(obj)) out[k] = fn(v, k);\n  return out;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "js-006",
+    "track": "javascript",
+    "category": "es6",
+    "categoryI18n": { "en": "ES6+", "ru": "ES6+" },
+    "order": 6,
+    "title": { "en": "Greeting Card", "ru": "Визитка" },
+    "prompt": {
+      "en": "Using modern JS (destructuring, template literals, default parameters), write an arrow function `greet` that takes a user object `{ name, city?, mood? }` and returns the string: `Hi, <name>! You are from <city>. Mood: <mood>.` Defaults: city = 'Syntax City', mood = 'great'. Example: `greet({name: 'Ada'})` → `Hi, Ada! You are from Syntax City. Mood: great.`",
+      "ru": "Современным JS (деструктуризация, шаблонные строки, значения по умолчанию) напиши arrow-функцию `greet`, принимающую объект пользователя `{ name, city?, mood? }` и возвращающую строку: `Hi, <name>! You are from <city>. Mood: <mood>.` По умолчанию: city = 'Syntax City', mood = 'great'. Пример: `greet({name: 'Ada'})` → `Hi, Ada! You are from Syntax City. Mood: great.`"
+    },
+    "difficulty": "easy",
+    "minutes": 15,
+    "xp": 50,
+    "files": {
+      "index.js": "// Greeting Card\n// Шаблонная строка + деструктуризация + дефолты\n\nconst greet = (user) => {\n  // TODO: implement\n  return '';\n};"
+    },
+    "tests": [
+      { "name": "full object", "code": "assert(greet({name: 'Ada', city: 'London', mood: 'focused'}) === 'Hi, Ada! You are from London. Mood: focused.', \"check the exact format\");" },
+      { "name": "defaults", "code": "assert(greet({name: 'Ada'}) === 'Hi, Ada! You are from Syntax City. Mood: great.', \"defaults must apply\");" },
+      { "name": "partial", "code": "assert(greet({name: 'Bo', city: 'Rome'}) === 'Hi, Bo! You are from Rome. Mood: great.', \"only mood default\");" }
+    ],
+    "hint": {
+      "en": "Destructure in the parameter: `({ name, city = 'Syntax City', mood = 'great' })`, then use a template literal.",
+      "ru": "Деструктуризация в параметре: `({ name, city = 'Syntax City', mood = 'great' })`, дальше — шаблонная строка."
+    },
+    "solution": "const greet = ({ name, city = 'Syntax City', mood = 'great' }) =>\n  `Hi, ${name}! You are from ${city}. Mood: ${mood}.`;",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "js-007",
+    "track": "javascript",
+    "category": "functions",
+    "categoryI18n": { "en": "Functions", "ru": "Функции" },
+    "order": 7,
+    "title": { "en": "Deep Clone", "ru": "Глубокое клонирование" },
+    "prompt": {
+      "en": "Write a function `deepClone(value)` that returns a deep copy of a plain data structure: objects, arrays, numbers, strings, booleans, null. Mutating the clone must not affect the original. Cycles do not have to be supported. Example: `const b = deepClone({a: [1, {b: 2}]}); b.a[0] = 99;` — the original is unchanged.",
+      "ru": "Напиши функцию `deepClone(value)`, возвращающую глубокую копию структуры из «плоских» данных: объекты, массивы, числа, строки, boolean, null. Мутация клона не должна влиять на оригинал. Циклы поддерживать не нужно. Пример: `const b = deepClone({a: [1, {b: 2}]}); b.a[0] = 99;` — оригинал не меняется."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.js": "// Deep Clone\n// Глубокая копия структуры (объекты, массивы, примитивы, null)\n\nfunction deepClone(value) {\n  // TODO: implement\n  return value;\n}"
+    },
+    "tests": [
+      { "name": "nested mutation", "code": "const a = {x: [1, {y: 2}]}; const b = deepClone(a); b.x[1].y = 99; assert(a.x[1].y === 2, \"original must stay\");" },
+      { "name": "arrays", "code": "const a = [[1, 2], [3, 4]]; const b = deepClone(a); b[0][0] = 0; assert(a[0][0] === 1, \"original array must stay\");" },
+      { "name": "primitives and null", "code": "assert(deepClone(5) === 5 && deepClone('s') === 's' && deepClone(null) === null && deepClone(true) === true, \"primitives pass through\");" },
+      { "name": "top-level array", "code": "const a = [1, 2]; const b = deepClone(a); b.push(3); assert(a.length === 2, \"original length must stay 2\");" }
+    ],
+    "hint": {
+      "en": "Recursion: if it is an array — clone each element; if it is an object (not null) — clone each value; otherwise return the value as is.",
+      "ru": "Рекурсия: если массив — клонируем каждый элемент; если объект (не null) — каждое значение; иначе — само значение."
+    },
+    "solution": "function deepClone(value) {\n  if (Array.isArray(value)) return value.map(deepClone);\n  if (value && typeof value === 'object') {\n    const out = {};\n    for (const [k, v] of Object.entries(value)) out[k] = deepClone(v);\n    return out;\n  }\n  return value;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "js-008",
+    "track": "javascript",
+    "category": "arrays-objects",
+    "categoryI18n": { "en": "Arrays & Objects", "ru": "Массивы и объекты" },
+    "order": 8,
+    "title": { "en": "Chunk", "ru": "Chunk" },
+    "prompt": {
+      "en": "Write a function `chunk(arr, size)` that splits the array into pieces of `size` elements. The last piece may be shorter. Example: `chunk([1, 2, 3, 4, 5], 2)` → `[[1, 2], [3, 4], [5]]`. If size >= arr.length — one piece.",
+      "ru": "Напиши функцию `chunk(arr, size)`, разбивающую массив на куски по `size` элементов. Последний кусок может быть короче. Пример: `chunk([1, 2, 3, 4, 5], 2)` → `[[1, 2], [3, 4], [5]]`. Если size >= arr.length — один кусок."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.js": "// Chunk\n// Разбей массив на куски по size\n\nfunction chunk(arr, size) {\n  // TODO: implement\n  return [arr];\n}"
+    },
+    "tests": [
+      { "name": "basic", "code": "assert(JSON.stringify(chunk([1, 2, 3, 4, 5], 2)) === JSON.stringify([[1, 2], [3, 4], [5]]), \"expected [[1,2],[3,4],[5]]\");" },
+      { "name": "even split", "code": "assert(JSON.stringify(chunk([1, 2, 3, 4], 2)) === JSON.stringify([[1, 2], [3, 4]]), \"expected [[1,2],[3,4]]\");" },
+      { "name": "size >= length", "code": "assert(JSON.stringify(chunk([1, 2], 5)) === JSON.stringify([[1, 2]]), \"one piece\");" },
+      { "name": "empty", "code": "assert(chunk([], 3).length === 0, \"expected []\");" }
+    ],
+    "hint": {
+      "en": "Loop with a step of `size` and take `arr.slice(i, i + size)` for each i.",
+      "ru": "Цикл с шагом `size`, на каждом шаге — `arr.slice(i, i + size)`."
+    },
+    "solution": "function chunk(arr, size) {\n  const out = [];\n  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));\n  return out;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "js-009",
+    "track": "javascript",
+    "category": "arrays-objects",
+    "categoryI18n": { "en": "Arrays & Objects", "ru": "Массивы и объекты" },
+    "order": 9,
+    "title": { "en": "Deep Merge", "ru": "Глубокое слияние" },
+    "prompt": {
+      "en": "Write a function `mergeDeep(a, b)` that merges two plain objects recursively: nested objects are merged, but any other value from `b` (arrays, primitives) replaces the one from `a`. Return a new object, do not mutate the inputs. Example: `mergeDeep({a: 1, c: {x: 1}}, {b: 2, c: {y: 2}})` → `{a: 1, b: 2, c: {x: 1, y: 2}}`.",
+      "ru": "Напиши функцию `mergeDeep(a, b)`, рекурсивно слияющую два «плоских» объекта: вложенные объекты сливаются, любые другие значения из `b` (массивы, примитивы) заменяют значения из `a`. Верни новый объект, не мутируй входы. Пример: `mergeDeep({a: 1, c: {x: 1}}, {b: 2, c: {y: 2}})` → `{a: 1, b: 2, c: {x: 1, y: 2}}`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.js": "// Deep Merge\n// Рекурсивное слияние: объекты — глубоко, остальное — из b\n\nfunction mergeDeep(a, b) {\n  // TODO: implement\n  return Object.assign({}, a, b);\n}"
+    },
+    "tests": [
+      { "name": "nested merge", "code": "assert(JSON.stringify(mergeDeep({a: 1, c: {x: 1}}, {b: 2, c: {y: 2}})) === JSON.stringify({a: 1, b: 2, c: {x: 1, y: 2}}), \"nested keys must merge\");" },
+      { "name": "arrays replace", "code": "assert(JSON.stringify(mergeDeep({l: [1, 2]}, {l: [3]})) === JSON.stringify({l: [3]}), \"arrays must be replaced, not merged\");" },
+      { "name": "primitive override", "code": "assert(JSON.stringify(mergeDeep({a: 1}, {a: 2})) === JSON.stringify({a: 2}), \"b wins\");" },
+      { "name": "inputs untouched", "code": "const a = {c: {x: 1}}; const b = {c: {y: 2}}; mergeDeep(a, b); assert(a.c.y === undefined && b.c.x === undefined, \"inputs must not be mutated\");" }
+    ],
+    "hint": {
+      "en": "For each key of `b`: if both values are plain objects — recurse; otherwise take `b`'s value. Start from a copy of `a`.",
+      "ru": "Для каждого ключа `b`: если оба значения — обычные объекты, рекурсия; иначе берём значение `b`. Начинаем с копии `a`."
+    },
+    "solution": "function mergeDeep(a, b) {\n  const out = { ...a };\n  for (const [k, v] of Object.entries(b)) {\n    if (v && typeof v === 'object' && !Array.isArray(v) && out[k] && typeof out[k] === 'object' && !Array.isArray(out[k])) {\n      out[k] = mergeDeep(out[k], v);\n    } else {\n      out[k] = v;\n    }\n  }\n  return out;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "js-010",
+    "track": "javascript",
+    "category": "es6",
+    "categoryI18n": { "en": "ES6+", "ru": "ES6+" },
+    "order": 10,
+    "title": { "en": "Debounce", "ru": "Debounce" },
+    "prompt": {
+      "en": "Write a function `debounce(fn, ms)` that returns a debounced version of `fn`: after every call the timer restarts, and `fn` fires only after `ms` milliseconds of quiet. Calls must be made with the latest arguments. Example: calling the debounced function 3 times within 50ms results in exactly one `fn` invocation ~40ms after the last call.",
+      "ru": "Напиши функцию `debounce(fn, ms)`, возвращающую дебаунс-версию `fn`: после каждого вызова таймер перезапускается, и `fn` срабатывает только после `ms` миллисекунд тишины. Вызов должен произойти с последними аргументами. Пример: 3 вызова дебаунс-функции в пределах 50 мс → ровно один вызов `fn` примерно через 40 мс после последнего."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.js": "// Debounce\n// fn срабатывает только после ms миллисекунд тишины\n\nfunction debounce(fn, ms) {\n  // TODO: implement\n  return fn;\n}"
+    },
+    "tests": [
+      { "name": "fires once after quiet", "code": "let calls = 0; const f = debounce(() => { calls += 1; }, 40); f(); f(); f(); await new Promise((r) => setTimeout(r, 100)); assert(calls === 1, \"expected 1 call, got \" + calls);" },
+      { "name": "latest arguments", "code": "let got; const f = debounce((x) => { got = x; }, 30); f('a'); f('b'); await new Promise((r) => setTimeout(r, 80)); assert(got === 'b', \"expected 'b'\");" },
+      { "name": "two quiet windows", "code": "let calls = 0; const f = debounce(() => { calls += 1; }, 30); f(); await new Promise((r) => setTimeout(r, 80)); f(); await new Promise((r) => setTimeout(r, 80)); assert(calls === 2, \"expected 2 calls, got \" + calls);" }
+    ],
+    "hint": {
+      "en": "Keep a `timer` in the closure. On each call: clearTimeout(timer), then setTimeout(() => fn(...args), ms).",
+      "ru": "В замыкании держи `timer`. При каждом вызове: clearTimeout(timer), затем setTimeout(() => fn(...args), ms)."
+    },
+    "solution": "function debounce(fn, ms) {\n  let timer;\n  return function (...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn.apply(this, args), ms);\n  };\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "js-011",
+    "track": "javascript",
+    "category": "async",
+    "categoryI18n": { "en": "Async", "ru": "Async" },
+    "order": 11,
+    "title": { "en": "With Timeout", "ru": "WithTimeout" },
+    "prompt": {
+      "en": "Write an async function `withTimeout(promise, ms)` that resolves with the same value as `promise`, but rejects with `new Error('timeout')` if the promise does not settle within `ms` milliseconds. If the promise settles first — the timer must not reject later (a delayed reject is fine to ignore). Example: `await withTimeout(Promise.resolve(1), 100)` → `1`.",
+      "ru": "Напиши async-функцию `withTimeout(promise, ms)`, которая резолвится тем же значением, что и `promise`, но отклоняется с `new Error('timeout')`, если promise не селится за `ms` миллисекунд. Если promise селится раньше — поздний reject таймера можно игнорировать. Пример: `await withTimeout(Promise.resolve(1), 100)` → `1`."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.js": "// With Timeout\n// promise или Error('timeout') через ms\n\nasync function withTimeout(promise, ms) {\n  // TODO: implement\n  return promise;\n}"
+    },
+    "tests": [
+      { "name": "resolves fast", "code": "const v = await withTimeout(Promise.resolve(42), 200); assert(v === 42, \"expected 42\");" },
+      { "name": "times out", "code": "let msg = ''; try { await withTimeout(new Promise(() => {}), 50); } catch (e) { msg = e.message; } assert(msg === 'timeout', \"expected Error('timeout'), got \" + msg);" },
+      { "name": "slow but within limit", "code": "const p = new Promise((r) => setTimeout(() => r('ok'), 60)); const v = await withTimeout(p, 300); assert(v === 'ok', \"expected 'ok'\");" }
+    ],
+    "hint": {
+      "en": "Race the promise against a setTimeout that rejects with `new Error('timeout')`: `Promise.race([promise, timer])`.",
+      "ru": "Проведи race между promise и setTimeout, который отклоняется с `new Error('timeout')`: `Promise.race([promise, timer])`."
+    },
+    "solution": "async function withTimeout(promise, ms) {\n  return Promise.race([\n    promise,\n    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),\n  ]);\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "js-012",
+    "track": "javascript",
+    "category": "dom",
+    "categoryI18n": { "en": "DOM", "ru": "DOM" },
+    "order": 12,
+    "title": { "en": "Count External Links", "ru": "Счётчик внешних ссылок" },
+    "prompt": {
+      "en": "The page has a `<div id=\"content\">` with several links. Write a function `countExternal()` in index.js that returns how many links in `#content` point outside the current origin (their href starts with `https://` to another domain). Links like `/about` or `#top` are internal. Run the code and read the result in the console — then make the tests green.",
+      "ru": "На странице есть `<div id=\"content\">` с несколькими ссылками. Напиши в index.js функцию `countExternal()`, возвращающую, сколько ссылок внутри `#content` уходят за пределы текущего origin (href начинается с `https://` на другой домен). Ссылки вида `/about` или `#top` — внутренние. Запусти код и посмотри результат в консоли — затем сделай тесты зелёными."
+    },
+    "difficulty": "medium",
+    "minutes": 30,
+    "xp": 100,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Link counter</title>\n</head>\n<body>\n  <div id=\"content\">\n    <a href=\"/about\">About</a>\n    <a href=\"https://developer.mozilla.org\">MDN</a>\n    <a href=\"#top\">Top</a>\n    <a href=\"https://github.com\">GitHub</a>\n    <a href=\"/docs\">Docs</a>\n    <a href=\"https://syntax.dev\">Syntax</a>\n  </div>\n</body>\n</html>",
+      "index.js": "// Count External Links\n// Сколько ссылок внутри #content ведут на другой домен\n\nfunction countExternal() {\n  // TODO: implement\n  return 0;\n}\n\nconsole.log('external links:', countExternal());"
+    },
+    "tests": [
+      { "name": "counts 3 external", "code": "assert(countExternal() === 3, \"expected 3, got \" + countExternal());" },
+      { "name": "internal links are not counted", "code": "assert(countExternal() !== 6, \"all 6 links are not external\");" }
+    ],
+    "hint": {
+      "en": "Select `#content a`, and for each `href` check: it starts with 'https://' and the hostname is not `location.hostname`.",
+      "ru": "Выбери `#content a` и для каждого `href` проверь: начинается с 'https://', а hostname отличается от `location.hostname`."
+    },
+    "solution": "function countExternal() {\n  const links = document.querySelectorAll('#content a');\n  let n = 0;\n  links.forEach((a) => {\n    const href = a.getAttribute('href') || '';\n    if (href.startsWith('https://')) {\n      const u = new URL(href);\n      if (u.hostname !== location.hostname) n += 1;\n    }\n  });\n  return n;\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "js-013",
+    "track": "javascript",
+    "category": "async",
+    "categoryI18n": { "en": "Async", "ru": "Async" },
+    "order": 13,
+    "title": { "en": "allSettled-lite", "ru": "allSettled-lite" },
+    "prompt": {
+      "en": "Implement `allSettledLite(promises)` — an async function that waits for all promises and returns an array of status objects in the original order: `{ status: 'fulfilled', value }` or `{ status: 'rejected', reason }`. Unlike `Promise.all`, one rejection must not reject the whole batch. Example: `allSettledLite([Promise.resolve(1), Promise.reject(new Error('x'))])` → 2 results.",
+      "ru": "Реализуй `allSettledLite(promises)` — async-функцию, которая ждёт все промисы и возвращает массив статусов в исходном порядке: `{ status: 'fulfilled', value }` или `{ status: 'rejected', reason }`. В отличие от `Promise.all`, один reject не должен ронять всю партию. Пример: `allSettledLite([Promise.resolve(1), Promise.reject(new Error('x'))])` → 2 результата."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "index.js": "// allSettled-lite\n// Все промисы → массив статусов (fulfilled / rejected)\n\nasync function allSettledLite(promises) {\n  // TODO: implement\n  return [];\n}"
+    },
+    "tests": [
+      { "name": "mixed batch", "code": "const r = await allSettledLite([Promise.resolve(1), Promise.reject(new Error('x'))]); assert(r.length === 2 && r[0].status === 'fulfilled' && r[0].value === 1 && r[1].status === 'rejected' && r[1].reason.message === 'x', \"check statuses\");" },
+      { "name": "order preserved", "code": "const r = await allSettledLite([new Promise((res) => setTimeout(() => res('slow'), 60)), Promise.resolve('fast')]); assert(r[0].value === 'slow' && r[1].value === 'fast', \"order must match input\");" },
+      { "name": "empty", "code": "assert((await allSettledLite([])).length === 0, \"expected []\");" },
+      { "name": "all rejected", "code": "const r = await allSettledLite([Promise.reject(new Error('a')), Promise.reject(new Error('b'))]); assert(r.length === 2 && r.every((x) => x.status === 'rejected'), \"both rejected\");" }
+    ],
+    "hint": {
+      "en": "Map each promise to `promise.then(value => ({status:'fulfilled',value}), reason => ({status:'rejected',reason}))`, then `Promise.all` the mapped array.",
+      "ru": "Каждый промис мапни в `promise.then(value => ({status:'fulfilled',value}), reason => ({status:'rejected',reason}))`, затем `Promise.all` по получившемуся массиву."
+    },
+    "solution": "async function allSettledLite(promises) {\n  return Promise.all(\n    promises.map((p) =>\n      Promise.resolve(p).then(\n        (value) => ({ status: 'fulfilled', value }),\n        (reason) => ({ status: 'rejected', reason })\n      )\n    )\n  );\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  },
+  {
+    "id": "js-014",
+    "track": "javascript",
+    "category": "dom",
+    "categoryI18n": { "en": "DOM", "ru": "DOM" },
+    "order": 14,
+    "title": { "en": "Highlight Words", "ru": "Подсветка слов" },
+    "prompt": {
+      "en": "The page has a paragraph `<p id=\"text\">`. Write a function `highlight(selector, word)` that wraps every case-insensitive occurrence of `word` (whole words only, separated by spaces) inside the element with a `<mark>` tag. Example: for the word 'code' the paragraph must contain `<mark>code</mark>`. Call `highlight('#text', 'code')` at the bottom of index.js so the tests see the result.",
+      "ru": "На странице есть параграф `<p id=\"text\">`. Напиши функцию `highlight(selector, word)`, которая оборачивает каждое вхождение `word` (без учёта регистра, только целые слова, разделённые пробелами) внутри элемента в тег `<mark>`. Пример: для слова 'code' параграф должен содержать `<mark>code</mark>`. В конце index.js вызови `highlight('#text', 'code')`, чтобы тесты видели результат."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Highlight</title>\n  <style>mark { background: #ffe9a8; }</style>\n</head>\n<body>\n  <p id=\"text\">Good code is written by humans for humans. Clean code reads like well-written text.</p>\n</body>\n</html>",
+      "index.js": "// Highlight Words\n// Оберни вхождения слова в <mark> (без учёта регистра, целые слова)\n\nfunction highlight(selector, word) {\n  // TODO: implement\n}\n\n// Запусти для слов из задания:\nhighlight('#text', 'code');"
+    },
+    "tests": [
+      { "name": "marks exist", "code": "const marks = document.querySelectorAll('#text mark'); assert(marks.length === 2, \"expected 2 <mark>, got \" + marks.length);" },
+      { "name": "right text", "code": "const marks = [...document.querySelectorAll('#text mark')].map((m) => m.textContent); assert(marks.every((m) => m.toLowerCase() === 'code'), \"marks must contain 'code'\");" },
+      { "name": "no double wrap", "code": "const p = document.getElementById('text').innerHTML; assert(!/<mark><mark>/i.test(p), \"no nested marks\");" }
+    ],
+    "hint": {
+      "en": "Work with text nodes: walk the childNodes, and for text nodes replace matches with a regex `/\\bword\\b/gi` — split the node and insert a <mark> element between the pieces.",
+      "ru": "Работай с текстовыми узлами: обходи childNodes, для текстовых узлов — regex `/\\bword\\b/gi`: режь узел по совпадениям и вставляй между кусками элемент <mark>."
+    },
+    "solution": "function highlight(selector, word) {\n  const root = document.querySelector(selector);\n  const re = new RegExp('\\\\b' + word + '\\\\b', 'gi');\n  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);\n  const nodes = [];\n  while (walker.nextNode()) nodes.push(walker.currentNode);\n  for (const node of nodes) {\n    const text = node.nodeValue;\n    if (!re.test(text)) { re.lastIndex = 0; continue; }\n    re.lastIndex = 0;\n    const frag = document.createDocumentFragment();\n    let last = 0;\n    let m;\n    while ((m = re.exec(text))) {\n      frag.appendChild(document.createTextNode(text.slice(last, m.index)));\n      const mark = document.createElement('mark');\n      mark.textContent = m[0];\n      frag.appendChild(mark);\n      last = m.index + m[0].length;\n    }\n    frag.appendChild(document.createTextNode(text.slice(last)));\n    node.parentNode.replaceChild(frag, node);\n  }\n}",
+    "dailyChallenge": false,
+    "status": "published"
+  },
+  {
+    "id": "js-015",
+    "track": "javascript",
+    "category": "async",
+    "categoryI18n": { "en": "Async", "ru": "Async" },
+    "order": 15,
+    "title": { "en": "Retry with Backoff", "ru": "Retry с паузами" },
+    "prompt": {
+      "en": "Write an async function `retry(fn, times, delayMs)` that calls `fn` (which returns a promise) and retries on rejection up to `times` total attempts, waiting `delayMs` milliseconds between attempts. If all attempts fail — throw the last error. Return the value of the first successful call. Example: a function that fails twice and then resolves — `retry(fn, 3, 10)` succeeds.",
+      "ru": "Напиши async-функцию `retry(fn, times, delayMs)`, которая вызывает `fn` (он возвращает промис) и при reject повторяет до `times` попыток всего, выжидая `delayMs` миллисекунд между попытками. Если все попытки упали — брось последнюю ошибку. Верни значение первого успешного вызова. Пример: функция, падающая дважды, а потом резолвящаяся — `retry(fn, 3, 10)` успешна."
+    },
+    "difficulty": "hard",
+    "minutes": 60,
+    "xp": 200,
+    "files": {
+      "index.js": "// Retry with Backoff\n// Повторяй fn до times попыток, пауза delayMs между ними\n\nasync function retry(fn, times, delayMs) {\n  // TODO: implement\n  return fn();\n}"
+    },
+    "tests": [
+      { "name": "succeeds after 2 failures", "code": "let n = 0; const flaky = () => { n += 1; if (n < 3) return Promise.reject(new Error('flaky ' + n)); return Promise.resolve('ok'); }; const v = await retry(flaky, 5, 5); assert(v === 'ok' && n === 3, \"expected 3 attempts, got \" + n);" },
+      { "name": "exhausts attempts", "code": "let n = 0; const always = () => { n += 1; return Promise.reject(new Error('nope ' + n)); }; let msg = ''; try { await retry(always, 3, 5); } catch (e) { msg = e.message; } assert(n === 3 && msg === 'nope 3', \"3 attempts then last error, got n=\" + n + \" msg=\" + msg);" },
+      { "name": "immediate success", "code": "let n = 0; const ok = () => { n += 1; return Promise.resolve(7); }; const v = await retry(ok, 3, 5); assert(v === 7 && n === 1, \"one attempt only\");" }
+    ],
+    "hint": {
+      "en": "Loop attempts 1..times: try to await fn() and return the value; on error — if this was the last attempt, throw; otherwise `await new Promise(r => setTimeout(r, delayMs))` and continue.",
+      "ru": "Цикл попыток 1..times: try — await fn(), вернуть значение; при ошибке — если последняя попытка, throw; иначе `await new Promise(r => setTimeout(r, delayMs))` и дальше."
+    },
+    "solution": "async function retry(fn, times, delayMs) {\n  let lastErr;\n  for (let i = 1; i <= times; i++) {\n    try {\n      return await fn();\n    } catch (e) {\n      lastErr = e;\n      if (i < times) await new Promise((r) => setTimeout(r, delayMs));\n    }\n  }\n  throw lastErr;\n}",
+    "dailyChallenge": true,
+    "status": "published"
+  }
+]

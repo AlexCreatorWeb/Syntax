@@ -1,32 +1,17 @@
 import { useState } from "react";
 import { useT } from "../../i18n/useT";
-import { getTech } from "../../lib/techs";
-import TECHS from "../../lib/techs";
+import { useLanguage } from "../../context/useLanguage";
+import TECHS, { getTech } from "../../lib/techs";
 import { getDoneTasks } from "../../lib/progress";
+import { tasksForTrack, categoriesForTrack, locField } from "../../lib/tasks";
 
 // Лого треков на уровне модуля: стабильные ссылки (react-compiler не любит getTech() в рендере)
 const TRACK_LOGOS = Object.fromEntries(TECHS.map((tc) => [tc.id, tc.Logo]));
 
-// Задания (UX-аудит Tasks): раздел знает о треке — tech-табы (синхронно с выбранным
-// треком), заголовок «{Track} Tasks», счётчик «N of M · track», tech-empty-state.
-// Карточка кликабельна целиком (паттерн roadmap-модуля). «All Statuses» — деактивен (soon).
-const TASKS = [
-  { id: 1, tech: "general", category: "string", difficulty: "easy", time: 15, xp: 50 },
-  { id: 2, tech: "general", category: "data", difficulty: "medium", time: 30, xp: 150 },
-  { id: 3, tech: "general", category: "algorithms", difficulty: "hard", locked: true },
-  { id: 4, tech: "javascript", category: "algorithms", difficulty: "medium", time: 25, xp: 120 },
-  { id: 5, tech: "javascript", category: "data", difficulty: "easy", time: 10, xp: 40 },
-  { id: 6, tech: "python", category: "data", difficulty: "easy", time: 12, xp: 45 },
-  { id: 7, tech: "python", category: "algorithms", difficulty: "medium", time: 35, xp: 150 },
-  { id: 8, tech: "postgres", category: "data", difficulty: "medium", time: 20, xp: 100 },
-  { id: 9, tech: "html", category: "data", difficulty: "easy", time: 12, xp: 45 },
-  { id: 10, tech: "html", category: "data", difficulty: "medium", time: 20, xp: 100 },
-  { id: 11, tech: "css", category: "algorithms", difficulty: "medium", time: 25, xp: 120 },
-  { id: 12, tech: "css", category: "algorithms", difficulty: "easy", time: 10, xp: 40 },
-];
-
-const CATEGORIES = ["string", "data", "algorithms"];
-
+// Tasks = структурированный каталог (2026-09): контент — src/content/tasks/*.json
+// (lib/tasks.js), вкладка = трек, «SOON» только у реально пустых треков,
+// категории — автоматически из задач трека, «Solve» открывает задачу в редакторе
+// с тестами (job.files + job.tests → Run → все зелёные → Complete +XP).
 function ChevronIcon() {
   return (
     <svg
@@ -44,30 +29,32 @@ function ChevronIcon() {
   );
 }
 
-function TaskCard({ task, t, onSolve, done }) {
-  const item = t("tasks.items")[task.id - 1];
-  const TrackLogo = TRACK_LOGOS[task.tech];
+function TaskCard({ task, lang, t, onSolve, done }) {
+  const TrackLogo = TRACK_LOGOS[task.track];
+  const catName = task.categoryI18n ? locField(task.categoryI18n, lang) : task.category;
 
   // Единое правило «карточка действия = кликабельна целиком» (паттерн roadmap)
   const open = (e) => {
-    if (task.locked) return;
     if (e.target.closest("button")) return; // кнопку обрабатывает она сама
-    onSolve(task.id - 1, task.tech);
+    onSolve(task);
   };
 
   return (
     <article
-      className={`card task-card ${task.locked ? "task-card--locked" : "task-card--open"}`}
-      role={task.locked ? undefined : "button"}
-      tabIndex={task.locked ? undefined : 0}
+      className={`card task-card ${done ? "task-card--done" : "task-card--open"}`}
+      role="button"
+      tabIndex={0}
       onClick={open}
-      onKeyDown={task.locked ? undefined : (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSolve(task.id - 1, task.tech); }
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSolve(task);
+        }
       }}
     >
       <div className="task-card__body">
         <div className="task-card__meta-top">
-          <span className="chip">{t(`tasks.categories.${task.category}`)}</span>
+          <span className="chip">{catName}</span>
           {done && (
             <span className="chip chip--done">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
@@ -78,53 +65,39 @@ function TaskCard({ task, t, onSolve, done }) {
             {t(`tasks.${task.difficulty}`)}
           </span>
         </div>
-        <h3 className="task-card__title">
-          {item.title}
-          {task.locked && (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="4" y="11" width="16" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
-          )}
-        </h3>
-        <p className="task-card__desc">{item.desc}</p>
-        {/* Микрострока-привязка: откуда задача (трек) */}
-        {TrackLogo && (
+        <h3 className="task-card__title">{locField(task.title, lang)}</h3>
+        <p className="task-card__desc">{locField(task.prompt, lang)}</p>
+        {/* Микрострока-привязка: откуда задача (трек) — в General-каталоге */}
+        {task.track !== "general" && TrackLogo && (
           <span className="task-card__track">
             <TrackLogo />
-            {t(`home.tech.${task.tech}`)}
+            {t(`home.tech.${task.track}`)}
           </span>
         )}
-        {!task.locked && (
-          <div className="task-card__meta">
-            <span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v5l3 2" />
-              </svg>
-              {task.time} {t("tasks.minutes")}
-            </span>
-            <span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <circle cx="12" cy="12" r="4.5" />
-                <circle cx="12" cy="12" r="1" fill="currentColor" />
-              </svg>
-              {task.xp} {t("tasks.xp")}
-            </span>
-          </div>
-        )}
+        <div className="task-card__meta">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            {task.minutes} {t("tasks.minutes")}
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="4.5" />
+              <circle cx="12" cy="12" r="1" fill="currentColor" />
+            </svg>
+            {task.xp} {t("tasks.xp")}
+          </span>
+        </div>
       </div>
-      {task.locked ? (
-        <button type="button" className="btn btn--secondary task-card__action" disabled>
-          {t("tasks.locked")}
-        </button>
-      ) : done ? (
-        <button type="button" className="btn btn--ghost task-card__action" onClick={() => onSolve(task.id - 1, task.tech)}>
+      {done ? (
+        <button type="button" className="btn btn--ghost task-card__action" onClick={() => onSolve(task)}>
           {t("tasks.reopen")}
         </button>
       ) : (
-        <button type="button" className="btn btn--primary task-card__action" onClick={() => onSolve(task.id - 1, task.tech)}>
+        <button type="button" className="btn btn--primary task-card__action" onClick={() => onSolve(task)}>
           {t("tasks.solve")}
         </button>
       )}
@@ -134,33 +107,48 @@ function TaskCard({ task, t, onSolve, done }) {
 
 function TasksView({ activeTech, onSelectTech, onSolve }) {
   const t = useT();
+  const { langCode } = useLanguage();
   const [difficulty, setDifficulty] = useState("all");
+  const [status, setStatus] = useState("all"); // all | done | open (2026-09: реально работает)
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
   // Tech-фильтр: синхронен с выбранным треком через key-перемонтирование в MainContent
   // (key=activeTech); «General» — локальный просмотр
   const [techFilter, setTechFilter] = useState(() => (getTech(activeTech) ? activeTech : "general"));
-  // Выполненные задания (успешный Submit в редакторе) — ключ `tech:taskId`
+  // Выполненные задания: ключ `track:taskId`
   const doneSet = new Set(getDoneTasks());
 
   const tech = getTech(techFilter);
-  const items = t("tasks.items");
+  // Каталог: задачи из JSON-контента трека (в порядке order)
+  const pool = tasksForTrack(techFilter);
+  // Категории — автоматически из задач трека (≤6)
+  const cats = categoriesForTrack(techFilter);
+  const catName = (slug) => {
+    const first = pool.find((x) => x.category === slug);
+    return first && first.categoryI18n ? locField(first.categoryI18n, langCode) : slug;
+  };
 
-  const pool = TASKS.filter((task) => task.tech === techFilter);
   const visible = pool.filter((task) => {
     const okDiff = difficulty === "all" || task.difficulty === difficulty;
     const okCat = category === "all" || task.category === category;
-    const okQuery = !query || items[task.id - 1].title.toLowerCase().includes(query.toLowerCase());
-    return okDiff && okCat && okQuery;
+    const isDone = doneSet.has(`${task.track}:${task.id}`);
+    const okStatus = status === "all" || (status === "done" ? isDone : !isDone);
+    const okQuery =
+      !query ||
+      locField(task.title, langCode).toLowerCase().includes(query.toLowerCase()) ||
+      locField(task.prompt, langCode).toLowerCase().includes(query.toLowerCase());
+    return okDiff && okCat && okStatus && okQuery;
   });
 
   const selectTechTab = (id) => {
-    onSelectTech(id); // глобальный выбор трека (пersistence, deep-link-совместимый)
+    onSelectTech(id); // глобальный выбор трека (persistence, deep-link-совместимый)
     setTechFilter(id);
+    setCategory("all"); // категории другого трека
   };
 
   const clearFilters = () => {
     setDifficulty("all");
+    setStatus("all");
     setCategory("all");
     setQuery("");
   };
@@ -190,11 +178,18 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
             </select>
             <ChevronIcon />
           </label>
-          {/* Статусы появятся с бэкендом — контрол честно деактивен */}
-          <button type="button" className="filter-btn filter-btn--soon" title={t("home.soon")} aria-disabled="true">
-            {t("tasks.allStatuses")}
-            <span className="soon-badge">{t("home.soon")}</span>
-          </button>
+          <label className="filter-btn filter-btn--select">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              aria-label={t("tasks.allStatuses")}
+            >
+              <option value="all">{t("tasks.allStatuses")}</option>
+              <option value="done">{t("tasks.done")}</option>
+              <option value="open">{t("tasks.open")}</option>
+            </select>
+            <ChevronIcon />
+          </label>
           <div className="tasks-search">
             <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="7" />
@@ -211,10 +206,12 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
         </div>
       </header>
 
-      {/* Tech-табы: технологии по порядку каталога, «General» — в конце (UX-фидбек) */}
+      {/* Tech-табы: технологии по порядку каталога, «General» — в конце.
+          «SOON» — только у треков без опубликованных задач (2026-09: хардкод убран) */}
       <div className="tech-switch" role="tablist" aria-label={t("techPage.changeTrack")}>
         {TECHS.map((tc) => {
-          const TLogo = tc.Logo;
+          const TLogo = TRACK_LOGOS[tc.id];
+          const empty = tasksForTrack(tc.id).length === 0;
           return (
             <button
               key={tc.id}
@@ -226,6 +223,7 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
             >
               <TLogo />
               <span>{t(tc.label)}</span>
+              {empty && <span className="soon-badge">{t("home.soon")}</span>}
             </button>
           );
         })}
@@ -246,7 +244,7 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
         </button>
       </div>
 
-      {/* Чипы категорий + строка состояния списка: масштаб и активный контекст */}
+      {/* Чипы категорий (из задач трека) + строка состояния списка */}
       <div className="tasks-meta-row">
         <div className="task-chips">
           <button
@@ -256,14 +254,14 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
           >
             {t("tasks.allCategories")}
           </button>
-          {CATEGORIES.map((c) => (
+          {cats.map((c) => (
             <button
               key={c}
               type="button"
               className={`task-chip ${category === c ? "task-chip--active" : ""}`}
               onClick={() => setCategory(c)}
             >
-              {t(`tasks.categories.${c}`)}
+              {catName(c)}
             </button>
           ))}
         </div>
@@ -274,7 +272,14 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
 
       <div className="task-list">
         {visible.map((task) => (
-          <TaskCard key={task.id} task={task} t={t} onSolve={onSolve} done={doneSet.has(`${task.tech}:${task.id}`)} />
+          <TaskCard
+            key={task.id}
+            task={task}
+            lang={langCode}
+            t={t}
+            onSolve={onSolve}
+            done={doneSet.has(`${task.track}:${task.id}`)}
+          />
         ))}
 
         {/* Tech-empty: задач по треку нет — путь дальше, а не констатация пустоты */}
@@ -311,7 +316,7 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
           </div>
         )}
 
-        {/* Пусто по фильтрам сложности/категории */}
+        {/* Пусто по фильтрам сложности/категории/статуса */}
         {visible.length === 0 && pool.length > 0 && !query && (
           <div className="tasks-empty">
             <span className="tasks-empty__icon" aria-hidden="true">

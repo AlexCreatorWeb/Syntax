@@ -75,7 +75,7 @@ def top_scores(scores: list[float], n: int = 3) -> list[float]:
 def find_index(items: list[int], target: int) -> int | None:
     """Индекс target или None."""
     for i, value in enumerate(items):
-        if value == value and value == target:
+        if value == target:
             return i
     return None
 

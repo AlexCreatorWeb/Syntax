@@ -121,6 +121,7 @@ except AppError as e:
 
 # contextlib.suppress
 from contextlib import suppress
+value = None
 with suppress(KeyError, IndexError):
     value = users["Вера"]
 print("suppress: значение =", value)

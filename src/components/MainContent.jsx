@@ -10,7 +10,9 @@ import RankingsView from "./views/RankingsView";
 import CommunityView from "./views/CommunityView";
 import ProfileView from "./views/ProfileView";
 import { useT } from "../i18n/useT";
-import { getCompleted, markTaskDone } from "../lib/progress";
+import { useLanguage } from "../context/useLanguage";
+import { getCompleted, getDoneTasks } from "../lib/progress";
+import { taskJobFor } from "../lib/taskJob";
 import { lessonJobFor } from "../lib/lessonJob";
 
 // Учебный контекст «урока» (демо-данные; дальше — с бэкенда)
@@ -23,25 +25,13 @@ function lessonJob(t) {
   };
 }
 
-function taskJob(t, index, techId) {
-  const item = t("tasks.items")[index];
-  // Файл редактора по треку задачи (K2-паттерн: имя/расширение соответствуют технологии)
-  const taskFile = { javascript: "index.js", python: "main.py", postgres: "queries.sql", html: "index.html", css: "styles.css" }[techId] || "index.js";
-  return {
-    kind: "task",
-    title: item.title,
-    desc: item.desc,
-    backTab: "tasks",
-    file: taskFile,
-    // Статистика: успешный Submit = задание засчитано (отдельный бакет от уроков)
-    onComplete: () => markTaskDone(techId, index + 1),
-  };
-}
-
 function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons, session, userName, onAuth, onLogout }) {
   const t = useT();
+  const { langCode } = useLanguage();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
   const isAuthed = Boolean(session);
+  // Перерасчёт taskDone после Complete (job живёт в state App и не пересобирается)
+  const [taskTick, setTaskTick] = useState(0);
 
   // Уроки открыты гостю (фидбек 2026-09: «Try a demo lesson» обязан работать без аккаунта —
   // обещание «first lesson in 2 minutes»); прогресс гостя живёт в localStorage анонимно.
@@ -88,7 +78,12 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
     }
     onNavigate("editor", lessonJob(t));
   };
-  const openTask = (index, techId) => onNavigate("editor", taskJob(t, index, techId));
+  // 2026-09: Tasks = структурированный каталог. openTask(task) — задача из
+  // src/content/tasks/*.json (job: файлы, тесты, XP, связь с уроком — в lib/taskJob.js).
+  const openTask = (task) => {
+    const j = taskJobFor(task, { dbLessons: dbLessonsArr, langCode, onCompleted: () => setTaskTick((v) => v + 1) });
+    if (j) onNavigate("editor", j);
+  };
 
   const renderLessonCard = () => (
     <section className="card lesson">
@@ -169,14 +164,21 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
       case "technology":
         // job.techId — при клике по карточке; activeTech — при deep-link/refresh (job сбрасывается)
         return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} onSelectTech={onSelectTech} />;
-      case "editor":
-        return <CodeEditor language={currentLanguage} theme={theme} job={job} onNavigate={onNavigate} />;
+      case "editor": {
+        // Task-джоб: taskDone пересчитываем (job в state App не пересобирается после Complete)
+        const editorJob =
+          job && job.kind === "task" && job.track
+            ? { ...job, taskDone: getDoneTasks().includes(`${job.track}:${job.taskId}`) }
+            : job;
+        void taskTick; // зависимость: пересчёт после Complete
+        return <CodeEditor key={job && job.kind === "task" && job.taskId ? `task-${job.taskId}` : "editor"} language={currentLanguage} theme={theme} job={editorJob} onNavigate={onNavigate} />;
+      }
       case "lesson":
         // Урок из базы: материал + редактор (job = строка lessons); без job — редирект в effect
         return job ? <LessonView job={job} theme={theme} onNavigate={onNavigate} /> : null;
       case "tasks":
         // key=activeTech: смена трека перемонтирует вьюху — tech-фильтр синхронен с выбранным треком
-        return <TasksView key={activeTech || "none"} activeTech={activeTech} onSelectTech={onSelectTech} onSolve={(i, techId) => openTask(i, techId)} />;
+        return <TasksView key={activeTech || "none"} activeTech={activeTech} onSelectTech={onSelectTech} onSolve={(task) => openTask(task)} />;
       case "documentation":
         // routeParam — slug статьи из deep-link #/documentation/<slug> (валидация внутри DocsView)
         return <DocsView routeParam={routeParam} activeTech={activeTech} onNavigate={onNavigate} />;

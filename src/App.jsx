@@ -38,12 +38,21 @@ function App() {
   const [dbLessons, setDbLessons] = useState(null);
   useEffect(() => {
     let alive = true;
-    fetchDbLessons().then((rows) => {
-      // сбой/таймаут (null) нормализуем в [] — null остаётся только «ещё грузим»
-      if (alive) setDbLessons(rows || []);
-    });
+    const load = (force) =>
+      fetchDbLessons(4000, { force }).then((rows) => {
+        // сбой/таймаут (null) нормализуем в [] — null остаётся только «ещё грузим»
+        if (alive) setDbLessons(rows || []);
+      });
+    load(false);
+    // Возврат на вкладку — свежий fetch (TTL внутри lib гасит спам запросов):
+    // правки контента в БД (DELETE+INSERT) становятся видны без перезагрузки/перелогина
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load(true);
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       alive = false;
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 

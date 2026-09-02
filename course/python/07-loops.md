@@ -15,7 +15,9 @@ for word in ["a", "bb", "ccc"]:
     print(len(word))
 
 for i in range(5):        # 0,1,2,3,4
+    pass
 for i in range(2, 8, 2):  # 2,4,6 (start, stop, step)
+    pass
 ```
 
 ### range: «генератор чисел»
@@ -43,8 +45,10 @@ else:
 
 ### enumerate и zip
 
-- **`enumerate(seq)`** — `(индекс, элемент)`: `for i, w in enumerate(words):` (вместо `i = 0; for w in …: i += 1`).
-- **`zip(a, b)`** — параллельно: `for name, score in zip(names, scores):`. `zip` «обрезает» до самого короткого.
+- **`enumerate(seq)`** — `(индекс, элемент)`: `for i, w in enumerate(words):` (вместо `i = 0; for w in …: i += 1`). Аргумент `start=1` — нумерация с 1.
+- **`zip(a, b)`** — параллельно: `for name, score in zip(names, scores):`. `zip` «обрезает» до самого короткого (лишнее молча отбрасывается).
+
+`zip` + `enumerate` покрывают 90% «цикл с индексом/параллельно» без ручного счётчика.
 
 TIP: «цикл по строкам с номером» — enumerate; «две параллельные коллекции» — zip. Не ведите счётчик руками.
 

@@ -85,6 +85,10 @@ class AsyncClient:
         self.base_url = base_url
         self.timeout = timeout
         self.headers = headers or {}
+    async def __aenter__(self) -> "AsyncClient":
+        return self
+    async def __aexit__(self, *exc) -> None:
+        pass
     async def get(self, path: str) -> Resp:
         await asyncio.sleep(0.05)   # «сеть**
         r = fake_api("GET", path)
