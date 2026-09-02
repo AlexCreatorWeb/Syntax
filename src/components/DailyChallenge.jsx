@@ -65,11 +65,13 @@ function DailyChallenge({ dbLessons, isAuthed, onAuth, onNavigate, backTab = "ta
           </svg>
           {t("tasks.daily.title")}
         </span>
-        <span className="timer-chip" role="timer" aria-label={t("tasks.timerAria")}>
-          {formatTime(seconds)}
-        </span>
-        {/* L6-аудит: что именно отсчитывает таймер */}
-        <span className="daily-challenge__reset">{t("tasks.resetsDaily")}</span>
+        {/* Таймер и подпись — отдельная группа под заголовком (не конкурирует с ним за ширину) */}
+        <div className="daily-challenge__timer">
+          <span className="timer-chip" role="timer" aria-label={t("tasks.timerAria")}>
+            {formatTime(seconds)}
+          </span>
+          <span className="daily-challenge__reset">{t("tasks.resetsDaily")}</span>
+        </div>
       </div>
 
       {dbLessons === null ? (

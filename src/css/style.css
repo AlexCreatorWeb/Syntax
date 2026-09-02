@@ -682,11 +682,10 @@ code {
   padding: 6px 10px;
   margin-bottom: 14px;
 }
-/* L6: что отсчитывает таймер challenge */
+/* L6: что отсчитывает таймер challenge (в группе .daily-challenge__timer) */
 .daily-challenge__reset {
   font-size: 10.5px;
   color: var(--muted);
-  width: 100%;
 }
 .code-card__actions { display: flex; align-items: center; gap: 6px; }
 
@@ -1959,10 +1958,17 @@ code {
 }
 .daily-challenge__head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
   margin-bottom: 14px;
+}
+/* Таймер + подпись «resets at midnight» — одна группа под заголовком */
+.daily-challenge__timer {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 .daily-challenge__title {
   display: inline-flex;
@@ -1971,6 +1977,7 @@ code {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 .daily-challenge__title svg { width: 20px; height: 20px; color: var(--primary); }
 .timer-chip {
