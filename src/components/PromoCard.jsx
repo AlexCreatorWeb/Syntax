@@ -16,8 +16,8 @@ function PromoCard({ id }) {
     </>
   );
   return (
-    <article className={`card promo${p.rowLayout ? " promo--row" : ""}`}>
-      <div className="promo__media">
+    <article className="card promo">
+      <div className={`promo__media${p.mediaClass ? ` ${p.mediaClass}` : ""}`}>
         <span className="promo__badge">{t("home.sponsored")}</span>
         <img src={p.img} alt={t(p.titleKey)} loading="lazy" />
       </div>
