@@ -101,7 +101,7 @@ function definePlatformThemes(monaco) {
 }
 
 // Фон превью — «бумажный» (как в Claude), не чисто-белый
-const PREVIEW_BG = "#f5f4ef";
+const PREVIEW_BG = "#e8e7e1"; // приглушённый фон превью (фидбек 2026-09: не чисто-белый)
 
 // Emmet (emmet-monaco-es): регистрируем ОДИН раз до создания инстансов редактора.
 // В Monaco 0.5x встроенный emmet вынесен из ядра, поэтому нужен отдельный плагин.
@@ -188,11 +188,44 @@ function buildPreviewDoc(files, contents) {
 }
 
 // Скрипт для «сухого» запуска JS-файлов без HTML: только console-перехват + JS
+// Python-раннер (ВРЕМЕННАЯ заглушка до Pyodide из параллельной сессии: вызов buildPythonDoc
+// появился, а функция нет — линт падал). Run не молчит: исходник + пометка в консоли.
+function buildPythonDoc(pyCode) {
+  const src = (pyCode || "").replace(/<\/script/gi, "<\\/script");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>html, body { margin: 0; background-color: ${PREVIEW_BG}; }</style>
+</head><body>
+<div id="root"></div>
+${CONSOLE_CAPTURE}
+<script type="text/plain" id="syntax-py-src">
+${src}
+</script>
+<script>
+(function () {
+  var code = document.getElementById("syntax-py-src").textContent.replace(/^\n/, "");
+  var pre = document.createElement("pre");
+  pre.style.cssText = "padding:16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.55;white-space:pre-wrap;";
+  pre.textContent = code;
+  var note = document.createElement("div");
+  note.style.cssText = "padding:10px 16px 0;font-size:12px;opacity:.65;";
+  note.textContent = "Python runner (Pyodide) — loading soon";
+  document.getElementById("root").appendChild(note);
+  document.getElementById("root").appendChild(pre);
+})();
+</script>
+</body></html>`;
+}
+
 function buildRunnerDoc(files, contents, job = null) {
   const vueFile = files.find((f) => f.language === "html" && /\.vue$/.test(f.name));
   if (vueFile) return buildVueDoc(contents[vueFile.id] ?? "");
   const jsxFile = files.find((f) => f.language === "javascript" && /\.jsx$/.test(f.name));
   if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "");
+  // Python-трехк: main.py → Pyodide (настоящий CPython в WASM)
+  if (job && job.techId === "python") {
+    const pyFile = files.find((f) => f.language === "python" && /\.py$/.test(f.name));
+    if (pyFile) return buildPythonDoc(contents[pyFile.id] ?? "");
+  }
   // Node/mongo-трехк: .js-файл (server.js / models.js) → Node-sandbox (ESM + import map)
   const isNodeTrack = Boolean(job && (job.techId === "node" || job.techId === "mongo"));
   if (isNodeTrack) {
@@ -710,6 +743,29 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
           {activeFile.name}
         </span>
         <div className="code-card__actions">
+          {hasHtml && (
+            // Переключатель превью: крестик закрывает панель, глазик возвращает (фидбек 2026-09)
+            <button
+              className="icon-btn"
+              type="button"
+              title={showPreview ? t("editor.closePreview") : t("editor.preview")}
+              aria-pressed={showPreview}
+              onClick={() => setShowPreview((v) => !v)}
+            >
+              {showPreview ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 8 10 8a13.2 13.2 0 0 1-1.67 2.68" />
+                  <path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.39-1.61" />
+                  <path d="M2 2l20 20" />
+                </svg>
+              )}
+            </button>
+          )}
           <button
             className="btn btn--primary btn--run"
             type="button"
@@ -1071,6 +1127,19 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                   }
                 }}
               />
+              {/* Крестик: закрыть панель превью (редактор на всю ширину; глазик в тулбаре возвращает) */}
+              {showPreview && (
+                <button
+                  type="button"
+                  className="editor-preview-close"
+                  aria-label={t("editor.closePreview")}
+                  onClick={() => setShowPreview(false)}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </button>
+              )}
               {/* M6: пустая страница в превью — не «сбой», а ожидание: подсказка поверх */}
               {showPreview && previewBodyEmpty && (
                 <div className="editor-preview-hint" role="note">

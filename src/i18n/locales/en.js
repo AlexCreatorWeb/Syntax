@@ -702,6 +702,7 @@ export default {
     submitFail: "Run has errors — check the console",
     submitTodosLeft: "It runs — but {n} TODOs left. Finish them to complete the lesson",
     submitUnchanged: "No changes yet — work through the first TODO in the code, then submit again",
+    closePreview: "Close preview",
     previewEmpty: "The page is empty — add some content to the HTML file",
     back: "Back",
     lessonLabel: "Lesson",

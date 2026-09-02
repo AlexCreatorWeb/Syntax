@@ -79,25 +79,6 @@ function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, user
     <>
     <header className="topbar">
       <div className="topbar__left">
-        {/* Мобильное меню: бургер (видим только на ≤640px) — ряд иконок сайдбара туда убран */}
-        <button
-          type="button"
-          className="menu-toggle"
-          aria-label={t("header.menu")}
-          aria-haspopup="true"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          {menuOpen ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
-        </button>
         {/* Лого всегда оригинальное, клик — всегда на главную (тех-лого не дублируем) */}
         <button
           type="button"
@@ -333,6 +314,25 @@ function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, user
             </button>
           </div>
         )}
+        {/* Мобильное меню: бургер — в САМЫЙ ПРАВЫЙ край хедера (фидбек 2026-09), виден только на ≤640px */}
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-label={t("header.menu")}
+          aria-haspopup="true"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          {menuOpen ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
       </div>
     </header>
 

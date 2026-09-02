@@ -641,8 +641,29 @@ code {
   min-width: 0;
   border: none;
   border-left: 1px solid var(--border);
-  background: #f5f4ef; /* «бумажный» фон, как в Claude */
+  background: #e8e7e1; /* приглушённый «бумажный» фон (фидбек 2026-09: чисто-белый — слишком контрастен) */
 }
+/* Крестик закрытия превью: в углу панели, поверх iframe */
+.editor-preview-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-variant);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.editor-preview-close svg { width: 15px; height: 15px; }
+.editor-preview-close:hover { background: var(--surface-2); color: var(--text); }
 /* М6: пустая страница в превью — подсказка поверх (не «сбой», а «доскачай TODO») */
 .editor-preview-hint {
   position: absolute;
