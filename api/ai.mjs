@@ -80,7 +80,7 @@ async function handle(req, res) {
           ...(Array.isArray(history) ? history.slice(-10) : []).map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
           { role: "user", parts: [{ text: question }] },
         ],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
+        generationConfig: { temperature: 0.4, maxOutputTokens: 2048, thinkingConfig: { thinkingLevel: "low" } },
       }),
     });
   } catch (e) {

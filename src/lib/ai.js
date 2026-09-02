@@ -102,7 +102,7 @@ function geminiBody(techName, hist, question) {
   return {
     systemInstruction: { parts: [{ text: buildSystemPrompt(techName) }] },
     contents: toGeminiContents(hist, question),
-    generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
+    generationConfig: { temperature: 0.4, maxOutputTokens: 2048, thinkingConfig: { thinkingLevel: "low" } },
   };
 }
 
