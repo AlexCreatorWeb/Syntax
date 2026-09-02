@@ -6,7 +6,7 @@
 // сис-промпт продублирован здесь (единый исходник — src/lib/ai-prompt.js, при правке синхронизируй).
 export const maxDuration = 60; // стриминг ответа
 
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse";
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?alt=sse";
 
 const TRACKS = ["HTML", "CSS", "JavaScript", "Python", "React", "Vue.js", "Node.js", "MongoDB", "PostgreSQL"];
 
@@ -80,7 +80,7 @@ async function handle(req, res) {
           ...(Array.isArray(history) ? history.slice(-10) : []).map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
           { role: "user", parts: [{ text: question }] },
         ],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 2048, thinkingConfig: { thinkingLevel: "low" } },
+        generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
       }),
     });
   } catch (e) {

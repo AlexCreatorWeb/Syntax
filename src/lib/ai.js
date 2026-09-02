@@ -10,7 +10,7 @@
 // candidates[0].content.parts[].text.
 import { buildSystemPrompt } from "./ai-prompt";
 
-export const AI_MODEL = "gemini-3.6-flash";
+export const AI_MODEL = "gemini-flash-lite-latest";
 export const AI_MODEL_SHORT = AI_MODEL;
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:streamGenerateContent?alt=sse`;
@@ -102,7 +102,7 @@ function geminiBody(techName, hist, question) {
   return {
     systemInstruction: { parts: [{ text: buildSystemPrompt(techName) }] },
     contents: toGeminiContents(hist, question),
-    generationConfig: { temperature: 0.4, maxOutputTokens: 2048, thinkingConfig: { thinkingLevel: "low" } },
+    generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
   };
 }
 
