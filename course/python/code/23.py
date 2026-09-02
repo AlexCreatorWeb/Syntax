@@ -18,4 +18,10 @@ async def main() -> None:
     # TODO: as_completed: for coro in asyncio.as_completed([task("fast", 0.5), task("slow", 1.5)]): r = await coro
 
 
-asyncio.run(main())
+# Запуск: в песочнице (Pyodide = WASM, sys.platform == "emscripten") loop уже работает
+# → main() «садится» в него (create_task); в терминале — asyncio.run(main()).
+import sys
+if sys.platform == "emscripten":
+    asyncio.get_event_loop().create_task(main())
+else:
+    asyncio.run(main())

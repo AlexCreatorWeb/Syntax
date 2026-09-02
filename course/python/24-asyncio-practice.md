@@ -103,8 +103,13 @@ async def main() -> None:
         result = tg.create_task(consumer())
     print("Queue consumer:", result.result())
 
-asyncio.run(main())
-```
+# Запуск: в песочнице (Pyodide = WASM, sys.platform == "emscripten") loop уже работает
+# → main() «садится» в него (create_task); в терминале — asyncio.run(main()).
+import sys
+if sys.platform == "emscripten":
+    asyncio.get_event_loop().create_task(main())
+else:
+    asyncio.run(main())```
 
 ## Частые ошибки
 

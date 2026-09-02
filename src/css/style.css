@@ -701,7 +701,6 @@ code {
 /* H4: чип языка курса */
 .lesson-view__head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .lesson-view__head .lesson-view__title { margin-bottom: 0; }
-.lesson-view__lang { flex: none; }
 .tech-page__section-head { display: flex; align-items: center; gap: 12px; }
 /* M7: «Прочитать все» в дропдауне уведомлений */
 .tb-menu__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -1790,7 +1789,7 @@ code {
 .lesson-view__tab { position: relative; display: inline-flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; padding: 10px 16px; font-size: 14px; font-weight: 600; color: var(--text-variant); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s ease, border-color .15s ease; }
 .lesson-view__tab:hover { color: var(--text); }
 .lesson-view__tab--active { color: var(--primary); border-bottom-color: var(--primary); }
-.lesson-view__tab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: lesson-dot 1.6s ease-in-out infinite; }
+.lesson-view__tab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--danger-strong); animation: lesson-dot 1.6s ease-in-out infinite; } /* красный акцент (фидбек 2026-09: зелёный не к месту) */
 @keyframes lesson-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.75); } }
 /* Панели: обе смонтированы (состояние Monaco переживает переключение), неактивная скрыта */
 /* Материал: стили внутреннего контента */

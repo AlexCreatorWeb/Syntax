@@ -49,8 +49,7 @@ function LessonView({ job, theme, onNavigate }) {
 
       <div className="lesson-view__head">
         <h1 className="lesson-view__title">{job.title}</h1>
-        {/* H4-аудит: контент курсов сейчас RU-только — студент с другим UI-языком должен это видеть */}
-        <span className="chip lesson-view__lang" title={t("lessonView.courseLangNote")}>{t("lessonView.courseLang")}</span>
+        {/* (RU-чип убран, фидбек 2026-09: «лишний» — язык курса очевиден из текста) */}
       </div>
 
       {/* Табы: материал / задание (редактор не размонтируется) */}

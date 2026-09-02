@@ -19,4 +19,10 @@ async def main() -> None:
     # TODO: Queue: q = asyncio.Queue(); producer (6 item, sleep 0.05); consumer (4 item); TaskGroup
 
 
-asyncio.run(main())
+# Запуск: в песочнице (Pyodide = WASM, sys.platform == "emscripten") loop уже работает
+# → main() «садится» в него (create_task); в терминале — asyncio.run(main()).
+import sys
+if sys.platform == "emscripten":
+    asyncio.get_event_loop().create_task(main())
+else:
+    asyncio.run(main())
