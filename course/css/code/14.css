@@ -1,0 +1,22 @@
+/* Урок 14. Grid I. HTML-каркас из материала урока — в index.html рядом. */
+
+.dashboard {
+  display: grid;
+  /* TODO: grid-template-columns: repeat(3, minmax(0, 1fr)) — 3 равных столбца */
+  /* TODO: gap: 1rem, padding: 1rem */
+}
+
+.banner {
+  /* TODO: grid-column: 1 / -1 ("вся ширина") + background #e7f5ff */
+}
+
+.tall {
+  /* TODO: grid-row: span 2 ("на 2 ряда") + background #fff4e6 */
+}
+
+.cell {
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+}

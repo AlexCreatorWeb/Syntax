@@ -1,0 +1,97 @@
+/* Урок 22. Финальный проект. HTML-каркас (с JS-переключателем темы) — в index.html рядом. */
+
+/* ===== BASE (reset + токены + типографика) ===== */
+
+/* TODO: *, *::before, *::after { box-sizing: border-box; } + body margin: 0 */
+
+:root {
+  /* TODO: светлые токены --bg, --surface, --text, --text-muted, --accent,
+     --accent-text, --radius, --space-1/2/3 */
+}
+
+/* TODO: [data-theme="dark"] — тёмные переопределения тех же имён */
+
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  /* TODO: font-size clamp(1rem, 0.95rem + 0.2vw, 1.125rem), line-height 1.6 */
+}
+
+h1 {
+  /* TODO: font-size clamp(1.75rem, 1.3rem + 2vw, 3rem), line-height 1.1 */
+}
+
+/* ===== LAYOUT ===== */
+
+.page {
+  /* TODO: display: grid, grid-template-rows: auto 1fr auto, min-height: 100dvh */
+}
+
+.main {
+  /* TODO: padding var(--space-2) */
+}
+
+/* ===== COMPONENTS ===== */
+
+.topbar {
+  /* TODO: display: flex, align-items: center, justify-content: space-between,
+     padding var(--space-2) var(--space-3), background var(--surface) */
+}
+
+.nav {
+  /* TODO: display: flex, align-items: center, gap var(--space-2) */
+}
+
+.hero {
+  /* TODO: text-align: center, padding var(--space-3) var(--space-2),
+     max-width: min(100%, 46rem), margin: 0 auto */
+}
+
+.catalog {
+  /* TODO: display: grid,
+     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)),
+     gap var(--space-2), padding 0 var(--space-2) var(--space-3) */
+}
+
+.card {
+  /* TODO: container-type: inline-size (для CQ) */
+  /* TODO: display: flex, flex-direction: column, gap var(--space-1),
+     padding var(--space-2), background var(--surface),
+     border-radius var(--radius), transition transform 0.2s ease-out */
+}
+
+.card:hover {
+  /* TODO: transform: translateY(-4px) */
+}
+
+.c-img {
+  /* TODO: height 140px, background var(--bg), border-radius calc(var(--radius) - 4px),
+     display: grid, place-items: center, color var(--text-muted) */
+}
+
+.price {
+  /* TODO: font-weight: 700 */
+}
+
+.card .btn {
+  /* TODO: margin-top: auto (кнопка "внизу" карточки) */
+}
+
+.btn {
+  /* TODO: background var(--accent), color var(--accent-text), border none,
+     border-radius var(--radius), padding var(--space-1) var(--space-2),
+     cursor: pointer, transition transform 0.2s ease-out */
+}
+
+.footer {
+  /* TODO: text-align: center, padding var(--space-2), color var(--text-muted) */
+}
+
+/* ===== OVERRIDES (CQ + MQ + a11y) ===== */
+
+/* TODO: @container (min-width: 380px) — .c-img height: 120px (карточка "широкая": изображение "ниже") */
+
+/* TODO: @media (min-width: 700px) — .hero padding: calc(var(--space-3) * 1.5) var(--space-2) */
+
+/* TODO: @media (prefers-reduced-motion: reduce) — "защитный" сброс animation/transition */

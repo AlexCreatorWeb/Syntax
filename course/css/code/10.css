@@ -1,0 +1,30 @@
+/* Урок 10. Цвет. HTML-каркас из материала урока — в index.html рядом. */
+
+body {
+  font-family: system-ui, sans-serif;
+  /* TODO: background #fff, color #212529 */
+}
+
+.card {
+  max-width: 420px;
+  margin: 1rem auto;
+  padding: 1.5rem;
+  /* TODO: border 1px solid #dee2e6, border-radius 12px */
+}
+
+.muted {
+  /* TODO: color rgb(33 37 41 / 0.6) — альфа, а не "серый" */
+}
+
+.link {
+  /* TODO: color #1971c2 */
+}
+
+.btn {
+  /* TODO: background hsl(215 79% 45%), color #fff, border none,
+     padding 0.5rem 1rem, border-radius 8px */
+}
+
+.banner {
+  /* TODO: background rgb(25 113 194 / 0.1), color #1971c2, padding 1rem */
+}

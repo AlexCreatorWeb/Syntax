@@ -1,0 +1,27 @@
+/* Урок 13. Flexbox II. HTML-каркас из материала урока — в index.html рядом. */
+
+.page {
+  /* TODO: display: flex, flex-direction: column, min-height: 100dvh ("святой грааль") */
+}
+
+.topbar,
+.footer {
+  padding: 0.75rem 1rem;
+  background: #f1f3f5;
+}
+
+.layout {
+  display: flex;
+  /* TODO: flex: 1 — займёт "остаток" между шапкой и подвалом */
+}
+
+.sidebar {
+  /* TODO: flex: 0 0 260px (ровно 260px, не тянется и не сжимается),
+     background #e7f5ff, padding 1rem */
+}
+
+.content {
+  /* TODO: flex: 1 (забрать "остаток" ширины) */
+  /* TODO: min-width: 0 — КЛЮЧЕВОЙ приём против переполнения длинным словом */
+  padding: 1rem;
+}

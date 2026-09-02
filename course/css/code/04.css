@@ -1,0 +1,11 @@
+/* Урок 4. Каскад. HTML-каркас из материала урока — в index.html рядом. */
+
+/* TODO: объявите три слоя одной строкой: base, components, overrides */
+
+/* @layer base: .btn — padding 0.5rem 1rem, фон #dee2e6, цвет #212529; .note — color #495057 */
+
+/* @layer components: .btn--primary — фон #1971c2, цвет #fff */
+
+/* @layer overrides: .note — color #e8590c (должно перебить base, проверьте в превью) */
+
+/* TODO (вне слоя): .btn — border 2px solid #343a40 */

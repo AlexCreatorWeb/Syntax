@@ -1,0 +1,21 @@
+/* Урок 8. display. HTML-каркас из материала урока — в index.html рядом. */
+
+.tag {
+  /* TODO: background #dee2e6, padding 4px 8px (по умолчанию inline — margin по вертикали не сработает) */
+}
+
+.tag--ib {
+  /* TODO: display: inline-block + margin 4px 0 — теперь вертикальные отступы «живые» */
+}
+
+.block {
+  background: #e7f5ff;
+  padding: 12px;
+  /* TODO: margin-bottom 20px */
+}
+
+/* TODO: у .block, стоящего ПОСЛЕ .block, margin-top 40px (схлопывание: расстояние будет 40px, не 60) */
+
+.btn {
+  /* TODO: display: inline-block, padding 8px 16px, margin-right 8px */
+}

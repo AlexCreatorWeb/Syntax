@@ -1,0 +1,33 @@
+/* Урок 15. Grid II. HTML-каркас из материала урока — в index.html рядом. */
+
+.page {
+  display: grid;
+  /* TODO: grid-template-columns: 220px 1fr */
+  /* TODO: grid-template-rows: auto 1fr auto */
+  /* TODO: grid-template-areas:
+     "header header"
+     "sidebar main"
+     "footer footer" */
+  min-height: 100dvh;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.header { grid-area: header; background: #f1f3f5; padding: 1rem; }
+.sidebar { grid-area: sidebar; background: #e7f5ff; padding: 1rem; }
+.main { grid-area: main; }
+.footer { grid-area: footer; background: #f1f3f5; padding: 1rem; }
+
+.gallery {
+  display: grid;
+  /* TODO: grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) */
+  gap: 0.75rem;
+}
+
+.g-card {
+  padding: 1.5rem 1rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  text-align: center;
+}

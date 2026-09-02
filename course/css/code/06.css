@@ -1,0 +1,22 @@
+/* Урок 6. Единицы. HTML-каркас из материала урока — в index.html рядом. */
+
+body {
+  font-size: 16px; /* база для сравнения */
+  /* TODO: padding 1rem */
+}
+
+.box {
+  /* TODO: margin-bottom 1rem, border 1px solid #adb5bd, padding 0.5rem 1rem */
+}
+
+.box--rem {
+  /* TODO: width 10rem (160px при корне 16px) */
+}
+
+.box--em {
+  /* TODO: font-size 1.5em + padding-left 2em (посчитайте, сколько px получился) */
+}
+
+.box--pct {
+  /* TODO: width 50% */
+}

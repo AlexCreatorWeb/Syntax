@@ -1,0 +1,11 @@
+/* Урок 3. Псевдоклассы. HTML-каркас из материала урока — в index.html рядом. */
+
+/* TODO: наведение на .btn — фон #1971c2 (псевдокласс :hover) */
+
+/* TODO: кольцо фокуса .btn только для клавиатуры (:focus-visible) — outline 3px #74c0fc, offset 2px */
+
+/* TODO: каждый ВТОРОЙ пункт .steps фиолетовый (#862e9c) — :nth-child(2n) */
+
+/* TODO: тире перед каждым пунктом .steps через псевдоэлемент ::before (content: "— ") */
+
+/* TODO: рамка у .card, внутри которой есть <img> — :has(img), border 2px #2b8a3e */

@@ -1,0 +1,24 @@
+/* Урок 16. Subgrid. HTML-каркас из материала урока — в index.html рядом. */
+
+.cards {
+  display: grid;
+  /* TODO: grid-template-columns: repeat(3, 1fr) */
+  /* TODO: grid-template-rows: repeat(2, auto) — "на 2 ряда карточек" */
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.card {
+  display: grid;
+  /* TODO: grid-template-rows: subgrid — "унаследовать" 3 ряда от родителя */
+  /* TODO: grid-row: span 3 — каждая карточка = 3 "родительских" ряда */
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  align-items: start;
+}
+
+.card button {
+  justify-self: start;
+}

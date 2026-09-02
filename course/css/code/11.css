@@ -1,0 +1,31 @@
+/* Урок 11. position. HTML-каркас из материала урока — в index.html рядом. */
+
+.topbar {
+  /* TODO: position: sticky, top: 0, background #fff,
+     border-bottom 1px solid #dee2e6, padding 0.75rem 1rem, z-index 10 */
+}
+
+.card {
+  /* TODO: position: relative (якорь для бейджа!) */
+  max-width: 420px;
+  margin: 1rem auto;
+  padding: 1.5rem;
+  /* TODO: border 1px solid #dee2e6, border-radius 12px */
+}
+
+.badge {
+  /* TODO: position: absolute, top 10px, right 10px,
+     background #e8590c, color #fff, font-size 0.75rem,
+     padding 2px 8px, border-radius 999px */
+}
+
+.fab {
+  /* TODO: position: fixed, right 20px, bottom 20px,
+     width/height 56px, border-radius 50%, border none,
+     background #1971c2, color #fff, font-size 1.5rem, z-index 100 */
+}
+
+.filler {
+  height: 50vh;
+  margin-top: 2rem;
+}

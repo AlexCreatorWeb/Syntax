@@ -1,0 +1,36 @@
+/* Урок 20. Переменные. HTML-каркас из материала урока — в index.html рядом
+   (кнопка "Тема" переключает data-theme инлайн-JS). */
+
+:root {
+  /* TODO: светлые токены --bg, --surface, --text, --text-muted,
+     --accent, --accent-text, --radius, --space-1/2/3 */
+}
+
+/* TODO: [data-theme="dark"] — переопределения тех же имён (тёмная палитра) */
+
+body {
+  font-family: system-ui, sans-serif;
+  /* TODO: background var(--bg), color var(--text), padding var(--space-3) */
+}
+
+.card {
+  /* TODO: background var(--surface), border-radius var(--radius),
+     padding var(--space-3), max-width 420px */
+}
+
+.card h2 { margin-top: 0; }
+.card p { color: var(--text-muted); }
+
+.btn {
+  /* TODO: background var(--accent), color var(--accent-text),
+     border none, border-radius var(--radius), padding var(--space-1) var(--space-2) */
+}
+
+.theme-toggle {
+  margin-bottom: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--text-muted);
+  background: var(--surface);
+  color: var(--text);
+}

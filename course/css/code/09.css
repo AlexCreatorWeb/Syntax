@@ -1,0 +1,22 @@
+/* Урок 9. Типографика. HTML-каркас из материала урока — в index.html рядом. */
+
+body {
+  /* TODO: font-family системный стек (system-ui, -apple-system, "Segoe UI", Roboto, sans-serif) */
+  /* TODO: font-size 1rem, line-height 1.6 (БЕЗ единиц!), color #212529 */
+}
+
+.article {
+  /* TODO: max-width 65ch, margin 0 auto, padding 1rem */
+}
+
+h1 {
+  /* TODO: font-size 2.25rem, line-height 1.15 */
+}
+
+h2 {
+  /* TODO: font-size 1.5rem, line-height 1.25 */
+}
+
+.subtitle {
+  /* TODO: text-transform capitalize, letter-spacing 0.02em, color #495057 */
+}
