@@ -362,6 +362,7 @@ const NODE_SHIM_MODULES = {
   express: "const s=globalThis.__shims.express;export default s;export const Router=s.Router;",
   pg: "export default globalThis.__shims.pg;",
   mongodb: "const s=globalThis.__shims.mongodb;export default s;export const MongoClient=s.MongoClient;export const ObjectId=s.ObjectId;",
+  mongoose: "export default globalThis.__shims.mongoose;",
   jsonwebtoken: "export default globalThis.__shims.jsonwebtoken;",
   bcrypt: "export default globalThis.__shims.bcrypt;",
   bcryptjs: "export default globalThis.__shims.bcryptjs;",

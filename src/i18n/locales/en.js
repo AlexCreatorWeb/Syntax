@@ -185,6 +185,8 @@ export default {
     changeLanguage: "Change language",
     theme: "Toggle theme",
     notifications: "Notifications",
+    menu: "Menu",
+    menuClose: "Close menu",
     account: "Account",
   },
   notifications: {

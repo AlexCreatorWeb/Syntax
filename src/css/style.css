@@ -205,6 +205,23 @@ code {
   letter-spacing: -0.02em;
   color: var(--text);
 }
+
+/* Бургер мобильного меню: на десктопе скрыт (навигация в сайдбаре), показан на ≤640px */
+.menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-variant);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.menu-toggle svg { width: 20px; height: 20px; }
+.menu-toggle:hover { background: var(--surface-2); color: var(--text); }
 .brand__accent { color: var(--primary); }
 .brand--link {
   background: none;
@@ -1174,7 +1191,10 @@ code {
 @media (max-width: 900px) {
   :root { --sidebar-w: 76px; }
   .shell { padding: 16px; gap: 16px; }
-  .sidebar { height: auto; }
+  .sidebar { height: auto; overflow: visible; } /* без clip для Settings-дропдауна (меню вправо) */
+  /* sticky = stacking context: без z-index дропдаун (z-60 внутри) проигрывает hero
+     (DOM-порядок) — поднимаем сайдбар выше контента (topbar z-50 не затронут) */
+  .sidebar { z-index: 10; }
   /* Группы в горизонтальном bottom-nav прозрачны (display: contents), подписи скрыты */
   .nav__group { display: contents; }
   .nav__group-label { display: none; }
@@ -1194,41 +1214,83 @@ code {
   .shell { grid-template-columns: 1fr; }
   .brand { font-size: 24px; gap: 8px; }
   .rail { grid-column: 1; grid-template-columns: 1fr; }
-  .sidebar {
-    position: static;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  /* Мобильный bottom-nav: без clip по overflow-x (Settings-дропдаун выходит за полосу);
-     само позиционирование меню — в конце файла, ПОСЛЕ базового .settings-menu */
-  .sidebar > .nav, .sidebar > .nav--bottom { overflow: visible; }
-  .streak { display: none; }
-  .nav, .nav--bottom {
-    flex-direction: row;
-  }
-  /* 6 основных + 2 служебных пункта — одна строка без обрезки (аудит Rankings #14) */
-  .sidebar > .nav { flex: 6 1 0; min-width: 0; }
-  .sidebar > .nav--bottom { flex: 2 1 0; min-width: 0; }
-  .nav--bottom { margin-top: 0; }
-  /* Подписи 10px под иконками: bottom-nav сканируется как меню, а не как ряд иконок.
-     6 пунктов должны влезаТЬ: равные флексы + эллипсис (аудит Rankings: обрезанный 6-й пункт) */
-  .nav__item {
-    flex: 1 1 0;
-    min-width: 0;
-    flex-direction: column;
-    gap: 3px;
-    font-size: 9px;
-    line-height: 1;
-    padding: 8px 4px;
-  }
-  .nav__item span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Навигация — в burger-меню хедера: полоса иконок скрыта (ряд иконок непонятен)
+     (мобильное меню — .mobile-menu, ниже в этом же блоке) */
+  .sidebar { display: none; }
+  .menu-toggle { display: inline-flex; }
   .nav__item svg { width: 20px; height: 20px; }
   .brand { font-size: 18px; }
   .auth__signup { font-size: 12px; padding: 7px 12px; }
   .lesson__title { font-size: 28px; line-height: 36px; }
   .lesson__top { flex-wrap: wrap; }
+
+  /* Мобильное burger-меню: backdrop + панель слева, пункты с иконками и подписями */
+  .mobile-menu { position: fixed; inset: 0; z-index: 80; }
+  .mobile-menu__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 8, 12, 0.6);
+    backdrop-filter: blur(2px);
+  }
+  .mobile-menu__panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(300px, 84vw);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 14px 20px;
+    background: var(--surface-1, var(--surface));
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    animation: mobile-menu-in 0.22s ease;
+  }
+  @keyframes mobile-menu-in {
+    from { transform: translateX(-100%); opacity: 0.5; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .mobile-menu__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .mobile-menu__head .brand__word { font-size: 20px; }
+  .mobile-menu__group { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; }
+  .mobile-menu__group-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px 4px;
+  }
+  .mobile-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 11px 12px;
+    background: none;
+    border: none;
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--text-variant);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .mobile-menu__item:hover { background: var(--surface-2); color: var(--text); }
+  .mobile-menu__item.is-active { background: var(--primary-soft); color: var(--primary); }
+  .mobile-menu__icon { display: inline-flex; flex: none; }
+  .mobile-menu__icon svg { width: 20px; height: 20px; }
+  /* (статистика 2×50% — в мобильном блоке home-секции, ниже) */
 }
 
 /* ============================================================
@@ -1472,7 +1534,7 @@ code {
 }
 .tech-page__desc {
   margin: 12px 0 0;
-  max-width: 640px;
+  max-width: 750px;
   font-size: 15px;
   line-height: 24px;
   color: var(--text-variant);
@@ -3391,19 +3453,26 @@ code {
   .sidebar .streak { display: none; }
   .tech-row { grid-template-columns: 1fr; }
   .tech-card { height: auto; padding: 14px 16px; }
-  .home__stats { grid-template-columns: 1fr; }
+  /* Статистика: 2 колонки по 50% (экономия места); success-карта — во всю ширину, компактная */
+  .home__stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .stat-card { padding: 14px; min-height: 0; }
+  .stat-card__value { font-size: 21px; }
+  .stat-card__delta { font-size: 11px; }
   .stat-card--success {
-    grid-column: auto;
-    flex-direction: column;
+    grid-column: 1 / -1;
+    flex-direction: row;
     align-items: center;
-    text-align: center;
-    gap: 12px;
-    padding: 22px 18px;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 16px;
+    padding: 16px 14px;
   }
-  .stat-card--success .stat-card__main { align-items: center; }
-  .stat-card--success .stat-card__delta { justify-content: center; }
-  .success-ring { width: 120px; height: 120px; }
-  .success-ring__num { font-size: 30px; }
+  .stat-card--success .stat-card__main { align-items: flex-start; text-align: left; }
+  .stat-card--success .stat-card__delta { justify-content: flex-start; }
+  .success-ring { width: 92px; height: 92px; }
+  .success-ring__num { font-size: 22px; }
+  /* дельта «+6 pts this month» не влезает в компактное кольцо — прячем (подпись карточки справа остаётся) */
+  .success-ring__icon { display: none; }
   .home__hero { padding: 28px 20px; flex-direction: column; align-items: flex-start; }
   .home__hero-title { font-size: 32px; line-height: 40px; }
   .home__hero-desc { font-size: 14.5px; margin-bottom: 18px; }

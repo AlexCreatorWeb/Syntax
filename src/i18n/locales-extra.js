@@ -53,6 +53,8 @@ export const LOCALES_EXTRA = {
       changeLanguage: "Змінити мову",
       theme: "Перемкнути тему",
       notifications: "Сповіщення",
+      menu: "Меню",
+      menuClose: "Закрити меню",
       account: "Акаунт",
     },
     notifications: {
@@ -640,6 +642,8 @@ export const LOCALES_EXTRA = {
       changeLanguage: "Cambiar idioma",
       theme: "Cambiar tema",
       notifications: "Notificaciones",
+      menu: "Menú",
+      menuClose: "Cerrar menú",
       account: "Cuenta",
     },
     notifications: {
@@ -1228,6 +1232,8 @@ export const LOCALES_EXTRA = {
       changeLanguage: "Sprache ändern",
       theme: "Theme umschalten",
       notifications: "Benachrichtigungen",
+      menu: "Menü",
+      menuClose: "Menü schließen",
       account: "Konto",
     },
     notifications: {

@@ -350,29 +350,8 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech }) {
         </div>
       </section>
 
-      {/* 4. Live-preview дашборда: аргумент «что получите» (UX-аудит Р7: в конверсионной зоне перед CTA,
-          без дублирующего primary; единственный выход — «View the roadmap», Р13/Р14)
-          (отзыв-ученика удалён — выглядел неорганично, 2026-09) */}
-      <section className="card card--feature home__resume spotlight">
-        <span className="home__preview-note">{t("home.preview")}</span>
-        <div className="home__resume-head">
-          <div>
-            <span className="label-caps home__greeting">{t("home.greeting")}</span>
-            <h2 className="home__lesson-title">{t("home.lessonTitle")}</h2>
-          </div>
-          <span className="home__resume-pct">{t("home.lessonProgress")}</span>
-        </div>
-        <div className="home__resume-progress">
-          <div className="bar">
-            <div className="bar__fill bar__fill--shimmer" style={{ width: "45%" }} />
-          </div>
-        </div>
-        <div className="home__resume-actions">
-          <button type="button" className="btn btn--ghost" onClick={() => onNavigate("roadmap")}>
-            {t("home.lesson.viewRoadmap")}
-          </button>
-        </div>
-      </section>
+      {/* (Live-preview дашборд с заголовком урока убран, 2026-09 — фидбек: плашка не нужна;
+          конверсионную зону закрывает final CTA ниже) */}
 
       {/* 6. Final CTA */}
       <section className="card card--feature home__final spotlight">

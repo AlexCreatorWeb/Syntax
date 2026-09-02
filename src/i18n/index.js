@@ -192,6 +192,8 @@ export const LOCALES = {
       changeLanguage: "Сменить язык",
       theme: "Переключить тему",
       notifications: "Уведомления",
+      menu: "Меню",
+      menuClose: "Закрыть меню",
       account: "Аккаунт",
     },
     notifications: {

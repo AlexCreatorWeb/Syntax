@@ -2,15 +2,17 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLanguage } from '../context/useLanguage';
 import { UI_LANGUAGES } from '../context/uiLanguages';
 import { useT } from '../i18n/useT';
+import { NAV_GROUPS, NAV_BOTTOM, NAV_ICONS } from './nav-data';
 
 // Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
 // Лого всегда оригинальный Syntax (тех-лого живёт на странице технологии — UX-фидбек);
 // таб-специфичный контент (заголовки, поиски) — внутри вьюх.
-function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, userEmail = null, mediumNews = [], seenNewsLinks, onOpenNews, onMarkAllNewsRead }) {
+function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, userEmail = null, mediumNews = [], seenNewsLinks, onOpenNews, onMarkAllNewsRead, activeTab = null }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState(null); // "notif" | "account" | null
+  const [menuOpen, setMenuOpen] = useState(false); // мобильное burger-меню (≤640px)
   const langRef = useRef(null);
   const notifRef = useRef(null);
   const accountRef = useRef(null);
@@ -54,6 +56,7 @@ function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, user
           return false;
         });
         setOpenMenu(null);
+        setMenuOpen(false);
       }
       // ⌘K / Ctrl+K — фокус на поиск в Документации
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -73,8 +76,28 @@ function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, user
   }, [onNavigate]);
 
   return (
+    <>
     <header className="topbar">
       <div className="topbar__left">
+        {/* Мобильное меню: бургер (видим только на ≤640px) — ряд иконок сайдбара туда убран */}
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-label={t("header.menu")}
+          aria-haspopup="true"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          {menuOpen ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
         {/* Лого всегда оригинальное, клик — всегда на главную (тех-лого не дублируем) */}
         <button
           type="button"
@@ -312,6 +335,67 @@ function Header({ onToggleTheme, onNavigate, onAuth, onLogout, user = null, user
         )}
       </div>
     </header>
+
+    {/* Мобильное меню (≤640px): тот же набор пунктов, что и сайдбар, но с подписями и группами.
+        Открывается бургером; закрывается — пунктом, фоном или Esc. */}
+    {menuOpen && (
+      <div className="mobile-menu">
+        <div className="mobile-menu__backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+        <nav className="mobile-menu__panel" aria-label={t("header.menu")}>
+          <div className="mobile-menu__head">
+            <span className="brand__word">
+              Syn<span className="brand__accent">tax</span>
+            </span>
+            <button
+              type="button"
+              className="icon-btn icon-btn--sm"
+              aria-label={t("header.menuClose")}
+              onClick={() => setMenuOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
+          {NAV_GROUPS.map((group) => (
+            <div className="mobile-menu__group" key={group.id}>
+              <span className="mobile-menu__group-label">{t(`sidebar.group${group.id[0].toUpperCase()}${group.id.slice(1)}`)}</span>
+              {group.items.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`mobile-menu__item ${activeTab === id ? "is-active" : ""}`}
+                  onClick={() => {
+                    onNavigate && onNavigate(id);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <span className="mobile-menu__icon" aria-hidden="true">{NAV_ICONS[id]}</span>
+                  {t(`sidebar.${id}`)}
+                </button>
+              ))}
+            </div>
+          ))}
+          <div className="mobile-menu__group">
+            {NAV_BOTTOM.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={`mobile-menu__item ${activeTab === id ? "is-active" : ""}`}
+                onClick={() => {
+                  onNavigate && onNavigate(id);
+                  setMenuOpen(false);
+                }}
+              >
+                <span className="mobile-menu__icon" aria-hidden="true">{NAV_ICONS[id]}</span>
+                {t(`sidebar.${id}`)}
+              </button>
+            ))}
+          </div>
+        </nav>
+      </div>
+    )}
+    </>
   );
 }
 

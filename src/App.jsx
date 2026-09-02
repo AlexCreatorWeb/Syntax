@@ -217,6 +217,7 @@ function App() {
         seenNewsLinks={seenNewsLinks}
         onOpenNews={openNews}
         onMarkAllNewsRead={markAllNewsRead}
+        activeTab={activeTab}
       />
       <div className="shell">
         <Sidebar
