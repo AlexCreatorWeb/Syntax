@@ -1,20 +1,6 @@
 import { useT } from "../i18n/useT";
 import { PROMOS } from "../lib/promos";
 
-// Обложка «JavaScript: The Definitive Guide» (Flanagan, 7e, O'Reilly) — CSS'ом:
-// чёрный фон, жёлтый «JavaScript», белая подзаголовочная строка (как оригинал).
-function FlanaganCover() {
-  return (
-    <div className="promo__cover" aria-hidden="true">
-      <span className="promo__cover-pub">O&rsquo;REILLY</span>
-      <span className="promo__cover-ed">Seventh Edition</span>
-      <span className="promo__cover-title">JavaScript</span>
-      <span className="promo__cover-sub">The Definitive Guide</span>
-      <span className="promo__cover-author">DAVID FLANAGAN</span>
-    </div>
-  );
-}
-
 function PromoCard({ id }) {
   const t = useT();
   const p = PROMOS[id];
@@ -31,9 +17,9 @@ function PromoCard({ id }) {
   );
   return (
     <article className="card promo">
-      <div className="promo__media">
+      <div className={`promo__media${p.mediaClass ? ` ${p.mediaClass}` : ""}`}>
         <span className="promo__badge">{t("home.sponsored")}</span>
-        {p.cover === "flanagan" ? <FlanaganCover /> : <img src={p.img} alt={t(p.titleKey)} loading="lazy" />}
+        <img src={p.img} alt={t(p.titleKey)} loading="lazy" />
       </div>
       <div className="promo__body">
         <h4 className="promo__title">{t(p.titleKey)}</h4>

@@ -278,7 +278,7 @@ ${src}
     const { parse, compileScript, compileTemplate } = await import("@vue/compiler-sfc");
     const src = document.getElementById("syntax-app-src").textContent.split("<\\\\/script").join("</scr" + "ipt");
     // offset: строка (1-indexed) первой строки содержимого <script> в .vue
-    const lines = src.split("\n");
+    const lines = src.split("\\n");
     let contentStart = 0;
     for (let i = 0; i < lines.length; i++) {
       if (/^\\s*<script/.test(lines[i])) { contentStart = i + 2; break; }
@@ -301,7 +301,7 @@ ${src}
         compilerOptions: { mode: "module", bindingMetadata: bindings },
       });
       if (tpl.errors && tpl.errors.length) console.error("App.vue template: " + tpl.errors[0].message);
-      code += "\n" + tpl.code; // import {...} from "vue" + export function render(...)
+      code += "\\n" + tpl.code; // import {...} from "vue" + export function render(...)
     }
     for (const s of descriptor.styles || []) {
       document.head.insertAdjacentHTML("beforeend", "<style>" + s.content + "</style>");
@@ -317,7 +317,7 @@ ${src}
     app.mount("#root");
     console.log("[Syntax] Vue app mounted");
   } catch (e) {
-    console.error("App.vue: " + String((e && e.message) || e).split("\n")[0]);
+    console.error("App.vue: " + String((e && e.message) || e).split("\\n")[0]);
   }
 })();
 </script>
