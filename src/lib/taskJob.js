@@ -3,6 +3,7 @@
 import { locField, pickDailyTask } from "./tasks";
 import { getDoneTasks, markTaskDone, markComplete } from "./progress";
 import { grantTaskXp } from "./xp";
+import { pushTaskComplete, pushLessonComplete } from "./db-progress";
 
 /**
  * @param {object} task задача из src/content/tasks/*.json
@@ -39,10 +40,14 @@ export function taskJobFor(task, { dbLessons = [], langCode = "en", backTab = "t
     taskDone: getDoneTasks().includes(`${task.track}:${task.id}`),
     onTaskComplete: () => {
       markTaskDone(task.track, task.id);
+      pushTaskComplete(task.track, task.id, task.xp); // Supabase: строка task_progress
       // XP: за задачу — один раз; daily-бонус +500 — если задача дня и ещё не начислен
       const res = grantTaskXp(task.id, task.xp, Boolean(daily && daily.id === task.id));
       // Связь с уроком: решение задачи = выполнение урока (прогресс Roadmap)
-      if (lessonUuid) markComplete(task.track, lessonUuid);
+      if (lessonUuid) {
+        markComplete(task.track, lessonUuid);
+        pushLessonComplete(lessonUuid);
+      }
       if (onCompleted) onCompleted();
       return res;
     },

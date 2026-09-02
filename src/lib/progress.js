@@ -31,6 +31,15 @@ export function markComplete(tech, lessonId, uid = currentUid()) {
   localStorage.setItem(key(tech, uid), JSON.stringify(cur));
 }
 
+// Merge-добавление списка id (синк БД → кэш, db-progress.js): без записи, если ничего нового
+export function addCompleted(tech, lessonIds, uid = currentUid()) {
+  if (!tech || !Array.isArray(lessonIds) || !lessonIds.length) return;
+  const k = key(tech, uid);
+  const cur = read(k);
+  const next = [...cur, ...lessonIds.filter((x) => x && !cur.includes(x))];
+  if (next.length !== cur.length) localStorage.setItem(k, JSON.stringify(next));
+}
+
 // Задания (Tasks): ключ `tech:taskId` — отдельный бакет от уроков (уроки = id из БД).
 // Статистика: профиль («Tasks completed»), чип Done на карточке задачи.
 const tasksKey = (uid) => `syntax-tasks${uid ? `-${uid}` : ""}`;
@@ -57,4 +66,19 @@ export function markTaskDone(tech, taskId, uid = currentUid()) {
   const cur = getDoneTasks(uid).filter((x) => x !== k);
   cur.push(k);
   localStorage.setItem(tasksKey(uid), JSON.stringify(cur));
+}
+
+// Merge-добавление списка ключей `tech:taskId` (синк БД → кэш, db-progress.js)
+export function addDoneTasks(taskKeys, uid = currentUid()) {
+  if (!Array.isArray(taskKeys) || !taskKeys.length) return;
+  const k = tasksKey(uid);
+  let list;
+  try {
+    const v = JSON.parse(localStorage.getItem(k) || "[]");
+    list = Array.isArray(v) ? v : [];
+  } catch {
+    list = [];
+  }
+  const next = [...list, ...taskKeys.filter((x) => x && !list.includes(x))];
+  if (next.length !== list.length) localStorage.setItem(k, JSON.stringify(next));
 }

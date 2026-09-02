@@ -27,6 +27,9 @@ export const LOCALES_EXTRA = {
     techPage: {
       live: "Активний",
       progress: "Прогрес курсу",
+      course: "Курс",
+      start: "Почати навчання",
+      guestLine: "У курсі {m} уроків — почніть з першого",
       continue: "Продовжити навчання",
       curriculum: "Програма",
       dbLessons: "Уроки",
@@ -624,6 +627,9 @@ export const LOCALES_EXTRA = {
     techPage: {
       live: "Activo",
       progress: "Progreso del curso",
+      course: "Curso",
+      start: "Empezar a aprender",
+      guestLine: "Este curso tiene {m} lecciones — empieza por la primera",
       continue: "Continuar aprendiendo",
       curriculum: "Plan de estudios",
       dbLessons: "Lecciones",
@@ -1222,6 +1228,9 @@ export const LOCALES_EXTRA = {
     techPage: {
       live: "Aktiv",
       progress: "Fortschritt des Kurses",
+      course: "Kurs",
+      start: "Jetzt lernen",
+      guestLine: "Dieser Kurs hat {m} Lektionen — fang mit der ersten an",
       continue: "Weiterlernen",
       curriculum: "Lehrplan",
       dbLessons: "Lektionen",

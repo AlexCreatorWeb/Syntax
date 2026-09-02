@@ -166,6 +166,9 @@ export const LOCALES = {
   techPage: {
       live: "Активно",
       progress: "Прогресс курса",
+      course: "Курс",
+      start: "Начать обучение",
+      guestLine: "В курсе {m} уроков — начните с первого",
       continue: "Продолжить обучение",
       curriculum: "Программа",
       dbLessons: "Уроки",

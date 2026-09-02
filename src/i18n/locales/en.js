@@ -159,6 +159,9 @@ export default {
   techPage: {
     live: "Open track",
     progress: "Course Progress",
+    course: "Course",
+    start: "Start Learning",
+    guestLine: "{m} lessons in this course — start with the first one",
     continue: "Continue Learning",
     curriculum: "Curriculum",
     dbLessons: "Lessons",

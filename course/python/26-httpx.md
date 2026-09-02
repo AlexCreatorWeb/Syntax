@@ -16,7 +16,7 @@ import httpx
 r = httpx.get("https://api.example.com/users", timeout=5)
 r.raise_for_status(); r.json()
 
-# Async (async with — «соединение** (keep-alive))
+# Async (async with — «соединение» (keep-alive))
 import asyncio, httpx
 
 async def main():
@@ -33,7 +33,7 @@ async def main():
 
 ### Retries (повторы)
 
-Сеть ненадёжна: повтор при 5xx/timeout (с backoff: 0.5с, 1с, 2с…). `httpx` — вручную (цикл) или `tenacity** (библиотека). **Идемпотентность**: **GET/PUT/DELETE** — **безопасно** повторять; **POST** — **осторожно** (дубль).
+Сеть ненадёжна: повтор при 5xx/timeout (с backoff: 0.5с, 1с, 2с…). `httpx` — вручную (цикл) или `tenacity` (библиотека). Идемпотентность: GET/PUT/DELETE — безопасно повторять; POST — осторожно (дубль).
 
 ### Best practices REST-клиента
 
@@ -52,14 +52,14 @@ NOTE: в песочнице (Pyodide) — httpx не установлен; «asy
 `main.py`:
 
 ```python
-"""httpx + продвинутый REST (async; в песочнице — «имитация** pyfetch-стиля)."""
+"""httpx + продвинутый REST (async; в песочнице — «имитация» pyfetch-стиля)."""
 
 import asyncio
 import json
 import random
 import time
 
-# «Имитация** «сетевого** API** (песочница: задержка + редкий 500)
+# «Имитация» «сетевого» API (песочница: задержка + редкий 500)
 def fake_api(method: str, path: str, body: dict | None = None) -> dict:
     delay = random.uniform(0.05, 0.2)
     if method == "GET" and path == "/users":
@@ -68,7 +68,7 @@ def fake_api(method: str, path: str, body: dict | None = None) -> dict:
         return {"status": 201, "json": {"id": 3, **(body or {})}}
     return {"status": 404, "json": {"error": "not found"}}
 
-# «Обёртка** (контракт httpx.Response): status_code, json(), raise_for_status()
+# «Обёртка» (контракт httpx.Response): status_code, json(), raise_for_status()
 class Resp:
     def __init__(self, status: int, payload: dict):
         self.status_code = status
@@ -79,7 +79,7 @@ class Resp:
         if self.status_code >= 400:
             raise RuntimeError(f"HTTP {self.status_code}")
 
-# «Асинхронный** клиент** (имитация httpx.AsyncClient)
+# «Асинхронный» клиент (имитация httpx.AsyncClient)
 class AsyncClient:
     def __init__(self, base_url: str, timeout: float = 5.0, headers: dict | None = None):
         self.base_url = base_url
@@ -90,7 +90,7 @@ class AsyncClient:
     async def __aexit__(self, *exc) -> None:
         pass
     async def get(self, path: str) -> Resp:
-        await asyncio.sleep(0.05)   # «сеть**
+        await asyncio.sleep(0.05)   # «сеть»
         r = fake_api("GET", path)
         return Resp(r["status"], r["json"])
     async def post(self, path: str, json: dict) -> Resp:
@@ -125,7 +125,7 @@ async def main() -> None:
         r = await client.post("/users", json={"name": "Вера"})
         print("POST /users:", r.status_code, r.json())
 
-        # «Параллельно** (async: gather)
+        # «Параллельно» (async: gather)
         t0 = time.perf_counter()
         results = await asyncio.gather(
             client.get("/users"),

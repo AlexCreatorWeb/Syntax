@@ -14,14 +14,14 @@
 task = asyncio.create_task(long_io())
 # … другая работа …
 if not task.done():
-    task.cancel()          # «отменить** (если «умеет** await)
+    task.cancel()          # «отменить» (если «умеет» await)
 else:
     print(task.result())
 ```
 
 ### `wait_for` (таймаут)
 
-`await asyncio.wait_for(coro, timeout)` — дождаться или `TimeoutError** заtimeout** (отменяет**коруту**).
+`await asyncio.wait_for(coro, timeout)` — дождаться или `TimeoutError` за timeout (отменяет корутину).
 
 ### `asyncio.wait`
 

@@ -2,6 +2,7 @@
 // Общий конструктор: MainContent (кнопки Continue/Lessons) и DailyChallenge
 // (сайдбар) собирают одинаковый формат — один источник правды.
 import { markComplete } from "./progress";
+import { pushLessonComplete } from "./db-progress";
 import { localizedLessonTitle } from "./lessonTitles";
 
 // Файл редактора по треку (имя/расширение соответствуют технологии)
@@ -36,7 +37,12 @@ export function lessonJobFor(lesson, techId, backTab = "technology", desc = "", 
     file: (techId && TASK_FILE[techId]) || "index.js",
     code: typeof lesson.code === "string" ? lesson.code : undefined,
     lessonId: lesson.id,
-    onComplete: techId ? () => markComplete(techId, lesson.id) : undefined,
+    onComplete: techId
+      ? () => {
+          markComplete(techId, lesson.id);
+          pushLessonComplete(lesson.id); // Supabase: строка lesson_progress
+        }
+      : undefined,
     fromDb: true,
   };
 }

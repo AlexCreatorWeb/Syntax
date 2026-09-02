@@ -10,7 +10,7 @@ import TechSwitch from "../TechSwitch";
 // Страница технологии (макет: technology-page).
 // Контент (описание, модули, ресурсы, AI-пример, урок) — в i18n: `techs.{id}`
 // (EN base + RU; uk/es/de откатываются на EN). UI-строки — `techPage.*` (5 языков).
-function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectTech }) {
+function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectTech, isAuthed = false }) {
   const t = useT();
   const { langCode } = useLanguage();
   const tech = getTech(techId) || getTech("javascript");
@@ -57,26 +57,37 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectT
       <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
 
       {/* Course Progress: где я + действие */}
+      {/* Прогресс курса — привязан к ЭТОЙ технологии (фидбек 2026-09): реальный, по отметкам
+          выполнения (localStorage, успешный Submit). Гостю — без процентов: чей это прогресс
+          и какой трек было непонятно — вместо него честный интро-блок «N уроков · начать». */}
       <section className="card tech-page__progress spotlight">
         <div className="tech-page__progress-head">
-          <h2 className="tech-page__card-title">{t("techPage.progress")}</h2>
-          <span className="tech-page__pct">{pct}%</span>
+          <h2 className="tech-page__card-title">{isAuthed ? t("techPage.progress") : t("techPage.course")}</h2>
+          {isAuthed && <span className="tech-page__pct">{pct}%</span>}
         </div>
-        <p className="tech-page__progress-module">{progressLine}</p>
-        <div
-          className="bar"
-          role="progressbar"
-          aria-valuenow={pct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="bar__fill" style={{ width: `${pct}%` }}></div>
-        </div>
+        <p className="tech-page__progress-module">
+          {isAuthed
+            ? progressLine
+            : hasDb
+              ? t("techPage.guestLine", { m: dbTechLessons.length })
+              : content.progressModule}
+        </p>
+        {isAuthed && (
+          <div
+            className="bar"
+            role="progressbar"
+            aria-valuenow={pct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div className="bar__fill" style={{ width: `${pct}%` }}></div>
+          </div>
+        )}
         <button type="button" className="btn btn--primary tech-page__cta" onClick={() => onResume(tech.id)}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m8 6 8 6-8 6V6Z" />
           </svg>
-          {t("techPage.continue")}
+          {isAuthed ? t("techPage.continue") : t("techPage.start")}
         </button>
       </section>
 

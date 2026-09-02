@@ -190,7 +190,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
         );
       case "technology":
         // job.techId — при клике по карточке; activeTech — при deep-link/refresh (job сбрасывается)
-        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} onSelectTech={onSelectTech} />;
+        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} onSelectTech={onSelectTech} isAuthed={isAuthed} />;
       case "editor": {
         // Task-джоб: taskDone пересчитываем (job в state App не пересобирается после Complete)
         const editorJob =

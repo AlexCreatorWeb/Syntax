@@ -8,6 +8,7 @@ import NewsModal from "./components/NewsModal";
 import { getTech } from "./lib/techs";
 import { fetchDbLessons } from "./lib/supabase";
 import { readStoredSession, getSession, onAuthChange, signOut, syncProfile, displayName } from "./lib/auth";
+import { syncProgressFromDb, pushProgressToDb } from "./lib/db-progress";
 import { fetchMediumNews, getSeenLinks, markLinkSeen, clearSeenLinks, mediumDayKey, markAllLinksSeen } from "./lib/medium";
 
 // URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
@@ -201,6 +202,13 @@ function App() {
     });
     return () => unsub();
   }, []);
+  // Прогресс в Supabase (2026-09): при входе — БД → локальный кэш (merge),
+  // затем кэш (включая гостевой) → БД. Гость — no-op (только localStorage);
+  // каждое выполнение в редакторе сразу upsert-ит свою строку (db-progress.js).
+  useEffect(() => {
+    if (!session || !dbLessons) return;
+    syncProgressFromDb(dbLessons).then(() => pushProgressToDb());
+  }, [session, dbLessons]);
   const isAuthed = Boolean(session);
   const userName = displayName(session);
   const handleLogout = useCallback(() => signOut(), []);
@@ -234,9 +242,6 @@ function App() {
           theme={theme}
           onToggleTheme={toggleTheme}
           onSelectTab={openTab}
-          isAuthed={isAuthed}
-          dbLessons={dbLessons}
-          activeTech={activeTech}
         />
         <MainContent
           activeTab={activeTab}

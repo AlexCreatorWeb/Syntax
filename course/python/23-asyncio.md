@@ -23,30 +23,18 @@ async def main() -> None:
     result = await fetch("api")   # await — «дождаться» (уступая loop)
     print(result)
 
-# Запуск: в Pyodide (песочница) top-level await работает — можно писать `await main()`;
-# в терминале — # Запуск: в песочнице (Pyodide) топ-уровень async — просто `await main()`;
-# в терминале (python main.py) — asyncio.run(main()).
+# Запуск: в песочнице (Pyodide = WASM, sys.platform == "emscripten") loop уже работает
+# → main() «садится» в него (create_task); в терминале — asyncio.run(main()).
 import sys
-if "__pyodide__" in sys.modules:
-    import asyncio as _a
-
-    _a.get_event_loop().create_task(main())
-else:
-    asyncio.run(main()) (создаёт и закрывает loop).
-# Запуск: в песочнице (Pyodide) топ-уровень async — просто `await main()`;
-# в терминале (python main.py) — asyncio.run(main()).
-import sys
-if "__pyodide__" in sys.modules:
-    import asyncio as _a
-
-    _a.get_event_loop().create_task(main())
+if sys.platform == "emscripten":
+    asyncio.get_event_loop().create_task(main())
 else:
     asyncio.run(main())               # запуск (создаёт loop, выполняет, закрывает)
 ```
 
 - `async def` — «корута» (вызов → объект coroutine, не выполняет).
 - `await` — «дождаться» (результат) уступая loop (другие коруты идут).
-- **запуск**: в терминале — `asyncio.run(main())` (создаёт/закрывает loop); в песочнице (Pyodide) loop **уже работает** → `asyncio.run` упадёт (RuntimeError), main «садится» в текущий loop (снизу — паттерн).
+- Запуск: в терминале — `asyncio.run(main())` (создаёт/закрывает loop); в песочнице (Pyodide) loop уже работает → `asyncio.run` упадёт (RuntimeError), main «садится» в текущий loop (снизу — паттерн).
 
 ### `asyncio.gather`: «параллельно»
 

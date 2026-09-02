@@ -45,7 +45,7 @@ log.exception("сбой")                 # в except: traceback
 
 ### pytest: тесты
 
-Тест — функция `test_*` в `test_*.py`; `assert** — **проверка** (не `self.assertEqual`). Запуск: `pytest` (или `pytest tests/ -v`).
+Тест — функция `test_*` в `test_*.py`; `assert` — проверка (не `self.assertEqual`). Запуск: `pytest` (или `pytest tests/ -v`).
 
 ```python
 # tests/test_service.py
@@ -101,11 +101,11 @@ try:
 except ValueError:
     log.exception("обработано (traceback в логе)")
 
-# «Логгер** на** «модуль** (иерархия)
+# «Логгер» на «модуль» (иерархия)
 child = logging.getLogger("demo.sub")
 child.info("из под-модуля")
 
-# «Тесты** (демо: «вручную** assert, как в pytest)
+# «Тесты» (демо: «вручную» assert, как в pytest)
 def total(nums: list[int]) -> int:
     return sum(nums)
 
@@ -120,7 +120,7 @@ def divide(a: float, b: float) -> float:
         raise ZeroDivisionError("деление на 0")
     return a / b
 
-# «Тесты** (assert — как в pytest)
+# «Тесты» (assert — как в pytest)
 assert total([1, 2, 3]) == 6
 assert find([10, 20], 20) == 1
 assert find([10], 99) is None
@@ -131,7 +131,7 @@ except ZeroDivisionError:
     pass
 print("все assert прошли (как pytest)")
 
-# «Структура** проекта** (каркас)
+# «Структура» проекта (каркас)
 tree = """myproject/
   pyproject.toml
   requirements.txt
