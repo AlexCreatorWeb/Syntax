@@ -10,11 +10,14 @@ export default {
     support: "Support",
     complete: "Course complete",
     streak: "12 Day Streak",
+    progressTitle: "Course progress",
+    progressCount: "{n} of {m} lessons",
+    progressNoTrack: "No track selected yet",
     groupLearn: "Learn",
     groupCommunity: "Community",
     groupResources: "Resources",
   },
-  promo: { book: { title: "Mastering Syntax", desc: "Deep dive into modern programming", cta: "Buy Now" }, studio: { title: "NeoStudio", desc: "High-end Web Design", cta: "Contact Us" } },
+  promo: { book: { title: "JavaScript: The Definitive Guide", desc: "David Flanagan · 7th Edition — the classic JavaScript reference", cta: "View on Amazon" }, studio: { title: "NeoStudio", desc: "High-end Web Design", cta: "Contact Us" } },
   techs: {
     javascript: {
       desc: "A multiparadigm programming language. Supports object-oriented, imperative, and functional styles. One of the core languages of web development.",

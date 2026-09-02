@@ -2,12 +2,53 @@ import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
 import AiChat from "../AiChat";
 
-// Правый rail страницы технологии (макет: technology-page):
-// Resources (ссылки-заглушки) + Syntax AI Assistant (Google Gemini 3.6 Flash).
+// Валидные внешние ссылки: официальная документация + актуальные справочники
+// по каждой технологии платформы. Открываются в новой вкладке.
+const TECH_RESOURCES = {
+  html: [
+    { label: "MDN · HTML Reference", href: "https://developer.mozilla.org/en-US/docs/Web/HTML" },
+    { label: "web.dev · Learn HTML", href: "https://web.dev/learn/html" },
+  ],
+  css: [
+    { label: "MDN · CSS Reference", href: "https://developer.mozilla.org/en-US/docs/Web/CSS" },
+    { label: "web.dev · Learn CSS", href: "https://web.dev/learn/css" },
+  ],
+  javascript: [
+    { label: "MDN · JavaScript Guide", href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" },
+    { label: "JavaScript Cheatsheet", href: "https://www.html5rocks.com/en/tutorials/everyday/cheatsheet_js/" },
+  ],
+  python: [
+    { label: "Python 3 · Official Docs", href: "https://docs.python.org/3/" },
+    { label: "Real Python · Tutorials", href: "https://realpython.com/" },
+  ],
+  react: [
+    { label: "React · Official Docs", href: "https://react.dev" },
+    { label: "react.dev · Learn React", href: "https://react.dev/learn" },
+  ],
+  vue: [
+    { label: "Vue · Official Guide", href: "https://vuejs.org/guide/introduction.html" },
+    { label: "Vue · API Reference", href: "https://vuejs.org/api/" },
+  ],
+  node: [
+    { label: "Node.js · Official Docs", href: "https://nodejs.org/en/docs" },
+    { label: "Node.js · Learn", href: "https://nodejs.org/en/learn" },
+  ],
+  mongo: [
+    { label: "MongoDB · Documentation", href: "https://www.mongodb.com/docs/" },
+    { label: "MongoDB · Free Courses", href: "https://learn.mongodb.com/" },
+  ],
+  postgres: [
+    { label: "PostgreSQL · Official Docs", href: "https://www.postgresql.org/docs/current/" },
+    { label: "PostgreSQL · Tutorial", href: "https://www.postgresqltutorial.com/" },
+  ],
+};
+
+// Правый rail страницы технологии И страницы урока (lesson → тот же TechAside):
+// Resources (реальные ссылки на документацию) + AI Assistant.
 function TechAside({ techId }) {
   const t = useT();
   const tech = getTech(techId) || getTech("javascript");
-  const content = t(`techs.${tech.id}`);
+  const resources = TECH_RESOURCES[tech.id] || TECH_RESOURCES.javascript;
 
   return (
     <>
@@ -20,14 +61,19 @@ function TechAside({ techId }) {
           {t("techPage.resources")}
         </h2>
         <ul className="tech-aside__resources">
-          {content.resources.map((r, i) => (
-            <li key={i}>
-              <button type="button" className="tech-aside__resource" title={t("home.soon")} aria-disabled="true">
+          {resources.map((r) => (
+            <li key={r.href}>
+              <a
+                className="tech-aside__resource"
+                href={r.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 12h9M12 12V3M12 12 3 21" />
+                  <path d="M7 17 17 7M9 7h8v8" />
                 </svg>
-                {r}
-              </button>
+                {r.label}
+              </a>
             </li>
           ))}
         </ul>

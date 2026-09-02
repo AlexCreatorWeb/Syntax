@@ -17,11 +17,14 @@ export const LOCALES = {
       support: "Поддержка",
       complete: "Курс пройден",
       streak: "Серия: 12 дней",
+      progressTitle: "Прогресс курса",
+      progressCount: "{n} из {m} уроков",
+      progressNoTrack: "Трек ещё не выбран",
       groupLearn: "Обучение",
       groupCommunity: "Сообщество",
       groupResources: "Ресурсы",
     },
-    promo: { book: { title: "Mastering Syntax", desc: "Глубокое погружение в современное программирование", cta: "Купить" }, studio: { title: "NeoStudio", desc: "Премиальный веб-дизайн", cta: "Связаться с нами" } },
+    promo: { book: { title: "JavaScript. Подробное руководство", desc: "Дэвид Флэнаган · 7-е издание — классический справочник по JavaScript", cta: "Смотреть на Amazon" }, studio: { title: "NeoStudio", desc: "Премиальный веб-дизайн", cta: "Связаться с нами" } },
     techs: {
       javascript: {
         desc: "Мультипарадигменный язык программирования. Поддерживает объектно-ориентированный, императивный и функциональный стили. Один из основных языков веб-разработки.",

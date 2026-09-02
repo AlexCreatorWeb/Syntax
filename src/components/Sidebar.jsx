@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useT } from "../i18n/useT";
+import { getCompleted } from "../lib/progress";
 
 // Выпадающее меню настроек (как в VS Code): пункты открываются здесь, без перехода на вкладку
 const SETTINGS_STUB_ITEMS = ["editor", "notifications", "shortcuts", "about"];
@@ -12,8 +13,16 @@ const NAV_GROUPS = [
   { id: "resources", items: ["documentation"] },
 ];
 
-function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab, isAuthed }) {
+function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab, isAuthed, dbLessons, activeTech }) {
   const t = useT();
+  // Реальный прогресс по выбранному треку: выполненные уроки (progress в localStorage,
+  // тот же источник, что и Submit-гейт редактора) ÷ опубликованные уроки трека в БД.
+  // Окружность кольца: r=19 → C=119.4 — смещение считается, а не хардкодится (is-57 убрана).
+  const C = 119.4;
+  const trackLessons = (dbLessons || []).filter((l) => l.tech === activeTech);
+  const completedSet = getCompleted(activeTech);
+  const doneCount = trackLessons.filter((l) => completedSet.includes(l.id)).length;
+  const pct = trackLessons.length ? Math.round((doneCount / trackLessons.length) * 100) : 0;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
 
@@ -172,11 +181,11 @@ function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab, isAuthed }) {
 
   return (
     <aside className="sidebar">
-      {/* Прогресс ученика — только для залогиненных (гость видит без него) */}
-      {isAuthed && (
+      {/* Прогресс ученика — только для залогиненных и после загрузки БД (гость видит без него) */}
+      {isAuthed && dbLessons && (
         <button
           type="button"
-          className="streak card is-57 streak--link"
+          className="streak card streak--link"
           onClick={() => onSelectTab("roadmap")}
           aria-label={t("sidebar.roadmap")}
           title={t("sidebar.roadmap")}
@@ -184,13 +193,13 @@ function Sidebar({ activeTab, theme, onToggleTheme, onSelectTab, isAuthed }) {
           <div className="streak__ring" aria-hidden="true">
             <svg viewBox="0 0 44 44">
               <circle className="ring-bg" cx="22" cy="22" r="19" />
-              <circle className="ring-fg" cx="22" cy="22" r="19" />
+              <circle className="ring-fg" cx="22" cy="22" r="19" style={{ strokeDashoffset: C * (1 - pct / 100) }} />
             </svg>
-            <span className="streak__pct">57%</span>
+            <span className="streak__pct">{pct}%</span>
           </div>
           <div className="streak__meta">
-            <strong>{t("sidebar.complete")}</strong>
-            <span>{t("sidebar.streak")}</span>
+            <strong>{t("sidebar.progressTitle")}</strong>
+            <span>{trackLessons.length ? t("sidebar.progressCount", { n: doneCount, m: trackLessons.length }) : t("sidebar.progressNoTrack")}</span>
           </div>
         </button>
       )}

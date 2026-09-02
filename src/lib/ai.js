@@ -12,6 +12,8 @@ import { buildSystemPrompt } from "./ai-prompt";
 
 export const AI_MODEL = "gemini-flash-lite-latest";
 export const AI_MODEL_SHORT = AI_MODEL;
+// Человекочитаемое имя модели для чипа в UI (честно: реальная модель, не заглушка)
+export const AI_MODEL_DISPLAY = "Gemini Flash Lite";
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:streamGenerateContent?alt=sse`;
 

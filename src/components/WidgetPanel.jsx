@@ -14,6 +14,9 @@ const TAB_ASIDES = {
   documentation: DocsAside,
   tasks: TasksAside,
   technology: TechAside,
+  // Урок — тот же функциональный rail, что и страница технологии (Resources + AI Assistant);
+  // techId для AI берётся из job (урок привязан к треку)
+  lesson: TechAside,
 };
 
 function WidgetPanel({ activeTab, onNavigate, onAuth, job, activeTech, isAuthed, dbLessons }) {

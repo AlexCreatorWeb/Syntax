@@ -214,7 +214,15 @@ function App() {
         onMarkAllNewsRead={markAllNewsRead}
       />
       <div className="shell">
-        <Sidebar activeTab={activeTab} theme={theme} onToggleTheme={toggleTheme} onSelectTab={openTab} isAuthed={isAuthed} />
+        <Sidebar
+          activeTab={activeTab}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          onSelectTab={openTab}
+          isAuthed={isAuthed}
+          dbLessons={dbLessons}
+          activeTech={activeTech}
+        />
         <MainContent
           activeTab={activeTab}
           theme={theme}
