@@ -15,10 +15,15 @@ export const AI_MODEL_SHORT = AI_MODEL;
 // Человекочитаемое имя модели для чипа в UI (честно: реальная модель, не заглушка)
 export const AI_MODEL_DISPLAY = "Gemini Flash Lite";
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+// Внешний AI-прокси (обычно prod-Vercel): нужен, когда прямой запрос к Google из этого
+// окружения гео-блокирован ("User location is not supported for the API use").
+// Задаётся VITE_AI_PROXY_URL (без хвостового /), например https://syntax-sooty.vercel.app.
+const AI_PROXY_BASE = (import.meta.env.VITE_AI_PROXY_URL || "").replace(/\/+$/, "");
+const proxyTarget = () => (AI_PROXY_BASE ? `${AI_PROXY_BASE}/api/ai` : "/api/ai");
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:streamGenerateContent?alt=sse`;
 
-// Dev: настроен, если есть локальный ключ. Prod: всегда (прокси есть, если Vercel env выставлен).
-export const isAiConfigured = () => GEMINI_KEY || import.meta.env.PROD;
+// Dev: настроен, если есть локальный ключ ИЛИ внешний прокси ИЛИ prod (есть /api/ai).
+export const isAiConfigured = () => Boolean(GEMINI_KEY || AI_PROXY_BASE || import.meta.env.PROD);
 
 // Ошибка с «человечным» кодом: badKey / credits / rateLimit / modelLoading / network / http.
 export class AiError extends Error {
@@ -117,31 +122,25 @@ export async function askAssistant({ techName, history, question, onToken, signa
   if (!isAiConfigured()) throw new AiError("noKey", "VITE_GEMINI_API_KEY is not set (dev) or GEMINI_API_KEY in Vercel env (prod)");
   const hist = Array.isArray(history) ? history.slice(-10) : [];
 
-  // DEV: прямой Google (ключ из .env.local). PROD: /api/ai — прокси сам собирает запрос.
-  const request = GEMINI_KEY
-    ? {
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": GEMINI_KEY,
-        },
-        body: geminiBody(techName, hist, question),
-      }
-    : {
-        headers: { "Content-Type": "application/json" },
-        body: { techName, history: hist, question },
-        url: "/api/ai",
-      };
-
   let acc = "";
   const token = (txt) => {
     acc += txt;
     onToken(acc);
   };
+  // Прямой запрос к Google — только если есть локальный ключ И не задан внешний прокси.
+  // DEV часто гео-блокирован Google'ом → VITE_AI_PROXY_URL переключает на prod-Vercel-прокси
+  // (браузер ходит на Vercel, тот — к Google со своего, поддержанного IP).
+  const useDirect = Boolean(GEMINI_KEY) && !AI_PROXY_BASE;
   try {
-    if (GEMINI_KEY) {
-      await streamChatCompletion({ headers: request.headers, body: request.body, signal, onToken: token });
+    if (useDirect) {
+      await streamChatCompletion({
+        headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY },
+        body: geminiBody(techName, hist, question),
+        signal,
+        onToken: token,
+      });
     } else {
-      await proxyStream({ signal, onToken: token, body: request.body });
+      await proxyStream({ url: proxyTarget(), signal, onToken: token, body: { techName, history: hist, question } });
     }
   } catch (e) {
     if (e && e.name === "AbortError") throw e;
@@ -152,8 +151,9 @@ export async function askAssistant({ techName, history, question, onToken, signa
 }
 
 // PROD: POST /api/ai (Vercel-прокси уже держит ключ) — SSE passthrough того же формата Gemini.
-async function proxyStream({ body, signal, onToken }) {
-  const res = await fetch("/api/ai", {
+// url — /api/ai (same-origin в prod) либо внешний прокси (dev → prod-Vercel, CORS на прокси).
+async function proxyStream({ body, signal, onToken, url = "/api/ai" }) {
+  const res = await fetch(url, {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json" },

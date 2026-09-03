@@ -6,6 +6,15 @@
 // сис-промпт продублирован здесь (единый исходник — src/lib/ai-prompt.js, при правке синхронизируй).
 export const maxDuration = 60; // стриминг ответа
 
+// CORS: позволяет DEV-окружению (localhost:5173) ходить на прод-прокси прямо из браузера,
+// когда прямой запрос к Google гео-блокирован. Без credentials → origin: * безопасен (ключ на сервере).
+function setCors(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Max-Age", "86400");
+}
+
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?alt=sse";
 
 const TRACKS = ["HTML", "CSS", "JavaScript", "Python", "React", "Vue.js", "Node.js", "MongoDB", "PostgreSQL"];
@@ -34,6 +43,12 @@ function buildSystemPrompt(techName) {
 }
 
 export default async function handler(req, res) {
+  setCors(res);
+  // Preflight для cross-origin POST из dev-окружения
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return;
+  }
   // Диагностика: GET возвращает окружение
   if (req.method === "GET") {
     res.status(200).json({ ok: true, node: process.version, fetch: typeof fetch, hasKey: Boolean(process.env.GEMINI_API_KEY) });
