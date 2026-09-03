@@ -25,7 +25,23 @@ function lessonJob(t) {
   };
 }
 
-function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTech, onSignup, routeParam, dbLessons, session, userName, onAuth, onLogout, progressTick }) {
+function MainContent({
+  activeTab,
+  theme,
+  job,
+  onNavigate,
+  activeTech,
+  onSelectTech,
+  onSignup,
+  dbLessons,
+  session,
+  userName,
+  onAuth,
+  onLogout,
+  progressTick,
+  docsRoute,
+  onDocsRoute,
+}) {
   const t = useT();
   const { langCode } = useLanguage();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
@@ -36,8 +52,9 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
   // в момент входа видели пустой кэш; данные уже в localStorage — просто перерисовать)
   void progressTick;
 
-  // УЧЕБА ТОЛЬКО ЗА РЕГИСТРАЦИЕЙ (условия платформы, 2026-09): гость листает
-  // roadmap/технологии/tasks, но открыть урок или задачу — только после входа.
+  // УЧЕБА ЗА РЕГИСТРАЦИЕЙ (условия платформы, 2026-09): гость листает
+  // roadmap/технологии/tasks, открыть задачу — только после входа.
+  // Исключение: ПЕРВЫЙ урок любого трека открыт гостю (фрис-триал, 2026-09).
   // requireAuth(action): гость → auth-модалка + pending-action; после успешного
   // входа (session пришёл) эффект выполняет сохранённое действие — студент
   // оказывается в том самом уроке/задаче, что нажал до регистрации.
@@ -73,17 +90,45 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
     const rows = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
     const n = rows.findIndex((l) => l.id === lesson.id) + 1;
     // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
-    onNavigate("lesson", lessonJobFor(lesson, techId, backTab, (staticFor && staticFor.desc) || "", n || null, langCode));
+    onNavigate(
+      "lesson",
+      lessonJobFor(
+        lesson,
+        techId,
+        backTab,
+        (staticFor && staticFor.desc) || "",
+        n || null,
+        langCode,
+      ),
+    );
   };
-  // Гость → auth-гейт (условия: учебный контент — за регистрацией)
-  const openDbLesson = (lesson, techId, backTab) => requireAuth(() => doOpenDbLesson(lesson, techId, backTab));
+  // Гость → auth-гейт. Исключение (2026-09): ПЕРВЫЙ урок любого курса открыт
+  // всем — обещание лендинга «first lesson in 2 minutes», демо-урок без регистрации.
+  const lessonNumber = (lesson, techId) => {
+    const rows = techId
+      ? dbLessonsArr.filter((l) => l.tech === techId)
+      : dbLessonsArr;
+    return rows.findIndex((l) => l.id === lesson.id) + 1;
+  };
+  const openDbLesson = (lesson, techId, backTab) => {
+    if (isAuthed || lessonNumber(lesson, techId) <= 1) {
+      doOpenDbLesson(lesson, techId, backTab);
+      return;
+    }
+    requireAuth(() => doOpenDbLesson(lesson, techId, backTab));
+  };
   const doOpenLesson = (techId) => {
-    // Урок трека из БД: первый НЕВЫПОЛНЕННЫЙ (иначе — первый); демо-урок без трека — первая строка
-    const completed = getCompleted(techId);
-    const techLessons = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
+    // Урок трека из БД: первый НЕВЫПОЛНЕННЫЙ (иначе — первый). Без трека
+    // (Continue с главной) — первый невыполненный по ВСЕМ трекам: логичное
+    // «продолжить», а не возврат на первый урок HTML.
+    const techLessons = techId
+      ? dbLessonsArr.filter((l) => l.tech === techId)
+      : dbLessonsArr;
     const match = techId
-      ? techLessons.find((l) => !completed.includes(l.id)) || techLessons[0]
-      : dbLessonsArr[0];
+      ? techLessons.find((l) => !getCompleted(techId).includes(l.id)) ||
+        techLessons[0]
+      : dbLessonsArr.find((l) => !getCompleted(l.tech).includes(l.id)) ||
+        dbLessonsArr[0];
     if (match) {
       openDbLesson(match, techId);
       return;
@@ -104,14 +149,38 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
     }
     onNavigate("editor", lessonJob(t));
   };
-  // Гость → auth-гейт: после входа «Continue» продолжает с того же урока
-  const openLesson = (techId) => requireAuth(() => doOpenLesson(techId));
+  // Гость → auth-гейт: после входа «Continue» продолжает с того же урока.
+  // Исключение: гость всегда попадает на ПЕРВЫЙ урок трека (open без гейта);
+  // трек без уроков в БД — обычный гейт.
+  const openLesson = (techId) => {
+    const tid = techId && techId !== "none" ? techId : null;
+    if (!isAuthed) {
+      const first = tid
+        ? dbLessonsArr.find((l) => l.tech === tid)
+        : dbLessonsArr[0];
+      if (first) {
+        doOpenDbLesson(first, tid);
+        return;
+      }
+      // БД ещё грузится (null) или пуста — гостя НЕ слить в регистрацию:
+      // обещание лендинга «первый урок за 2 минуты» держим и на статическом демо.
+      if (!tid) {
+        onNavigate("editor", lessonJob(t));
+        return;
+      }
+    }
+    requireAuth(() => doOpenLesson(tid));
+  };
   // 2026-09: Tasks = структурированный каталог. openTask(task) — задача из
   // src/content/tasks/*.json (job: файлы, тесты, XP, связь с уроком — в lib/taskJob.js).
   // Гость → auth-гейт (условия: задачи — за регистрацией).
   const openTask = (task) =>
     requireAuth(() => {
-      const j = taskJobFor(task, { dbLessons: dbLessonsArr, langCode, onCompleted: () => setTaskTick((v) => v + 1) });
+      const j = taskJobFor(task, {
+        dbLessons: dbLessonsArr,
+        langCode,
+        onCompleted: () => setTaskTick((v) => v + 1),
+      });
       if (j) onNavigate("editor", j);
     });
 
@@ -172,7 +241,7 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
           <MainView
             onNavigate={onNavigate}
             onSignup={onSignup}
-            onDemo={() => openLesson()}
+            onDemo={() => openLesson(activeTech)}
             activeTech={activeTech}
             onSelectTech={onSelectTech}
             dbLessons={dbLessons}
@@ -193,25 +262,67 @@ function MainContent({ activeTab, theme, job, onNavigate, activeTech, onSelectTe
         );
       case "technology":
         // job.techId — при клике по карточке; activeTech — при deep-link/refresh (job сбрасывается)
-        return <TechnologyView techId={(job && job.techId) || activeTech} onResume={(id) => openLesson(id)} onOpenDbLesson={openDbLesson} dbLessons={dbLessonsArr} onNavigate={onNavigate} onSelectTech={onSelectTech} isAuthed={isAuthed} />;
+        return (
+          <TechnologyView
+            techId={(job && job.techId) || activeTech}
+            onResume={(id) => openLesson(id)}
+            onOpenDbLesson={openDbLesson}
+            dbLessons={dbLessonsArr}
+            onNavigate={onNavigate}
+            onSelectTech={onSelectTech}
+            isAuthed={isAuthed}
+          />
+        );
       case "editor": {
         // Task-джоб: taskDone пересчитываем (job в state App не пересобирается после Complete)
         const editorJob =
           job && job.kind === "task" && job.track
-            ? { ...job, taskDone: getDoneTasks().includes(`${job.track}:${job.taskId}`) }
+            ? {
+                ...job,
+                taskDone: getDoneTasks().includes(`${job.track}:${job.taskId}`),
+              }
             : job;
         void taskTick; // зависимость: пересчёт после Complete
-        return <CodeEditor key={job && job.kind === "task" && job.taskId ? `task-${job.taskId}` : "editor"} language={currentLanguage} theme={theme} job={editorJob} onNavigate={onNavigate} />;
+        return (
+          <CodeEditor
+            key={
+              job && job.kind === "task" && job.taskId
+                ? `task-${job.taskId}`
+                : "editor"
+            }
+            language={currentLanguage}
+            theme={theme}
+            job={editorJob}
+            onNavigate={onNavigate}
+          />
+        );
       }
       case "lesson":
         // Урок из базы: материал + редактор (job = строка lessons); без job — редирект в effect
-        return job ? <LessonView job={job} theme={theme} onNavigate={onNavigate} /> : null;
+        return job ? (
+          <LessonView job={job} theme={theme} onNavigate={onNavigate} />
+        ) : null;
       case "tasks":
         // key=activeTech: смена трека перемонтирует вьюху — tech-фильтр синхронен с выбранным треком
-        return <TasksView key={activeTech || "none"} activeTech={activeTech} onSelectTech={onSelectTech} onSolve={(task) => openTask(task)} />;
+        return (
+          <TasksView
+            key={activeTech || "none"}
+            activeTech={activeTech}
+            onSelectTech={onSelectTech}
+            onSolve={(task) => openTask(task)}
+          />
+        );
       case "documentation":
-        // routeParam — slug статьи из deep-link #/documentation/<slug> (валидация внутри DocsView)
-        return <DocsView routeParam={routeParam} activeTech={activeTech} onNavigate={onNavigate} />;
+        // docsRoute {track, page} — из /docs-пути (deep-link + refresh); onDocsRoute — pushState
+        return (
+          <DocsView
+            docsRoute={docsRoute}
+            onDocsRoute={onDocsRoute}
+            activeTech={activeTech}
+            onNavigate={onNavigate}
+            onOpenTask={(task) => openTask(task)}
+          />
+        );
       case "rankings":
         return <RankingsView />;
       case "community":

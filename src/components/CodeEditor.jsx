@@ -277,6 +277,78 @@ ${tests && tests.length ? TESTS_HARNESS_PY(tests) : ""}
 </body></html>`;
 }
 
+function buildSqlDoc(sqlCode) {
+  const src = (sqlCode || "").replace(/<\/script/gi, "<\\/script");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>html, body { margin: 0; background: ${PREVIEW_BG}; }</style>
+</head><body>
+${CONSOLE_CAPTURE}
+<script type="text/plain" id="syntax-sql-src">
+${src}
+</script>
+<script type="module">
+// PGlite (WASM PostgreSQL 16, jsDelivr) — настоящий Postgres в браузере.
+// Код студента = сценарий psql: разбираем на операторы (учитывая строки/комментарии/$$-тело)
+// и исполняем по одному (PGlite: «один prepared-оператор на query»).
+window.__syntaxOffset = 0;
+function splitSql(text) {
+  const out = [];
+  let buf = "", inS = false, inD = false, inLC = false, inBC = false, inDQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i + 1];
+    if (inLC) { buf += c; if (c === "\\n") inLC = false; continue; }
+    if (inBC) { buf += c; if (c === "*" && n === "/") { buf += "/"; i++; inBC = false; } continue; }
+    if (inS) { buf += c; if (c === "'" && n === "'") { buf += "'"; i++; } else if (c === "'") inS = false; continue; }
+    if (inD) { buf += c; if (c === '"') inD = false; continue; }
+    if (inDQ) { if (c === "$" && n === "$") { inDQ = false; buf += "$$"; i++; } else buf += c; continue; }
+    if (c === "'" && n === "''") { buf += "''"; i++; continue; }
+    if (c === "'") { inS = true; buf += c; continue; }
+    if (c === '"') { inD = true; buf += c; continue; }
+    if (c === "-" && n === "-") { inLC = true; buf += c; continue; }
+    if (c === "/" && n === "*") { inBC = true; buf += c; i++; continue; }
+    if (c === "$" && n === "$") { inDQ = true; buf += "$$"; i++; continue; }
+    if (c === ";") { if (buf.trim()) out.push(buf.trim()); buf = ""; continue; }
+    buf += c;
+  }
+  if (buf.trim()) out.push(buf.trim());
+  return out;
+}
+try {
+  const { PGlite } = await import("https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.3.5/dist/index.js");
+  const db = new PGlite();
+  const sql = document.getElementById("syntax-sql-src").textContent.replace(/^\\n/, "").split("<\\\\/script").join("</scr" + "ipt");
+  const stmts = splitSql(sql);
+  for (let i = 0; i < stmts.length; i++) {
+    const s = stmts[i];
+    try {
+      const r = await db.query(s);
+      const rows = r && r.rows ? r.rows : [];
+      const isSelect = /^(select|with)/i.test(s);
+      if (isSelect && rows.length) {
+        const cols = Object.keys(rows[0]);
+        console.log(cols.join(" | "));
+        console.log(rows.slice(0, 10).map((x) => cols.map((c) => String(x[c])).join(" | ")).join("\\n"));
+        if (rows.length > 10) console.log("... и ещё " + (rows.length - 10) + "");
+        console.log("(" + rows.length + " rows)");
+      } else {
+        const firstLine = s.split("\\n").map((l) => l.trim()).find((l) => l && !/^--/.test(l) && !/^\\//.test(l)) || s.split("\\n")[0];
+        console.log("OK: " + firstLine.replace(/;$/, "").slice(0, 60) + (s.split("\\n").length > 1 ? " ..." : ""));
+      }
+    } catch (e) {
+      console.error("Оператор #" + (i + 1) + ": " + String((e && e.message) || e).split("\\n").slice(0, 3).join(" | "));
+      break; // psql-стиль: стоп на первой ошибке
+    }
+  }
+  console.log("[Syntax] Postgres sandbox (PGlite/WASM PG 16) готов: " + stmts.length + " операторов");
+  window.__testsDone = true;
+} catch (e) {
+  console.error(String((e && e.message) || e));
+  window.__testsDone = true;
+}
+</script>
+</body></html>`;
+}
+
 function buildRunnerDoc(files, contents, job = null) {
   const tests = job && Array.isArray(job.tests) ? job.tests : null;
   const vueFile = files.find((f) => f.language === "html" && /\.vue$/.test(f.name));
@@ -288,11 +360,16 @@ function buildRunnerDoc(files, contents, job = null) {
     const pyFile = files.find((f) => f.language === "python" && /\.py$/.test(f.name));
     if (pyFile) return buildPythonDoc(contents[pyFile.id] ?? "", tests);
   }
-  // Node/mongo/postgres-трехк: .js-файл (server.js / query.js / …) → Node-sandbox (ESM + import map)
+  // Node/mongo-трехк: .js-файл (server.js / query.js / …) → Node-sandbox (ESM + import map)
   const isNodeTrack = Boolean(job && (job.techId === "node" || job.techId === "mongo" || job.techId === "postgres"));
   if (isNodeTrack) {
     const jsFile = files.find((f) => f.language === "javascript" && /\.js$/.test(f.name));
     if (jsFile) return buildNodeDoc(contents[jsFile.id] ?? "", job);
+  }
+  // postgres-трехк: .sql-файл (queries.sql) → PGlite (WASM Postgres в браузере)
+  if (job && job.techId === "postgres") {
+    const sqlFile = files.find((f) => f.language === "sql" && /\.sql$/.test(f.name));
+    if (sqlFile) return buildSqlDoc(contents[sqlFile.id] ?? "");
   }
   const blocks = buildJsBlocks(files, contents);
   const js = blocks.join("\n");
@@ -578,8 +655,8 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const activeFile = files.find((f) => f.id === activeId) || files[0];
   const hasHtml = files.some((f) => f.language === "html" && !/\.vue$/.test(f.name)); // .vue → раннер, не превью
   const hasJs = files.some(
-    (f) => f.language === "javascript" || f.language === "python" || /\.vue$/.test(f.name)
-  ); // python (.py) → Pyodide-раннер (buildRunnerDoc)
+    (f) => f.language === "javascript" || f.language === "python" || f.language === "sql" || /\.vue$/.test(f.name)
+  ); // python (.py) → Pyodide, sql (.sql) → PGlite, vue → раннер (buildRunnerDoc)
   const jobTech = job && job.techId ? getTech(job.techId) : null;
 
   // Консоль всегда в кадре + вспышка после Run (аудит #1): цикл «действие → фидбек»
@@ -767,9 +844,9 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     }, 250);
   };
 
-  // Медленный раннер (Pyodide грузит CPython в WASM 5–10с): collectFrom при onLoad (250мс) видит пустые логи
-  // и больше не вызывается → «—». Для python-трехка — поллинг до вывода (или таймаута).
-  const isPythonRunner = Boolean(job && job.techId === "python");
+  // Медленный раннер (Pyodide/PGlite грузят WASM 5–10с): collectFrom при onLoad (250мс) видит пустые логи
+  // и больше не вызывается → «—». Для python/postgres-трехка — поллинг до вывода (или таймаута).
+  const isSlowRunner = Boolean(job && (job.techId === "python" || job.techId === "postgres"));
   const pyPollRef = useRef(null);
   useEffect(() => {
     return () => {
@@ -1367,7 +1444,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
             srcDoc={runnerDoc}
             sandbox="allow-scripts allow-same-origin"
             onLoad={() => {
-              if (isPythonRunner) {
+              if (isSlowRunner) {
                 // поллинг: читаем логи, пока нет вывода (Pyodide-загрузка) — до 60с
                 const started = Date.now();
                 if (pyPollRef.current) clearInterval(pyPollRef.current);

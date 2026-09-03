@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useT } from "../../i18n/useT";
 
 // Правый сайдбар вкладки Documentation (монтируется во внешнюю rail):
-// on-page TOC текущей статьи (scrollspy) + help-карточка.
+// on-page TOC текущей статьи (h2/h3, scrollspy) + help-карточка (Community + AI assistant).
 // Контент TOC приходит CustomEvent-ом от DocsView (паттерн community-тегов).
 function DocsAside({ onNavigate }) {
   const t = useT();
-  const [toc, setToc] = useState(null); // { title, anchors: [{id, text}] }
+  const [toc, setToc] = useState(null); // { title, anchors: [{id, text, level}] }
   const [activeId, setActiveId] = useState(null);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ function DocsAside({ onNavigate }) {
     return () => window.removeEventListener("syntax-docs-toc", onToc);
   }, []);
 
-  // Scrollspy: активный заголовок — последний h2, прошедший отметку 120px от верха
+  // Scrollspy: активный заголовок — последний h2/h3, прошедший отметку 120px от верха
   useEffect(() => {
     if (!toc || !toc.anchors.length) return;
     const onScroll = () => {
@@ -44,15 +44,15 @@ function DocsAside({ onNavigate }) {
   return (
     <>
       {toc && toc.anchors.length > 0 && (
-        <section className="card docs-rail-card">
+        <section className="card docs-rail-card docs-rail-card--toc">
           <span className="label-caps">{t("docs.tocPage")}</span>
           <p className="docs-rail-card__article">{toc.title}</p>
-          <nav className="toc" aria-label="On this page">
+          <nav className="toc" aria-label={t("docs.tocPage")}>
             {toc.anchors.map((a) => (
               <button
                 key={a.id}
                 type="button"
-                className={`toc__item ${a.id === activeId ? "is-active" : ""}`}
+                className={`toc__item ${a.level === 3 ? "toc__item--h3" : ""} ${a.id === activeId ? "is-active" : ""}`}
                 onClick={() => jump(a.id)}
               >
                 {a.text}
@@ -64,12 +64,21 @@ function DocsAside({ onNavigate }) {
       <section className="card docs-rail-card help-card">
         <span className="label-caps">{t("docs.helpTitle")}</span>
         <p>{t("docs.helpText")}</p>
-        <button type="button" className="btn btn--secondary btn--full" onClick={() => onNavigate && onNavigate("community")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M21 12a8 8 0 0 1-8 8H4l2.5-3A8 8 0 1 1 21 12Z" />
-          </svg>
-          {t("docs.community")}
-        </button>
+        <div className="help-card__btns">
+          <button type="button" className="btn btn--secondary btn--full" onClick={() => onNavigate && onNavigate("community")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 12a8 8 0 0 1-8 8H4l2.5-3A8 8 0 1 1 21 12Z" />
+            </svg>
+            {t("docs.community")}
+          </button>
+          <button type="button" className="btn btn--ghost btn--full" onClick={() => onNavigate && onNavigate("technology")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z" />
+              <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" />
+            </svg>
+            {t("docs.aiAssistant")}
+          </button>
+        </div>
       </section>
     </>
   );

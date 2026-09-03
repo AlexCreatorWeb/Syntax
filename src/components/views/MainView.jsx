@@ -16,7 +16,7 @@ const PROOF_HUES = [152, 200, 262, 330, 42];
 // Count-up с easeOutExpo (только на первый mount; reduced-motion → сразу финал)
 function useCountUp(target, decimals = 0, duration = 800) {
   const [value, setValue] = useState(() =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? target : 0
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? target : 0,
   );
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -64,7 +64,8 @@ const CODE_LINES = [
     ch: 30,
     node: (
       <>
-        <span className="tk-k">async function</span> <span className="tk-f">fetchStatus</span>(){" "}
+        <span className="tk-k">async function</span>{" "}
+        <span className="tk-f">fetchStatus</span>(){" "}
         <span className="tk-p">{"{"}</span>
       </>
     ),
@@ -75,7 +76,8 @@ const CODE_LINES = [
       <>
         {"  "}
         <span className="tk-k">const</span> res <span className="tk-p">=</span>{" "}
-        <span className="tk-k">await</span> <span className="tk-f">fetch</span>(url);
+        <span className="tk-k">await</span> <span className="tk-f">fetch</span>
+        (url);
       </>
     ),
   },
@@ -83,7 +85,10 @@ const CODE_LINES = [
     ch: 34,
     node: (
       <>
-        {"  "}<span className="tk-k">return</span> (<span className="tk-k">await</span> res.<span className="tk-f">json</span>()).status;
+        {"  "}
+        <span className="tk-k">return</span> (
+        <span className="tk-k">await</span> res.
+        <span className="tk-f">json</span>()).status;
       </>
     ),
   },
@@ -92,7 +97,8 @@ const CODE_LINES = [
     ch: 31,
     node: (
       <>
-        <span className="tk-f">fetchStatus</span>().<span className="tk-f">then</span>(console.log);
+        <span className="tk-f">fetchStatus</span>().
+        <span className="tk-f">then</span>(console.log);
       </>
     ),
   },
@@ -138,7 +144,8 @@ function HeroDemo({ t }) {
         lines[i].style.opacity = p > 0 ? "1" : "0";
         codes[i].style.width = chars + "ch";
         const isLast = i === CODE_LINES.length - 1;
-        carets[i].style.visibility = p > 0 && (isLast || now < d + dur + 0.6) ? "visible" : "hidden";
+        carets[i].style.visibility =
+          p > 0 && (isLast || now < d + dur + 0.6) ? "visible" : "hidden";
         carets[i].style.left = `calc(34px + ${chars}ch)`;
       });
       if (allDone) {
@@ -176,7 +183,15 @@ function HeroDemo({ t }) {
           Run
         </span>
         <span className="hero-demo__pass">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="m5 12 5 5 9-10" />
           </svg>
           {t("home.offer.passed")}
@@ -186,7 +201,16 @@ function HeroDemo({ t }) {
   );
 }
 
-function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLessons, isAuthed, onAuth }) {
+function MainView({
+  onNavigate,
+  onSignup,
+  onDemo,
+  activeTech,
+  onSelectTech,
+  dbLessons,
+  isAuthed,
+  onAuth,
+}) {
   const t = useT();
 
   // Success-rate кольцо: r=52 => окружность ~326.7. Sweep при mount (двойной rAF —
@@ -194,15 +218,21 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
   // после sweep'а — дышащее свечение (is-live): блок «живой», а не статичный.
   const C = 326.7;
   const [ringOffset, setRingOffset] = useState(() =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? C * (1 - STATS.success.value / 100) : C
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? C * (1 - STATS.success.value / 100)
+      : C,
   );
   // reduced-motion: сразу в финальном состоянии (без свипа и свечения-таймера)
-  const [ringLive, setRingLive] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const [ringLive, setRingLive] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   useEffect(() => {
     if (ringLive) return;
     let t2;
     const raf = requestAnimationFrame(() =>
-      requestAnimationFrame(() => setRingOffset(C * (1 - STATS.success.value / 100)))
+      requestAnimationFrame(() =>
+        setRingOffset(C * (1 - STATS.success.value / 100)),
+      ),
     );
     t2 = setTimeout(() => setRingLive(true), 1500);
     return () => {
@@ -216,19 +246,72 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
       {/* 1. Гостевой hero: оффер + продукт (mock редактора) в первом экране */}
       <section className="card card--feature home__hero spotlight">
         <div className="home__hero-text">
-          <span className="label-caps home__eyebrow">{t("home.offer.eyebrow")}</span>
+          <span className="label-caps home__eyebrow">
+            {t("home.offer.eyebrow")}
+          </span>
           <h1 className="home__hero-title">{t("home.offer.title")}</h1>
           <p className="home__hero-desc">{t("home.offer.desc")}</p>
+          {/* Авторизованному «Начать бесплатно» = анти-CТА (он уже зарегистрирован):
+              primary = «Продолжить обучение» (первый невыполненный урок),
+              secondary = дорожная карта. Гостю — конверсионная пара. */}
           <div className="home__hero-cta">
-            <button type="button" className="btn btn--primary home__hero-btn" onClick={onSignup}>
-              {t("home.offer.start")}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </button>
-            <button type="button" className="btn btn--secondary home__hero-btn" onClick={onDemo}>
-              {t("home.offer.demo")}
-            </button>
+            {isAuthed ? (
+              <>
+                <button
+                  type="button"
+                  className="btn btn--primary home__hero-btn"
+                  onClick={onDemo}
+                >
+                  {t("home.lesson.continue")}
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--secondary home__hero-btn"
+                  onClick={() => onNavigate("roadmap")}
+                >
+                  {t("home.lesson.viewRoadmap")}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="btn btn--primary home__hero-btn"
+                  onClick={onSignup}
+                >
+                  {t("home.offer.start")}
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--secondary home__hero-btn"
+                  onClick={onDemo}
+                >
+                  {t("home.offer.demo")}
+                </button>
+              </>
+            )}
           </div>
           <span className="home__trust">{t("home.offer.trust")}</span>
           <div className="home__proof">
@@ -237,12 +320,15 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
                 <span
                   key={i}
                   className="avatar-dot avatar-dot--sm home__proof-avatar"
-                  style={{ background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 18%))` }}
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 18%))`,
+                  }}
                 />
               ))}
             </span>
             <span className="home__proof-text">
-              {t("home.proof")} · <span className="home__proof-rating">★ 4.8</span>
+              {t("home.proof")} ·{" "}
+              <span className="home__proof-rating">★ 4.8</span>
             </span>
           </div>
         </div>
@@ -264,18 +350,37 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
 
       {/* 3. Bento-статистика: доказательство (UX-аудит Р9: личное обещание — на 2-й позиции) */}
       <section className="home__stats">
-        <div className={`stat-card stat-card--success spotlight${ringLive ? " is-live" : ""}`}>
+        <div
+          className={`stat-card stat-card--success spotlight${ringLive ? " is-live" : ""}`}
+        >
           {/* Кольцо — центр композиции: число считается В ПУЗЕ, sweep при загрузке,
               после — мягкое дышащее свечение (живой элемент, не статичный круг) */}
-          <div className="success-ring" role="img" aria-label={`${t("home.stats.success")}: ${STATS.success.value}${STATS.success.suffix}`}>
+          <div
+            className="success-ring"
+            role="img"
+            aria-label={`${t("home.stats.success")}: ${STATS.success.value}${STATS.success.suffix}`}
+          >
             <svg className="ring" viewBox="0 0 120 120" aria-hidden="true">
               <defs>
-                <linearGradient id="success-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient
+                  id="success-ring-grad"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
                   <stop offset="0%" stopColor="var(--primary)" />
                   <stop offset="100%" stopColor="var(--accent-2, #5eead4)" />
                 </linearGradient>
               </defs>
-              <circle className="ring__track" cx="60" cy="60" r="52" fill="none" strokeWidth="10" />
+              <circle
+                className="ring__track"
+                cx="60"
+                cy="60"
+                r="52"
+                fill="none"
+                strokeWidth="10"
+              />
               <circle
                 className="ring__fill"
                 cx="60"
@@ -294,7 +399,14 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
                 <StatValue stat={STATS.success} className="success-ring__num" />
               </span>
               <span className="success-ring__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="m5 12 5 5 9-10" />
                 </svg>
                 {t("home.stats.successDelta")}
@@ -303,14 +415,26 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
           </div>
           <div className="stat-card__main">
             <span className="stat-card__label">{t("home.stats.success")}</span>
-            <span className="success-ring__sub">{t("home.stats.successSub")}</span>
+            <span className="success-ring__sub">
+              {t("home.stats.successSub")}
+            </span>
           </div>
         </div>
         <div className="stat-card spotlight">
           <span className="stat-card__label">{t("home.firstProject")}</span>
-          <span className="stat-card__value">{t("home.firstProjectValue")}</span>
+          <span className="stat-card__value">
+            {t("home.firstProjectValue")}
+          </span>
           <div className="stat-card__delta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M7 17 17 7M9 7h8v8" />
             </svg>
             {t("home.firstProjectDelta")}
@@ -320,7 +444,15 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
           <span className="stat-card__label">{t("home.stats.students")}</span>
           <StatValue stat={STATS.students} className="stat-card__value" />
           <div className="stat-card__delta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M7 17 17 7M9 7h8v8" />
             </svg>
             {t("home.stats.studentsDelta")}
@@ -330,13 +462,29 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
           <span className="stat-card__label">{t("home.stats.tasks")}</span>
           <StatValue stat={STATS.tasks} className="stat-card__value" />
           <div className="stat-card__delta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M7 17 17 7M9 7h8v8" />
             </svg>
             {t("home.stats.tasksDelta")}
           </div>
-          <svg className="sparkline" viewBox="0 0 320 48" preserveAspectRatio="none" aria-hidden="true">
-            <path className="sparkline__line" d="M0 40 L32 38 L64 34 L96 36 L128 28 L160 30 L192 22 L224 24 L256 16 L288 14 L320 8" />
+          <svg
+            className="sparkline"
+            viewBox="0 0 320 48"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path
+              className="sparkline__line"
+              d="M0 40 L32 38 L64 34 L96 36 L128 28 L160 30 L192 22 L224 24 L256 16 L288 14 L320 8"
+            />
             <circle className="sparkline__dot" cx="320" cy="8" r="3.5" />
           </svg>
         </div>
@@ -344,7 +492,15 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
           <span className="stat-card__label">{t("home.projects")}</span>
           <span className="stat-card__value">{t("home.projectsValue")}</span>
           <div className="stat-card__delta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M7 17 17 7M9 7h8v8" />
             </svg>
             {t("home.projectsDelta")}
@@ -359,9 +515,21 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
       <section className="card card--feature home__final spotlight">
         <h2 className="home__final-title">{t("home.final.title")}</h2>
         <span className="home__trust">{t("home.offer.trust")}</span>
-        <button type="button" className="btn btn--primary home__hero-btn" onClick={onSignup}>
-          {t("header.signup")}
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <button
+          type="button"
+          className="btn btn--primary home__hero-btn"
+          onClick={isAuthed ? onDemo : onSignup}
+        >
+          {t(isAuthed ? "home.lesson.continue" : "header.signup")}
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>
         </button>
@@ -371,7 +539,13 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
           (фидбек 2026-09: правая колонка на мобильном уезжала вниз страницы, после футера);
           сама rail на home скрыта этим же брейкпоинтом */}
       <div className="home__mobile-rail">
-        <DailyChallenge dbLessons={dbLessons} isAuthed={isAuthed} onAuth={onAuth} onNavigate={onNavigate} backTab="home" />
+        <DailyChallenge
+          dbLessons={dbLessons}
+          isAuthed={isAuthed}
+          onAuth={onAuth}
+          onNavigate={onNavigate}
+          backTab="home"
+        />
         <PromoCard id="book" />
       </div>
 
@@ -387,16 +561,30 @@ function MainView({ onNavigate, onSignup, onDemo, activeTech, onSelectTech, dbLe
           <div className="home__footer-col">
             <h5>{t("footer.product")}</h5>
             {/* Порядок синхронен сайдбару (UX-аудит Р17) */}
-            <button type="button" onClick={() => onNavigate("roadmap")}>{t("sidebar.roadmap")}</button>
-            <button type="button" onClick={() => onNavigate("tasks")}>{t("sidebar.tasks")}</button>
-            <button type="button" onClick={() => onNavigate("editor")}>{t("sidebar.editor")}</button>
-            <button type="button" onClick={() => onNavigate("documentation")}>{t("sidebar.documentation")}</button>
+            <button type="button" onClick={() => onNavigate("roadmap")}>
+              {t("sidebar.roadmap")}
+            </button>
+            <button type="button" onClick={() => onNavigate("tasks")}>
+              {t("sidebar.tasks")}
+            </button>
+            <button type="button" onClick={() => onNavigate("editor")}>
+              {t("sidebar.editor")}
+            </button>
+            <button type="button" onClick={() => onNavigate("documentation")}>
+              {t("sidebar.documentation")}
+            </button>
           </div>
           <div className="home__footer-col">
             <h5>{t("footer.company")}</h5>
-            <button type="button" onClick={() => onNavigate("community")}>{t("sidebar.community")}</button>
-            <button type="button" onClick={() => onNavigate("rankings")}>{t("sidebar.rankings")}</button>
-            <button type="button" onClick={() => onNavigate("support")}>{t("sidebar.support")}</button>
+            <button type="button" onClick={() => onNavigate("community")}>
+              {t("sidebar.community")}
+            </button>
+            <button type="button" onClick={() => onNavigate("rankings")}>
+              {t("sidebar.rankings")}
+            </button>
+            <button type="button" onClick={() => onNavigate("support")}>
+              {t("sidebar.support")}
+            </button>
           </div>
           <div className="home__footer-col">
             <h5>{t("footer.legal")}</h5>

@@ -6,18 +6,24 @@ import WidgetPanel from "./components/WidgetPanel";
 import AuthModal from "./components/AuthModal";
 import NewsModal from "./components/NewsModal";
 import { getTech } from "./lib/techs";
+import { parseDocsPath, docsPathFor } from "./lib/docs-route";
 import { fetchDbLessons } from "./lib/supabase";
 import { readStoredSession, getSession, onAuthChange, signOut, syncProfile, displayName } from "./lib/auth";
 import { syncProgressFromDb, pushProgressToDb } from "./lib/db-progress";
 import { fetchMediumNews, getSeenLinks, markLinkSeen, clearSeenLinks, mediumDayKey, markAllLinksSeen } from "./lib/medium";
+import RouteErrorBoundary from "./components/RouteErrorBoundary";
 
 // URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
 // Единственный параметризованный маршрут: #/technology/<techId> (deep-link на трек).
-const parseHash = () => {
-  const raw = window.location.hash.replace(/^#\/?/, "");
-  const [tab, param] = raw.split("/");
+const parseHash = (raw) => {
+  const s = (raw ?? window.location.hash).replace(/^#\/?/, "");
+  const [tab, param] = s.split("/");
   return { tab: tab || "home", param };
 };
+
+// Documentation: трек/страница живут в РЕАЛЬНОМ пути (/docs/{track}/{pageId}) —
+// refresh и share-ссылки ведут на ту же страницу (catch-all rewrite в vercel.json).
+const isDocsPath = () => window.location.pathname.startsWith("/docs");
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -25,15 +31,28 @@ function App() {
   });
 
   const [activeTab, setActiveTab] = useState(() => {
+    if (parseDocsPath()) return "documentation";
     const fromHash = parseHash().tab;
     if (fromHash) return fromHash;
     const tab = new URLSearchParams(window.location.search).get("tab");
     return tab || "home";
   });
 
-  // Учебный контекст для редактора: { type: "lesson" | "task", title, desc }
-  // URL-параметр вкладки (#/documentation/<slug> — статья; #/technology/<id> — трек)
-  const [routeParam, setRouteParam] = useState(() => parseHash().param);
+  // Доки-маршрут { track, page } — из /docs-пути (null = вкладка не открыта).
+  // Старый bookmark #/documentation без /docs в пути: трек пилюли переносим в URL
+  // синхронно в initializer (не в effect — lint-правило set-state-in-effect)
+  const [docsRoute, setDocsRoute] = useState(() => {
+    const dp = parseDocsPath();
+    if (dp) return dp;
+    if (parseHash().tab === "documentation") {
+      const saved = localStorage.getItem("syntax-tech");
+      const track = saved && getTech(saved) ? saved : "python";
+      history.replaceState(null, "", `${docsPathFor({ track })}#/documentation`);
+      return { track, page: null };
+    }
+    return null;
+  });
+
 
   // Уроки из Supabase (таблица lessons): null = ещё грузится, [] = пусто/сбой (fallback на i18n)
   const [dbLessons, setDbLessons] = useState(null);
@@ -134,14 +153,37 @@ function App() {
     }
   }, []);
 
+  // Доки-навигация: pushState на /docs-путь (hash остаётся #/documentation) —
+// один history-энтри на переход, back/forward через popstate.
+  const navigateDocs = useCallback((route, { replace = false } = {}) => {
+    const path = docsPathFor(route);
+    const url = `${path}#/documentation`;
+    if (window.location.pathname === path && window.location.hash === "#/documentation" && !replace) {
+      setDocsRoute(route);
+      setActiveTab("documentation");
+      return;
+    }
+    if (replace) history.replaceState(null, "", url);
+    else history.pushState(null, "", url);
+    setDocsRoute(route);
+    setActiveTab("documentation");
+    setJob(null);
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
-    if (!window.location.hash) {
+    // Начальная нормализация: #/documentation без /docs-пути обрабатывается в initializer docsRoute
+    const initialDocs = parseDocsPath();
+    if (initialDocs && window.location.hash !== "#/documentation") {
+      history.replaceState(null, "", `${docsPathFor(initialDocs)}#/documentation`);
+    } else if (!window.location.hash) {
       history.replaceState(null, "", "#/home");
     }
     const onHash = () => {
+      // Доки управляет hash сама (pushState); hashchange на /docs-пути игнорируем
+      if (isDocsPath()) return;
       const { tab, param } = parseHash();
       setActiveTab(tab || "home");
-      setRouteParam(param);
       // Deep-link #/technology/<id>: трек из URL становится выбранным (переживает refresh)
       if (tab === "technology" && param && getTech(param)) {
         selectTech(param);
@@ -149,13 +191,50 @@ function App() {
       setJob(pendingJob.current);
       pendingJob.current = null;
     };
+    // Back/forward: docs-энтри меняют только путь (hash тот же) — hashchange не стреляет,
+// поэтому синхронизация из пути идёт здесь
+    const onPop = () => {
+      const dp = parseDocsPath();
+      if (dp) {
+        setDocsRoute(dp);
+        setActiveTab("documentation");
+        setJob(null);
+        return;
+      }
+      // Путь ушёл из доков, а фрагмент не сменился (редко) — держим вкладку по хешу
+      if (parseHash().tab === "documentation") {
+        setActiveTab("documentation");
+        setJob(null);
+      }
+    };
     window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("hashchange", onHash);
+      window.removeEventListener("popstate", onPop);
+    };
   }, [selectTech]);
 
   const openTab = useCallback((tab, newJob = null) => {
+    // Доки: путь — источник правды; из сайдбара/хедера всегда в лендинг текущего трека
+    if (tab === "documentation") {
+      const track =
+        (docsRoute && docsRoute.track) || (activeTech && activeTech !== "none" ? activeTech : "python");
+      navigateDocs({ track, page: null });
+      return;
+    }
     // Страница трека пишет трек в URL — bookmark/refresh ведут на тот же трек
     const wantHash = tab === "technology" && newJob && newJob.techId ? `#/technology/${newJob.techId}` : `#/${tab}`;
+    // Покидаем docs-путь: refresh с /docs/{...}#/home вёл бы обратно в доки — правим путь
+    if (isDocsPath()) {
+      history.replaceState(null, "", `/${wantHash}`);
+      const { param } = parseHash(wantHash);
+      setDocsRoute(null);
+      setActiveTab(tab);
+      if (tab === "technology" && param && getTech(param)) selectTech(param);
+      setJob(newJob);
+      return;
+    }
     if (window.location.hash === wantHash) {
       setActiveTab(tab);
       setJob(newJob);
@@ -163,7 +242,7 @@ function App() {
       pendingJob.current = newJob;
       window.location.hash = wantHash;
     }
-  }, []);
+  }, [docsRoute, activeTech, navigateDocs, selectTech]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -249,22 +328,25 @@ function App() {
           onToggleTheme={toggleTheme}
           onSelectTab={openTab}
         />
-        <MainContent
-          activeTab={activeTab}
-          theme={theme}
-          job={job}
-          onNavigate={openTab}
-          activeTech={activeTech}
-          onSelectTech={selectTech}
-          onSignup={(ctx) => openAuth("signup", ctx)}
-          routeParam={routeParam}
-          dbLessons={dbLessons}
-          session={session}
-          userName={userName}
-          onAuth={openAuth}
-          onLogout={handleLogout}
-          progressTick={progressTick}
-        />
+        <RouteErrorBoundary key={activeTab} onNavigate={openTab}>
+          <MainContent
+            activeTab={activeTab}
+            theme={theme}
+            job={job}
+            onNavigate={openTab}
+            activeTech={activeTech}
+            onSelectTech={selectTech}
+            onSignup={(ctx) => openAuth("signup", ctx)}
+            dbLessons={dbLessons}
+            session={session}
+            userName={userName}
+            onAuth={openAuth}
+            onLogout={handleLogout}
+            progressTick={progressTick}
+            docsRoute={docsRoute}
+            onDocsRoute={navigateDocs}
+          />
+        </RouteErrorBoundary>
         <WidgetPanel
           activeTab={activeTab}
           onNavigate={openTab}

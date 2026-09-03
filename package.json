@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "lint:tasks": "node scripts/lint-tasks.mjs",
+    "lint:docs": "node scripts/lint-docs.mjs",
     "sync:tasks": "node scripts/sync-tasks.mjs"
   },
   "dependencies": {
