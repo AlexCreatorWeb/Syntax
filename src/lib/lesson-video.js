@@ -1,25 +1,32 @@
 // YouTube-видео на странице урока (вкладка «Материал», над контентом).
-// Этап 1 (2026-09): один фиксированный ролик на первом уроке HTML —
-// оттачиваем плеер. Этап 2 (2026-09): мапа lessonNumber → videoId для HTML
-// (подбор: не старше 5 лет, ≤ 10 мин, максимум просмотров, точное
-// совпадение с темой; авторы — WebAkademia / Friendly Frontend / Listen IT).
-// Уроки без видео (2, 7, 14, 16) — задезейбленная заглушка «Video coming
-// soon»; агент подбирает актуальных авторов, id впишем в мапу позже.
+// Этап 1 (2026-09): отточенный кастомный плеер на HTML. Этап 2 (2026-09):
+// мапа lessonNumber → videoId для ВСЕХ 16 уроков HTML — подбор по строгим
+// критериям (не старше 5 лет, ≤ 10 мин (кроме проекта), максимум просмотров,
+// точное совпадение с темой; приоритетные авторы, остальные — заглушки).
+// Уроки без видео — задезейбленная заглушка «Video coming soon»;
+// id вписываем в мапу, заглушки исчезают сами.
 // Размножить на все технологии = дописать id трека в TECHS_WITH_VIDEO
 // (+ логотип в COVER_LOGOS).
 export const LESSON_VIDEO_IDS = {
   1: "NP2NJVfgWm8", // WebAkademia — структура страницы, html/head/meta/body
+  2: "xaiPM8LtY0o", // Topchiy Dev — Unicode/эмодзи, кодировка UTF-8 и числовые сущности
   3: "ny-ouhU-cCc", // Friendly Frontend — h1-h6, p, ol, ul, li
   4: "scB2C0uNV1s", // Friendly Frontend — a/button, якоря, mailto/tel, target
   5: "wKHiuEeV1gU", // WebAkademia — ссылки в шапке (портфолио, контакты)
   6: "uCXwmupsoMY", // Friendly Frontend — img, относительные/абсолютные пути
+  7: "g8Dw9auTr_g", // ART PROGRAMS — списки: маркированный, нумерованный, определений
   8: "jWXGLAD2BUU", // Friendly Frontend — table/tr/td/th, thead/tbody/tfoot
   9: "_in4LAdxAUA", // Friendly Frontend — form/fieldset/legend/label/input
   10: "ScPhhvz1z5Q", // Friendly Frontend — input type: tel/email/password/…
   11: "7ZZK9Iprw5c", // Friendly Frontend — header/main/footer/section/aside/nav
   12: "6PL2TqBdz0I", // Friendly Frontend — video/audio/iframe/source
   13: "3wsvVLOrI3g", // Friendly Frontend — Frontend Accessibility 2024 (11:39)
+  14: "BwRqadwnBA4", // Вебмастер спит — мета-теги title и description для SEO
   15: "pznMUqqotpk", // Friendly Frontend — модальное окно, тег dialog
+  // Финальный проект: лимит 10 мин снят по решению (2026-09) — лайт-проект
+  // чистый HTML + CSS (без JS/SCSS), ~1,5 ч; при необходимости заменим на
+  // PoJaRi7Ug7Q (WebAkademia, 2:00:35, 139,8 тыс. просм.)
+  16: "eCYWUhaIvsA", // WebAkademia — верстка сайта на HTML/CSS + размещение в интернете (1:19:24)
 };
 export const TECHS_WITH_VIDEO = ["html"];
 

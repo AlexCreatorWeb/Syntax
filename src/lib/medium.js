@@ -19,7 +19,10 @@ const TOP_N = 8; // сколько новостей показать в дроп
 const FEED_GAP_MS = 1050; // ~1 req/с — последовательно, иначе 429
 // Прокси-база (Vercel): в prod — same-origin (/api/medium); в dev — prod-деплой
 // (тот же VITE_AI_PROXY_URL, что и для AI — один и тот же Vercel-проект).
-const PROXY_BASE = (import.meta.env.VITE_AI_PROXY_URL || "").replace(/\/+$/, "");
+const PROXY_BASE = (import.meta.env.VITE_AI_PROXY_URL || "").replace(
+  /\/+$/,
+  "",
+);
 let newsPending = null; // in-flight дедупликация (StrictMode дублирует mount-эффект)
 
 // Технология платформы → тег Medium + фильтр релевантности.
@@ -28,7 +31,10 @@ let newsPending = null; // in-flight дедупликация (StrictMode дуб
 const TECH_MEDIUM = {
   html: { tag: "html", keywords: /\bhtml\b/i },
   css: { tag: "css", keywords: /\bcss\b/i },
-  javascript: { tag: "javascript", keywords: /javascript|ecmascript|\bjs\b|\bes6\b|\bes20\d\d\b/i },
+  javascript: {
+    tag: "javascript",
+    keywords: /javascript|ecmascript|\bjs\b|\bes6\b|\bes20\d\d\b/i,
+  },
   react: { tag: "react", keywords: /\breact\b/i },
   vue: { tag: "vue", keywords: /\bvue\b/i },
   node: { tag: "node", keywords: /node\.js|\bnode\b(?!s)/i },
@@ -112,13 +118,22 @@ function readLsCache() {
     const raw = localStorage.getItem(LS_CACHE_KEY);
     if (!raw) return null;
     const c = JSON.parse(raw);
-    return Array.isArray(c.items) && c.ts && Date.now() - c.ts < CACHE_TTL_MS ? c.items : null;
+    return Array.isArray(c.items) && c.ts && Date.now() - c.ts < CACHE_TTL_MS
+      ? c.items
+      : null;
   } catch {
     return null;
   }
 }
 function writeLsCache(items) {
-  try { localStorage.setItem(LS_CACHE_KEY, JSON.stringify({ ts: Date.now(), items })); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(
+      LS_CACHE_KEY,
+      JSON.stringify({ ts: Date.now(), items }),
+    );
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
@@ -151,14 +166,23 @@ async function fetchFeedItems(feed) {
       url: `${RSS2JSON}?rss_url=${encodeURIComponent(xmlUrl)}`,
       toItems: async (res) => {
         const json = await res.json();
-        if (json.status !== "ok" || !Array.isArray(json.items)) throw new Error("bad feed");
+        if (json.status !== "ok" || !Array.isArray(json.items))
+          throw new Error("bad feed");
         return json.items;
       },
     },
-    { id: "allorigins", url: `https://api.allorigins.win/raw?url=${encodeURIComponent(xmlUrl)}`, toItems: rssXmlToItems },
+    {
+      id: "allorigins",
+      url: `https://api.allorigins.win/raw?url=${encodeURIComponent(xmlUrl)}`,
+      toItems: rssXmlToItems,
+    },
     // Jina читает RSS с CORS и отдаёт markdown: "### [](url)" + дата RFC2822.
     // Титулы пустые — slug → заголовок. Самая живучая нога (RPM-лимит, не дневной).
-    { id: "jina", url: `https://r.jina.ai/${xmlUrl}`, toItems: (res) => res.text().then(jinaRssToItems) },
+    {
+      id: "jina",
+      url: `https://r.jina.ai/${xmlUrl}`,
+      toItems: (res) => res.text().then(jinaRssToItems),
+    },
   ];
   for (const gw of gateways) {
     if (gwFail[gw.id] >= GW_DEAD) continue; // сессийно мёртвый — дальше
@@ -192,7 +216,9 @@ function jinaRssToItems(src) {
   const items = [];
   for (const blk of body.split(/^### \[/m).slice(1)) {
     const urlM = blk.match(/\]\((https?:[^)\s]+)\)/);
-    const dateM = blk.match(/([A-Z][a-z]{2}, \d{1,2} [A-Z][a-z]{2} \d{4} [\d:]+ GMT)/);
+    const dateM = blk.match(
+      /([A-Z][a-z]{2}, \d{1,2} [A-Z][a-z]{2} \d{4} [\d:]+ GMT)/,
+    );
     if (!urlM) continue;
     items.push({
       link: urlM[1],
@@ -254,51 +280,52 @@ export async function fetchMediumNews({ refresh = false } = {}) {
       for (let fi = 0; fi < feeds.length; fi++) {
         const feed = feeds[fi];
         all.push(...(await fetchFeedItems(feed)));
-        if (fi < feeds.length - 1) await new Promise((r) => setTimeout(r, FEED_GAP_MS));
+        if (fi < feeds.length - 1)
+          await new Promise((r) => setTimeout(r, FEED_GAP_MS));
       }
-    const seen = new Set();
-    const today = all.filter((it) => {
-      if (seen.has(it.link)) return false;
-      seen.add(it.link);
-      return isPublishedToday(it.pubDate);
-    });
-    // Разнообразие: «топ-8 самых свежих» захватывает одна активная технология
-    // (фидбэк: «все новости Python»). ROUND-ROBIN: сначала по ОДНОЙ СЛУЧАЙНОЙ
-    // статье с каждой технологии, потом второй круг — до N. Рандом внутри
-    // технологии: при каждом refresh (10 мин) сет меняется.
-    const byTech = new Map();
-    for (const it of today) {
-      const arr = byTech.get(it.techId) || [];
-      arr.push(it);
-      byTech.set(it.techId, arr);
-    }
-    for (const arr of byTech.values()) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+      const seen = new Set();
+      const today = all.filter((it) => {
+        if (seen.has(it.link)) return false;
+        seen.add(it.link);
+        return isPublishedToday(it.pubDate);
+      });
+      // Разнообразие: «топ-8 самых свежих» захватывает одна активная технология
+      // (фидбэк: «все новости Python»). ROUND-ROBIN: сначала по ОДНОЙ СЛУЧАЙНОЙ
+      // статье с каждой технологии, потом второй круг — до N. Рандом внутри
+      // технологии: при каждом refresh (10 мин) сет меняется.
+      const byTech = new Map();
+      for (const it of today) {
+        const arr = byTech.get(it.techId) || [];
+        arr.push(it);
+        byTech.set(it.techId, arr);
       }
-    }
-    const picked = [];
-    const techs = [...byTech.keys()];
-    for (let round = 0; picked.length < TOP_N && techs.length; round++) {
-      let added = false;
-      for (const tid of techs) {
-        const arr = byTech.get(tid);
-        if (arr.length > round) {
-          picked.push(arr[round]);
-          added = true;
-          if (picked.length >= TOP_N) break;
+      for (const arr of byTech.values()) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
         }
       }
-      if (!added) break;
-    }
-    // Пустой результат НЕ кэшируем: иначе сбой всех шлюзов «залипает» до TTL кэша
-    // (2ч) и фид пустует дольше, чем надо. Следующий поллинг (10 мин) перечитает ленты.
-    if (picked.length) {
-      newsCache = picked;
-      writeLsCache(picked);
-    }
-    return picked;
+      const picked = [];
+      const techs = [...byTech.keys()];
+      for (let round = 0; picked.length < TOP_N && techs.length; round++) {
+        let added = false;
+        for (const tid of techs) {
+          const arr = byTech.get(tid);
+          if (arr.length > round) {
+            picked.push(arr[round]);
+            added = true;
+            if (picked.length >= TOP_N) break;
+          }
+        }
+        if (!added) break;
+      }
+      // Пустой результат НЕ кэшируем: иначе сбой всех шлюзов «залипает» до TTL кэша
+      // (2ч) и фид пустует дольше, чем надо. Следующий поллинг (10 мин) перечитает ленты.
+      if (picked.length) {
+        newsCache = picked;
+        writeLsCache(picked);
+      }
+      return picked;
     } finally {
       newsPending = null;
     }
@@ -336,7 +363,9 @@ const JUNK_LINES = [
 function cleanArticleMarkdown(md) {
   const src = String(md || "");
   const marker = "Markdown Content:";
-  const body = src.includes(marker) ? src.slice(src.indexOf(marker) + marker.length) : src;
+  const body = src.includes(marker)
+    ? src.slice(src.indexOf(marker) + marker.length)
+    : src;
   const out = [];
   let avatar = null;
   let first = true; // первый НЕПУСТОЙ ряд (body начинается с \n)
@@ -369,7 +398,10 @@ function cleanArticleMarkdown(md) {
   });
   const fences = (out.join("\n").match(/```/g) || []).length;
   if (fences % 2 === 1) out.push("```");
-  let finalMd = wrapCodeLines(out).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  let finalMd = wrapCodeLines(out)
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
   // M1-аудит: Jina оборачивает ссылки в жирный — **<link>** рендерится звёздами;
   // оставляем ссылку, жирный вокруг неё теряем
   finalMd = finalMd.replace(/\*\*\[([^\]\n]+)\]\(([^)\s]+)\)\*\*/g, "[$1]($2)");
@@ -384,7 +416,8 @@ function cleanArticleMarkdown(md) {
 // Jina Reader часто «ломает» кодовые блоки: статья получает сырые строки кода
 // (<img, src=…, />), которые «плывут» в тексте. Хэвистик: последовательные
 // «кодовые» строки сворачиваем в ```-блок → рендерится фреймом .code-block.
-const CODE_START = /^(<[a-zA-Z/!?]|function\b|return\b|import\b|export\b|const\b|let\b|var\b|\S+\(.*\)\s*\{\s*$)/;
+const CODE_START =
+  /^(<[a-zA-Z/!?]|function\b|return\b|import\b|export\b|const\b|let\b|var\b|\S+\(.*\)\s*\{\s*$)/;
 const CODE_CONT = /^(\s+\S|\s*[{}();,]|\/>|<>|<\/?[a-zA-Z])|\s*=\s*\S.*$/;
 function wrapCodeLines(lines) {
   const res = [];
@@ -399,10 +432,16 @@ function wrapCodeLines(lines) {
   for (const line of lines) {
     if (buf.length) {
       // пустые строки допустимы ВНУТРИ группы (Jina разводит кодовые строки пустотами)
-      if (line === "" || CODE_CONT.test(line)) { buf.push(line); continue; }
+      if (line === "" || CODE_CONT.test(line)) {
+        buf.push(line);
+        continue;
+      }
       flush();
     }
-    if (CODE_START.test(line)) { buf.push(line); continue; }
+    if (CODE_START.test(line)) {
+      buf.push(line);
+      continue;
+    }
     res.push(line);
   }
   flush();
@@ -417,7 +456,10 @@ export async function fetchMediumArticle(link, timeoutMs = 25000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(`${JINA}${link}?target_selector=.postArticle-content`, { signal: ctrl.signal });
+    const res = await fetch(
+      `${JINA}${link}?target_selector=.postArticle-content`,
+      { signal: ctrl.signal },
+    );
     if (!res.ok) throw new Error(`http ${res.status}`);
     const value = cleanArticleMarkdown(await res.text());
     if (!value.md) throw new Error("empty article");
