@@ -367,6 +367,14 @@ export default {
     courseLang: "RU",
     courseLangNote:
       "Course content is in Russian for now — more languages are coming",
+    lessonOf: "Lesson {n} of {m}",
+    doneTitle: "Lesson completed · +{xp} XP",
+    upNext: "Up next",
+    nextLesson: "Next lesson",
+    courseList: "Course list",
+    prev: "Previous",
+    next: "Next",
+    taskFab: "Go to task",
   },
   ai: {
     thinking: "Thinking…",

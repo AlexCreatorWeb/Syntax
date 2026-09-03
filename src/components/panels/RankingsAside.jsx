@@ -4,7 +4,7 @@ import Avatar from "../Avatar";
 // Значения — в «XP/10» для наглядности (демо); tooltip — реальные значения
 const WEEK_BARS = [30, 50, 40, 80, 60, 90]; // последнее — сегодня
 
-function RankingsAside() {
+function RankingsAside({ isAuthed = false, onAuth = null }) {
   const t = useT();
   const days = t("rankings.weeklyDays");
   const weekTotal = WEEK_BARS.reduce((a, b) => a + b, 0) * 10;
@@ -14,31 +14,46 @@ function RankingsAside() {
       <aside className="card rank-card">
         <div className="rank-card__top">
           <div>
-            <span className="label-caps rank-card__label">{t("rankings.yourRank")}</span>
+            <span className="label-caps rank-card__label">
+              {t("rankings.yourRank")}
+              {!isAuthed && <span className="chip chip--sample rank-card__sample">SAMPLE</span>}
+            </span>
             <div className="rank-card__number-row">
-              <span className="rank-card__number">#6</span>
-              <span className="rank-card__up">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 19V5" />
-                  <path d="m5 12 7-7 7 7" />
-                </svg>
-                2
-              </span>
+              <span className="rank-card__number">{isAuthed ? "#6" : "—"}</span>
+              {isAuthed && (
+                <span className="rank-card__up">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 19V5" />
+                    <path d="m5 12 7-7 7 7" />
+                  </svg>
+                  2
+                </span>
+              )}
             </div>
           </div>
-          <Avatar name="NeoCoder" hue={158} size="avatar" />
+          {isAuthed ? (
+            <Avatar name="NeoCoder" hue={158} size="avatar" />
+          ) : (
+            <button type="button" className="btn btn--primary rank-card__cta" onClick={() => onAuth && onAuth("signup")}>
+              {t("rankings.railCta")}
+            </button>
+          )}
         </div>
 
-        <div className="rank-card__next">
-          <div className="rank-card__next-row">
-            <span>{t("rankings.nextRank")}</span>
-            <span className="rank-card__next-xp">{t("rankings.needXp")}</span>
+        {isAuthed ? (
+          <div className="rank-card__next">
+            <div className="rank-card__next-row">
+              <span>{t("rankings.nextRank")}</span>
+              <span className="rank-card__next-xp">{t("rankings.needXp")}</span>
+            </div>
+            {/* 9840 / 10120 = 97% — совпадает с прогрессом в строке таблицы */}
+            <div className="bar rank-card__bar">
+              <div className="bar__fill bar__fill--shimmer" style={{ width: "97%" }}></div>
+            </div>
           </div>
-          {/* 9840 / 10120 = 97% — совпадает с прогрессом в строке таблицы */}
-          <div className="bar rank-card__bar">
-            <div className="bar__fill bar__fill--shimmer" style={{ width: "97%" }}></div>
-          </div>
-        </div>
+        ) : (
+          <p className="rank-card__guest-note">{t("rankings.railGuestNote")}</p>
+        )}
 
         <div className="rank-card__weekly">
           <h4>

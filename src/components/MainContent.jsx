@@ -345,7 +345,7 @@ function MainContent({
           />
         );
       case "rankings":
-        return <RankingsView />;
+        return <RankingsView isAuthed={isAuthed} onAuth={onAuth} />;
       case "community":
         return <CommunityView activeTech={activeTech} />;
       case "settings":

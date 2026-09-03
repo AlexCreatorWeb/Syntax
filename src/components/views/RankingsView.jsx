@@ -68,7 +68,7 @@ function Delta({ value }) {
   return <span className="rk-delta" aria-hidden="true">—</span>;
 }
 
-function RankingsView() {
+function RankingsView({ isAuthed = false, onAuth = null }) {
   const t = useT();
   const [scope, setScope] = useState("global");
   const [period, setPeriod] = useState("all");
@@ -271,7 +271,20 @@ function RankingsView() {
                 <tr
                   key={row.name}
                   ref={row.you ? youRowRef : undefined}
-                  className={`rankings__row rankings__row--in ${row.you ? "rankings__row--you" : ""}`}
+                  className={`rankings__row rankings__row--in ${row.you ? "rankings__row--you" : ""}${row.you && !isAuthed ? " rankings__row--cta" : ""}`}
+                  role={row.you && !isAuthed ? "button" : undefined}
+                  tabIndex={row.you && !isAuthed ? 0 : undefined}
+                  onClick={row.you && !isAuthed ? () => onAuth && onAuth("signup") : undefined}
+                  onKeyDown={
+                    row.you && !isAuthed
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onAuth && onAuth("signup");
+                          }
+                        }
+                      : undefined
+                  }
                 >
                   <td className="rk-center rankings__rank">
                     #{row.rank} <Delta value={row.delta} />
@@ -281,7 +294,7 @@ function RankingsView() {
                       <Avatar name={row.name} hue={row.hue} size="sm" ring={row.you} />
                       <div className="rankings__user-info">
                         <span className="rankings__username">
-                          {row.you && !row.members ? t("rankings.you") : row.name}
+                          {row.you && !row.members ? (isAuthed ? t("rankings.you") : t("rankings.guestRow")) : row.name}
                         </span>
                         {/* Мобилка: уровень/участники под именем (колонки скрыты) */}
                         <span className="rankings__user-sub">
@@ -289,8 +302,9 @@ function RankingsView() {
                         </span>
                       </div>
                     </div>
-                    {/* Прогресс «до следующего ранга» — в самой строке пользователя */}
-                    {row.you && nextRow && (
+                    {/* Прогресс «до следующего ранга» — в самой строке пользователя
+                        (гостю не показываем: демо-ранг без аккаунта — вводить в заблуждение) */}
+                    {row.you && nextRow && isAuthed && (
                       <div className="rankings__you-next">
                         <div className="bar bar--mini">
                           <div className="bar__fill" style={{ width: `${youProgress}%` }}></div>
