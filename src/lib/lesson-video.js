@@ -101,7 +101,11 @@ export function getLessonVideo(job) {
   if (!num) return null; // demo-урок без номера — без видео
   const id = LESSON_VIDEO_IDS[num];
   if (!id) {
-    return { num, placeholder: true, thumb: makeThumb(job.techId, job.techId.toUpperCase(), num) };
+    return {
+      num,
+      placeholder: true,
+      thumb: makeThumb(job.techId, job.techId.toUpperCase(), num),
+    };
   }
   return {
     id,

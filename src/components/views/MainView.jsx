@@ -588,7 +588,10 @@ function MainView({
             </button>
           </div>
           <div className="home__footer-col">
-            <h5>{t("footer.legal")} <span className="soon-badge">{t("home.soon")}</span></h5>
+            <h5>
+              {t("footer.legal")}{" "}
+              <span className="soon-badge">{t("home.soon")}</span>
+            </h5>
             <button type="button">{t("footer.privacy")}</button>
             <button type="button">{t("footer.terms")}</button>
           </div>

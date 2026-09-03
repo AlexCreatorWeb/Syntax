@@ -9,7 +9,13 @@ import { totalXp } from "../../lib/xp";
 // Логотипы треков — static-мапа на уровне модуля (React-Compiler: не создавать
 // компоненты в рендере).
 const TRACK_LOGOS = Object.fromEntries(TECHS.map((tc) => [tc.id, tc.Logo]));
-const DATE_LOCALES = { en: "en-GB", ru: "ru-RU", uk: "uk-UA", es: "es-ES", de: "de-DE" };
+const DATE_LOCALES = {
+  en: "en-GB",
+  ru: "ru-RU",
+  uk: "uk-UA",
+  es: "es-ES",
+  de: "de-DE",
+};
 
 function nameHueOf(name) {
   let h = 0;
@@ -18,18 +24,28 @@ function nameHueOf(name) {
   return h;
 }
 
-function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLessons }) {
+function ProfileView({
+  session,
+  userName,
+  onAuth,
+  onNavigate,
+  onLogout,
+  dbLessons,
+}) {
   const t = useT();
   const { langCode } = useLanguage();
   const isAuthed = Boolean(session && session.user);
   const hue = nameHueOf(userName);
   const memberSince =
     isAuthed && session.user.created_at
-      ? new Date(session.user.created_at).toLocaleDateString(DATE_LOCALES[langCode] || "en-GB", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+      ? new Date(session.user.created_at).toLocaleDateString(
+          DATE_LOCALES[langCode] || "en-GB",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          },
+        )
       : null;
 
   // Прогресс по трекам, у которых есть курс в БД (иначе «N of M» не имеет смысла)
@@ -44,31 +60,53 @@ function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLesson
       const dbIds = new Set(dbTech.map((l) => l.id));
       const done = getCompleted(tc.id).filter((id) => dbIds.has(id)).length;
       totalDone += done;
-      rows.push({ id: tc.id, Logo: TRACK_LOGOS[tc.id], done, total: dbTech.length });
+      rows.push({
+        id: tc.id,
+        Logo: TRACK_LOGOS[tc.id],
+        done,
+        total: dbTech.length,
+      });
     }
   }
 
   return (
     <div className="profile">
       <section className="card card--feature profile__card spotlight">
-        <span className="avatar-dot avatar-dot--md profile__avatar" style={{ background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 18%))` }}>
+        <span
+          className="avatar-dot avatar-dot--md profile__avatar"
+          style={{
+            background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 18%))`,
+          }}
+        >
           {(isAuthed && userName ? userName : "S").charAt(0).toUpperCase()}
         </span>
         {isAuthed ? (
           <>
             <h1 className="profile__name">{userName}</h1>
             <p className="profile__email">{session.user.email}</p>
-            {memberSince && <p className="profile__since">{t("profile.memberSince", { date: memberSince })}</p>}
+            {memberSince && (
+              <p className="profile__since">
+                {t("profile.memberSince", { date: memberSince })}
+              </p>
+            )}
           </>
         ) : (
           <>
             <h1 className="profile__name">{t("profile.guestTitle")}</h1>
             <p className="profile__desc">{t("profile.guestBody")}</p>
             <div className="profile__cta">
-              <button type="button" className="btn btn--primary" onClick={() => onAuth("signup")}>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => onAuth("signup")}
+              >
                 {t("profile.signup")}
               </button>
-              <button type="button" className="btn btn--ghost" onClick={() => onAuth("login")}>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => onAuth("login")}
+              >
                 {t("profile.login")}
               </button>
             </div>
@@ -83,7 +121,9 @@ function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLesson
                   ["profile.gets4t", "profile.gets4d"],
                 ].map(([tk, dk], i) => (
                   <li key={i} className="profile__gets-item">
-                    <span className="profile__gets-ico" aria-hidden="true">✓</span>
+                    <span className="profile__gets-ico" aria-hidden="true">
+                      ✓
+                    </span>
                     <div className="profile__gets-body">
                       <strong>{t(tk)}</strong>
                       <p>{t(dk)}</p>
@@ -101,20 +141,40 @@ function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLesson
           <header className="profile__progress-head">
             <h2>{t("profile.progress")}</h2>
             <span className="profile__progress-total">
-              {t("profile.totalDone", { n: totalDone })}{isAuthed && doneTasks > 0 ? ` · ${t("profile.tasksDone", { n: doneTasks })}` : ""} · {t("profile.xp", { n: xpTotal })}
+              {t("profile.totalDone", { n: totalDone })}
+              {isAuthed && doneTasks > 0
+                ? ` · ${t("profile.tasksDone", { n: doneTasks })}`
+                : ""}{" "}
+              · {t("profile.xp", { n: xpTotal })}
             </span>
           </header>
           {rows.length ? (
             <div className="profile__rows">
               {rows.map(({ id, Logo, done, total }) => (
                 <div className="profile__row" key={id}>
-                  <span className="profile__row-logo" onClick={() => onNavigate("technology", { techId: id })} role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onNavigate("technology", { techId: id })}>
+                  <span
+                    className="profile__row-logo"
+                    onClick={() => onNavigate("technology", { techId: id })}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" &&
+                      onNavigate("technology", { techId: id })
+                    }
+                  >
                     <Logo />
                   </span>
                   <div className="profile__row-body">
-                    <span className="profile__row-name">{t(`home.tech.${id}`)}</span>
+                    <span className="profile__row-name">
+                      {t(`home.tech.${id}`)}
+                    </span>
                     <span className="profile__bar" aria-hidden="true">
-                      <span className="profile__bar-fill" style={{ width: `${Math.round((done / total) * 100)}%` }} />
+                      <span
+                        className="profile__bar-fill"
+                        style={{
+                          width: `${Math.round((done / total) * 100)}%`,
+                        }}
+                      />
                     </span>
                   </div>
                   <span className="profile__row-count">
@@ -126,10 +186,18 @@ function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLesson
           ) : (
             <p className="profile__empty">{t("profile.progressEmpty")}</p>
           )}
-          <button type="button" className="btn btn--ghost profile__open" onClick={() => onNavigate("roadmap")}>
+          <button
+            type="button"
+            className="btn btn--ghost profile__open"
+            onClick={() => onNavigate("roadmap")}
+          >
             {t("profile.openRoadmap")}
           </button>
-          <button type="button" className="btn btn--ghost profile__logout" onClick={onLogout}>
+          <button
+            type="button"
+            className="btn btn--ghost profile__logout"
+            onClick={onLogout}
+          >
             {t("account.logout")}
           </button>
         </section>

@@ -30,7 +30,7 @@ console.log("Hello, Syntax!");`,
 
 body {
   margin: 0;
-}`, 
+}`,
 
   python: `# Your code here
 
@@ -153,7 +153,10 @@ function fixJsOffsets(doc, blocks, js) {
   const markerLine = (doc.slice(0, first).match(/\n/g) || []).length + 1; // строка тегов-маркеров
   let shift = 0;
   const fixed = blocks.map((b) => {
-    const out = b.replace(marker, `window.__syntaxOffset = ${markerLine + shift + 1};`);
+    const out = b.replace(
+      marker,
+      `window.__syntaxOffset = ${markerLine + shift + 1};`,
+    );
     shift += b.split("\n").length + 1; // +1 на \n между блоками
     return out;
   });
@@ -165,7 +168,10 @@ function buildJsBlocks(files, contents) {
   // сам блок не исполняется, но маркер-тег успевает (аудит #3)
   return files
     .filter((f) => f.language === "javascript" && !/\.jsx$/.test(f.name)) // jsx → React-раннер (buildReactDoc)
-    .map((f) => `<script>window.__syntaxOffset = 0;</script>\n<script>\n${contents[f.id] ?? ""}\n</script>`);
+    .map(
+      (f) =>
+        `<script>window.__syntaxOffset = 0;</script>\n<script>\n${contents[f.id] ?? ""}\n</script>`,
+    );
 }
 
 // Тестовый harness для задач (2026-09): тесты бегут в той же песочнице, что и код
@@ -222,7 +228,9 @@ const TESTS_HARNESS_PY = (tests) => `
 
 // Собирает превью: HTML-файл + инлайн CSS и JS из соседних вкладок (+ перехват console)
 function buildPreviewDoc(files, contents, tests = null) {
-  const htmlFile = files.find((f) => f.language === "html" && !/\.vue$/.test(f.name)); // .vue → Vue-раннер
+  const htmlFile = files.find(
+    (f) => f.language === "html" && !/\.vue$/.test(f.name),
+  ); // .vue → Vue-раннер
   if (!htmlFile) return null;
 
   const css = files
@@ -232,11 +240,17 @@ function buildPreviewDoc(files, contents, tests = null) {
   const blocks = buildJsBlocks(files, contents);
   const js = blocks.join("\n");
   const baseStyle = `<style>html, body { background-color: ${PREVIEW_BG}; }</style>`;
-  const testsJs = tests && tests.length ? TESTS_HARNESS(tests) + `<script>setTimeout(function(){ window.__syntaxRunTests && window.__syntaxRunTests(); }, 0);</script>` : "";
+  const testsJs =
+    tests && tests.length
+      ? TESTS_HARNESS(tests) +
+        `<script>setTimeout(function(){ window.__syntaxRunTests && window.__syntaxRunTests(); }, 0);</script>`
+      : "";
 
   let doc = contents[htmlFile.id] ?? "";
   const injection = baseStyle + css + CONSOLE_CAPTURE + js + testsJs;
-  doc = doc.includes("</body>") ? doc.replace("</body>", `${injection}\n</body>`) : doc + injection;
+  doc = doc.includes("</body>")
+    ? doc.replace("</body>", `${injection}\n</body>`)
+    : doc + injection;
   return fixJsOffsets(doc, blocks, js);
 }
 
@@ -351,29 +365,48 @@ try {
 
 function buildRunnerDoc(files, contents, job = null) {
   const tests = job && Array.isArray(job.tests) ? job.tests : null;
-  const vueFile = files.find((f) => f.language === "html" && /\.vue$/.test(f.name));
+  const vueFile = files.find(
+    (f) => f.language === "html" && /\.vue$/.test(f.name),
+  );
   if (vueFile) return buildVueDoc(contents[vueFile.id] ?? "", tests);
-  const jsxFile = files.find((f) => f.language === "javascript" && /\.jsx$/.test(f.name));
+  const jsxFile = files.find(
+    (f) => f.language === "javascript" && /\.jsx$/.test(f.name),
+  );
   if (jsxFile) return buildReactDoc(contents[jsxFile.id] ?? "", tests);
   // Python-трехк: main.py → Pyodide (настоящий CPython в WASM)
   if (job && job.techId === "python") {
-    const pyFile = files.find((f) => f.language === "python" && /\.py$/.test(f.name));
+    const pyFile = files.find(
+      (f) => f.language === "python" && /\.py$/.test(f.name),
+    );
     if (pyFile) return buildPythonDoc(contents[pyFile.id] ?? "", tests);
   }
   // Node/mongo-трехк: .js-файл (server.js / query.js / …) → Node-sandbox (ESM + import map)
-  const isNodeTrack = Boolean(job && (job.techId === "node" || job.techId === "mongo" || job.techId === "postgres"));
+  const isNodeTrack = Boolean(
+    job &&
+      (job.techId === "node" ||
+        job.techId === "mongo" ||
+        job.techId === "postgres"),
+  );
   if (isNodeTrack) {
-    const jsFile = files.find((f) => f.language === "javascript" && /\.js$/.test(f.name));
+    const jsFile = files.find(
+      (f) => f.language === "javascript" && /\.js$/.test(f.name),
+    );
     if (jsFile) return buildNodeDoc(contents[jsFile.id] ?? "", job);
   }
   // postgres-трехк: .sql-файл (queries.sql) → PGlite (WASM Postgres в браузере)
   if (job && job.techId === "postgres") {
-    const sqlFile = files.find((f) => f.language === "sql" && /\.sql$/.test(f.name));
+    const sqlFile = files.find(
+      (f) => f.language === "sql" && /\.sql$/.test(f.name),
+    );
     if (sqlFile) return buildSqlDoc(contents[sqlFile.id] ?? "");
   }
   const blocks = buildJsBlocks(files, contents);
   const js = blocks.join("\n");
-  const testsJs = tests && tests.length ? TESTS_HARNESS(tests) + `<script>setTimeout(function(){ window.__syntaxRunTests && window.__syntaxRunTests(); }, 0);</script>` : "";
+  const testsJs =
+    tests && tests.length
+      ? TESTS_HARNESS(tests) +
+        `<script>setTimeout(function(){ window.__syntaxRunTests && window.__syntaxRunTests(); }, 0);</script>`
+      : "";
   let doc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${CONSOLE_CAPTURE}${js}${testsJs}</body></html>`;
   return fixJsOffsets(doc, blocks, js);
 }
@@ -444,16 +477,23 @@ try {
 const VUE_IMPORT_MAP = JSON.stringify({
   imports: {
     vue: "https://unpkg.com/vue@3.4.38/dist/vue.esm-bundler.js",
-    "@vue/compiler-dom": "https://unpkg.com/@vue/compiler-dom@3.4.38/dist/compiler-dom.esm-bundler.js",
-    "@vue/compiler-core": "https://unpkg.com/@vue/compiler-core@3.4.38/dist/compiler-core.esm-bundler.js",
-    "@vue/runtime-dom": "https://unpkg.com/@vue/runtime-dom@3.4.38/dist/runtime-dom.esm-bundler.js",
-    "@vue/runtime-core": "https://unpkg.com/@vue/runtime-core@3.4.38/dist/runtime-core.esm-bundler.js",
-    "@vue/reactivity": "https://unpkg.com/@vue/reactivity@3.4.38/dist/reactivity.esm-bundler.js",
-    "@vue/shared": "https://unpkg.com/@vue/shared@3.4.38/dist/shared.esm-bundler.js",
+    "@vue/compiler-dom":
+      "https://unpkg.com/@vue/compiler-dom@3.4.38/dist/compiler-dom.esm-bundler.js",
+    "@vue/compiler-core":
+      "https://unpkg.com/@vue/compiler-core@3.4.38/dist/compiler-core.esm-bundler.js",
+    "@vue/runtime-dom":
+      "https://unpkg.com/@vue/runtime-dom@3.4.38/dist/runtime-dom.esm-bundler.js",
+    "@vue/runtime-core":
+      "https://unpkg.com/@vue/runtime-core@3.4.38/dist/runtime-core.esm-bundler.js",
+    "@vue/reactivity":
+      "https://unpkg.com/@vue/reactivity@3.4.38/dist/reactivity.esm-bundler.js",
+    "@vue/shared":
+      "https://unpkg.com/@vue/shared@3.4.38/dist/shared.esm-bundler.js",
     "vue-router": "https://unpkg.com/vue-router@4.4.3/dist/vue-router.mjs",
     pinia: "https://unpkg.com/pinia@2.1.7/dist/pinia.mjs",
     "vue-demi": "https://unpkg.com/vue-demi@0.14.10/lib/index.mjs",
-    "@vue/devtools-api": "https://unpkg.com/@vue/devtools-api@6.6.3/lib/esm/index.js",
+    "@vue/devtools-api":
+      "https://unpkg.com/@vue/devtools-api@6.6.3/lib/esm/index.js",
     "@vue/compiler-sfc": "https://esm.sh/@vue/compiler-sfc@3.4.38",
   },
 });
@@ -536,11 +576,14 @@ ${src}
 const NODE_SHIM_MODULES = {
   fs: "const s=globalThis.__shims.fs;export default s;export const readFileSync=(...a)=>s.readFileSync(...a);export const writeFileSync=(...a)=>s.writeFileSync(...a);export const mkdirSync=(...a)=>s.mkdirSync(...a);export const readdirSync=(...a)=>s.readdirSync(...a);export const existsSync=(...a)=>s.existsSync(...a);export const statSync=(...a)=>s.statSync(...a);export const unlinkSync=(...a)=>s.unlinkSync(...a);export const accessSync=(...a)=>s.accessSync(...a);export const readFile=(...a)=>s.readFile(...a);export const writeFile=(...a)=>s.writeFile(...a);export const mkdir=(...a)=>s.mkdir(...a);export const appendFile=(...a)=>s.appendFile(...a);export const createReadStream=(...a)=>s.createReadStream(...a);export const createWriteStream=(...a)=>s.createWriteStream(...a);",
   path: "export default globalThis.__shims.path;",
-  stream: "const s=globalThis.__shims.stream;export default s;export const Readable=s.Readable;export const Writable=s.Writable;export const Transform=s.Transform;export const PassThrough=s.PassThrough;export const Duplex=s.Duplex;",
+  stream:
+    "const s=globalThis.__shims.stream;export default s;export const Readable=s.Readable;export const Writable=s.Writable;export const Transform=s.Transform;export const PassThrough=s.PassThrough;export const Duplex=s.Duplex;",
   http: "const s=globalThis.__shims.http;export default s;export const createServer=(...a)=>s.createServer(...a);export const STATUS_CODES=s.STATUS_CODES;export const METHODS=s.METHODS;",
-  express: "const s=globalThis.__shims.express;export default s;export const Router=s.Router;",
+  express:
+    "const s=globalThis.__shims.express;export default s;export const Router=s.Router;",
   pg: "export default globalThis.__shims.pg;",
-  mongodb: "const s=globalThis.__shims.mongodb;export default s;export const MongoClient=s.MongoClient;export const ObjectId=s.ObjectId;",
+  mongodb:
+    "const s=globalThis.__shims.mongodb;export default s;export const MongoClient=s.MongoClient;export const ObjectId=s.ObjectId;",
   mongoose: "export default globalThis.__shims.mongoose;",
   jsonwebtoken: "export default globalThis.__shims.jsonwebtoken;",
   bcrypt: "export default globalThis.__shims.bcrypt;",
@@ -555,9 +598,14 @@ const NODE_SHIM_MODULES = {
 const NODE_IMPORT_MAP = JSON.stringify({
   imports: Object.fromEntries(
     Object.entries(NODE_SHIM_MODULES).flatMap(([k, v]) => {
-      const url = v.startsWith("http") ? v : "data:text/javascript," + encodeURIComponent(v);
-      return [[k, url], ["node:" + k, url]];
-    })
+      const url = v.startsWith("http")
+        ? v
+        : "data:text/javascript," + encodeURIComponent(v);
+      return [
+        [k, url],
+        ["node:" + k, url],
+      ];
+    }),
   ),
 });
 
@@ -565,7 +613,8 @@ function buildNodeDoc(serverCode, job = null) {
   // </script> внутри кода ломал бы хранилище-тег — экранируем; раннер разэкранирует
   const src = (serverCode || "").replace(/<\/script/gi, "<\\/script");
   const tests = job && Array.isArray(job.tests) ? job.tests : null;
-  const setup = job && typeof job.setup === "string" && job.setup.trim() ? job.setup : null;
+  const setup =
+    job && typeof job.setup === "string" && job.setup.trim() ? job.setup : null;
   const testsJs = tests && tests.length ? TESTS_HARNESS(tests) : "";
   const setupJs = setup
     ? `<script>window.__setupDone = (async () => { ${setup} })().catch(function (e) { console.error("setup: " + (e && e.message ? e.message : e)); });</script>`
@@ -600,23 +649,38 @@ ${src}
 </body></html>`;
 }
 
-function CodeEditor({ language = "javascript", theme = "dark", job = null, onNavigate, defaultShowPreview = true }) {
+function CodeEditor({
+  language = "javascript",
+  theme = "dark",
+  job = null,
+  onNavigate,
+  defaultShowPreview = true,
+}) {
   const t = useT();
 
   // Стартовый файл: у урока с трека — файл урока (main.py, queries.sql, …),
   // у задачи — files из JSON (может быть несколько: index.html + index.js + styles.css),
   // иначе — дефолтный для языка (K2: имя/расширение соответствуют треку)
-  const startFile = job && job.file ? job.file : fileNames[language] || `file.${language}`;
+  const startFile =
+    job && job.file ? job.file : fileNames[language] || `file.${language}`;
   const startLang = langFromFileName(startFile);
   // Код урока из базы (Supabase): строка `lessons` приходит в job.code и перебивает шаблон
   const jobCode = job && typeof job.code === "string" ? job.code : null;
   // Мультифайловая задача: job.files = { "index.html": "…", "index.js": "…" }
-  const jobFiles = job && job.files && typeof job.files === "object" ? job.files : null;
+  const jobFiles =
+    job && job.files && typeof job.files === "object" ? job.files : null;
   const initialContents = jobFiles
-    ? Object.fromEntries(Object.entries(jobFiles).map(([, code], i) => [i + 1, code]))
+    ? Object.fromEntries(
+        Object.entries(jobFiles).map(([, code], i) => [i + 1, code]),
+      )
     : { 1: jobCode ?? (codeTemplates[startLang] || "") };
   const [files, setFiles] = useState(() => {
-    if (jobFiles) return Object.keys(jobFiles).map((name, i) => ({ id: i + 1, name, language: langFromFileName(name) }));
+    if (jobFiles)
+      return Object.keys(jobFiles).map((name, i) => ({
+        id: i + 1,
+        name,
+        language: langFromFileName(name),
+      }));
     return [{ id: 1, name: startFile, language: startLang }];
   });
   // Исходный контент файлов (для Clear, аудит #5): код урока из БД / файлы задачи / старт-шаблон
@@ -653,16 +717,25 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   const wrapperRef = useRef(null);
 
   const activeFile = files.find((f) => f.id === activeId) || files[0];
-  const hasHtml = files.some((f) => f.language === "html" && !/\.vue$/.test(f.name)); // .vue → раннер, не превью
+  const hasHtml = files.some(
+    (f) => f.language === "html" && !/\.vue$/.test(f.name),
+  ); // .vue → раннер, не превью
   const hasJs = files.some(
-    (f) => f.language === "javascript" || f.language === "python" || f.language === "sql" || /\.vue$/.test(f.name)
+    (f) =>
+      f.language === "javascript" ||
+      f.language === "python" ||
+      f.language === "sql" ||
+      /\.vue$/.test(f.name),
   ); // python (.py) → Pyodide, sql (.sql) → PGlite, vue → раннер (buildRunnerDoc)
   const jobTech = job && job.techId ? getTech(job.techId) : null;
 
   // Консоль всегда в кадре + вспышка после Run (аудит #1): цикл «действие → фидбек»
   const scrollConsoleToView = (aggressive) => {
     setTimeout(() => {
-      consoleRef.current?.scrollIntoView({ behavior: "smooth", block: aggressive ? "center" : "nearest" });
+      consoleRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: aggressive ? "center" : "nearest",
+      });
       setConsoleFlash(true);
     }, 60);
   };
@@ -685,7 +758,10 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
   useEffect(() => {
     if (!addMenuOpen) return undefined;
     const close = (e) => {
-      if (!addMenuRef.current.contains(e.target) && !e.target.closest(".file-menu")) {
+      if (
+        !addMenuRef.current.contains(e.target) &&
+        !e.target.closest(".file-menu")
+      ) {
         setAddMenuOpen(false);
       }
     };
@@ -715,7 +791,10 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
 
   const addFile = (lang) => {
     const id = Math.max(...files.map((f) => f.id)) + 1;
-    setFiles((prev) => [...prev, { id, name: uniqueName(lang), language: lang }]);
+    setFiles((prev) => [
+      ...prev,
+      { id, name: uniqueName(lang), language: lang },
+    ]);
     // Новые файлы — чистые, без дублирования шаблона
     initialContentsRef.current[id] = "";
     setContents((prev) => ({ ...prev, [id]: "" }));
@@ -748,13 +827,19 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       .catch(() => {});
   };
 
-  const previewDoc = useMemo(() => buildPreviewDoc(files, contents, jobTests), [files, contents, jobTests]);
+  const previewDoc = useMemo(
+    () => buildPreviewDoc(files, contents, jobTests),
+    [files, contents, jobTests],
+  );
 
   // M6: превью «белый лист» — подсказка вместо молчащего пустого iframe.
   // Проверка по реальному HTML: без комментариев и тегов видимого текста нет → страница пуста.
   const previewBodyEmpty = useMemo(() => {
     if (!hasHtml) return false;
-    const html = files.filter((f) => f.language === "html").map((f) => contents[f.id] || "").join("");
+    const html = files
+      .filter((f) => f.language === "html")
+      .map((f) => contents[f.id] || "")
+      .join("");
     const noComments = html.replace(/<!--[\s\S]*?-->/g, "");
     // <style>/<script> (baseStyle раннера) — тоже не «видимый текст» страницы
     const noInert = noComments.replace(/<(style|script)[\s\S]*?<\/\1>/gi, "");
@@ -765,8 +850,12 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
 
   // H3: сколько TODO-шагов задания осталось в воркспейсе (вердикт Submit без ложного «accepted»)
   const todosLeft = useMemo(
-    () => files.reduce((n, f) => n + ((contents[f.id] || "").match(/TODO/g) || []).length, 0),
-    [files, contents]
+    () =>
+      files.reduce(
+        (n, f) => n + ((contents[f.id] || "").match(/TODO/g) || []).length,
+        0,
+      ),
+    [files, contents],
   );
 
   const collectFrom = (frame) => {
@@ -781,11 +870,18 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       // HTML: в консоль — и разметка страницы (что реально собрал браузер), и логи страницы
       let markup = "";
       try {
-        if (hasHtml) markup = frame?.contentDocument?.documentElement?.outerHTML || "";
+        if (hasHtml)
+          markup = frame?.contentDocument?.documentElement?.outerHTML || "";
       } catch {
         /* iframe недоступен — без разметки */
       }
-      const entries = [...(logs.length ? logs : hasHtml ? [{ type: "info", text: t("editor.htmlResultHint") }] : [])];
+      const entries = [
+        ...(logs.length
+          ? logs
+          : hasHtml
+            ? [{ type: "info", text: t("editor.htmlResultHint") }]
+            : []),
+      ];
       if (hasHtml && markup) entries.push({ type: "markup", text: markup });
       setConsoleLogs(entries);
       setRanOnce(true);
@@ -794,16 +890,22 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       if (hasTaskTests) {
         try {
           const w = frame.contentWindow;
-          if (w && w.__testsDone && Array.isArray(w.__testResults)) taskResults = w.__testResults;
+          if (w && w.__testsDone && Array.isArray(w.__testResults))
+            taskResults = w.__testResults;
         } catch {
           /* sandbox-окно недоступно */
         }
         setTestResults(taskResults);
       }
-      const allPass = taskResults && taskResults.length > 0 ? taskResults.every((r) => r.pass) : null;
+      const allPass =
+        taskResults && taskResults.length > 0
+          ? taskResults.every((r) => r.pass)
+          : null;
       if (submitPendingRef.current) {
         submitPendingRef.current = false;
-        const failed = logs.some((l) => l.type === "error") || (taskResults ? !allPass : false);
+        const failed =
+          logs.some((l) => l.type === "error") ||
+          (taskResults ? !allPass : false);
         // H3: «accepted» только когда ошибок нет И TODO-шаги задания завершены
         // (у задач с тестами вердикт = тесты; TODO-проверка — только для lessons)
         if (failed) setSubmitStatus("fail");
@@ -824,7 +926,7 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
     // Тесты могут ещё бежать (Pyodide/React-раннеры грузятся 1–5 с) — поллинг до __testsDone
     let done;
     try {
-      done = !hasTaskTests || (frame?.contentWindow?.__testsDone === true);
+      done = !hasTaskTests || frame?.contentWindow?.__testsDone === true;
     } catch {
       done = true; // iframe мёртвый — собираем что есть
     }
@@ -850,7 +952,9 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
 
   // Медленный раннер (Pyodide/PGlite грузят WASM 5–10с): collectFrom при onLoad (250мс) видит пустые логи
   // и больше не вызывается → «—». Для python/postgres-трехка — поллинг до вывода (или таймаута).
-  const isSlowRunner = Boolean(job && (job.techId === "python" || job.techId === "postgres"));
+  const isSlowRunner = Boolean(
+    job && (job.techId === "python" || job.techId === "postgres"),
+  );
   const pyPollRef = useRef(null);
   useEffect(() => {
     return () => {
@@ -876,7 +980,12 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
         lang === "css"
           ? t("editor.cssOnly")
           : t("editor.runnerSoon", {
-              lang: lang === "python" ? "Python" : lang === "sql" ? "SQL" : lang.toUpperCase(),
+              lang:
+                lang === "python"
+                  ? "Python"
+                  : lang === "sql"
+                    ? "SQL"
+                    : lang.toUpperCase(),
             });
       setConsoleLogs([{ type: "info", text }]);
       setRanOnce(true);
@@ -897,13 +1006,19 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       return;
     }
     // H3: код не тронут — вердикта нет, студента ведут к первому TODO
-    const changed = files.some((f) => (contents[f.id] ?? "") !== (initialContentsRef.current[f.id] ?? ""));
+    const changed = files.some(
+      (f) =>
+        (contents[f.id] ?? "") !== (initialContentsRef.current[f.id] ?? ""),
+    );
     if (!changed) {
       const startCode = contents[1] ?? "";
-      const todoLine = startCode.split("\n").findIndex((l) => l.includes("TODO"));
+      const todoLine = startCode
+        .split("\n")
+        .findIndex((l) => l.includes("TODO"));
       setConsoleLogs([{ type: "info", text: t("editor.submitUnchanged") }]);
       setRanOnce(true);
-      if (todoLine >= 0) setTimeout(() => editorRef.current?.revealLineInCenter(todoLine), 120);
+      if (todoLine >= 0)
+        setTimeout(() => editorRef.current?.revealLineInCenter(todoLine), 120);
       scrollConsoleToView(true);
       return;
     }
@@ -975,17 +1090,35 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
             <button
               className="icon-btn"
               type="button"
-              title={showPreview ? t("editor.closePreview") : t("editor.preview")}
+              title={
+                showPreview ? t("editor.closePreview") : t("editor.preview")
+              }
               aria-pressed={showPreview}
               onClick={() => setShowPreview((v) => !v)}
             >
               {showPreview ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 8 10 8a13.2 13.2 0 0 1-1.67 2.68" />
                   <path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.39-1.61" />
                   <path d="M2 2l20 20" />
@@ -1013,7 +1146,11 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
             {t("editor.run")}
           </button>
           {job && (
-            <button className="btn btn--ghost btn--run" type="button" onClick={submitSolution}>
+            <button
+              className="btn btn--ghost btn--run"
+              type="button"
+              onClick={submitSolution}
+            >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -1026,8 +1163,12 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                 <path d="m5 12 5 5 9-10" />
               </svg>
               {/* Мобилка: короткая подпись «Submit» (аудит #8) */}
-              <span className="btn-label btn-label--full">{t("editor.submit")}</span>
-              <span className="btn-label btn-label--short">{t("editor.submitShort")}</span>
+              <span className="btn-label btn-label--full">
+                {t("editor.submit")}
+              </span>
+              <span className="btn-label btn-label--short">
+                {t("editor.submitShort")}
+              </span>
             </button>
           )}
           {/* Очистить редактор: одна кнопка, без пары-подтверждения (фидбек 2026-09) */}
@@ -1090,7 +1231,10 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
 
       {/* Статус сдачи решения */}
       {submitStatus && (
-        <div className={`editor-status editor-status--${submitStatus}`} role="status">
+        <div
+          className={`editor-status editor-status--${submitStatus}`}
+          role="status"
+        >
           {submitStatus === "ok"
             ? jobTests && jobTests.length
               ? t("editor.allTestsPass")
@@ -1107,13 +1251,22 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
           <div className="editor-job__row">
             <span className="chip">
               {jobTech ? `${t(jobTech.label)} · ` : ""}
-              {job.kind === "lesson" ? t("editor.lessonLabel") : t("editor.taskLabel")}
+              {job.kind === "lesson"
+                ? t("editor.lessonLabel")
+                : t("editor.taskLabel")}
             </span>
-            {job.fromDb && <span className="chip chip--db">{t("editor.dbSource")}</span>}
+            {job.fromDb && (
+              <span className="chip chip--db">{t("editor.dbSource")}</span>
+            )}
             <button
               type="button"
               className="editor-job__back"
-              onClick={() => onNavigate(job.backTab, job.techId ? { techId: job.techId } : null)}
+              onClick={() =>
+                onNavigate(
+                  job.backTab,
+                  job.techId ? { techId: job.techId } : null,
+                )
+              }
             >
               <svg
                 viewBox="0 0 24 24"
@@ -1146,53 +1299,57 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
 
       {/* Вкладки файлов */}
       <div className="file-tabs">
-        <div className="file-tabs__scroll" role="tablist" aria-label={t("editor.files")}>
+        <div
+          className="file-tabs__scroll"
+          role="tablist"
+          aria-label={t("editor.files")}
+        >
           {files.map((f, index) => (
-          <div
-            key={f.id}
-            role="tab"
-            tabIndex={0}
-            aria-selected={f.id === activeId}
-            draggable
-            onDragStart={(e) => handleDragStart(e, index)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, index)}
-            onDragEnd={() => setDragIndex(null)}
-            onClick={() => setActiveId(f.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setActiveId(f.id);
-              }
-            }}
-            className={`file-tab ${f.id === activeId ? "is-active" : ""} ${
-              dragIndex === index ? "is-dragging" : ""
-            }`}
-          >
-            <span className="file-tab__name">{f.name}</span>
-            {files.length > 1 && (
-              <button
-                type="button"
-                className="file-tab__close"
-                aria-label={t("editor.closeFile")}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeFile(f.id);
-                }}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.6"
-                  strokeLinecap="round"
-                  aria-hidden="true"
+            <div
+              key={f.id}
+              role="tab"
+              tabIndex={0}
+              aria-selected={f.id === activeId}
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={() => setDragIndex(null)}
+              onClick={() => setActiveId(f.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setActiveId(f.id);
+                }
+              }}
+              className={`file-tab ${f.id === activeId ? "is-active" : ""} ${
+                dragIndex === index ? "is-dragging" : ""
+              }`}
+            >
+              <span className="file-tab__name">{f.name}</span>
+              {files.length > 1 && (
+                <button
+                  type="button"
+                  className="file-tab__close"
+                  aria-label={t("editor.closeFile")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeFile(f.id);
+                  }}
                 >
-                  <path d="M6 6l12 12M18 6 6 18" />
-                </svg>
-              </button>
-            )}
-          </div>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.6"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </button>
+              )}
+            </div>
           ))}
           <div className="file-tabs__add" ref={addMenuRef}>
             <button
@@ -1244,11 +1401,21 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
       )}
 
       <div className="code-card__editor-wrapper" ref={wrapperRef}>
-        <div className="code-card__editor-pane" style={hasHtml && showPreview ? { flex: `${split} 1 0px` } : undefined}>
+        <div
+          className="code-card__editor-pane"
+          style={
+            hasHtml && showPreview ? { flex: `${split} 1 0px` } : undefined
+          }
+        >
           <div className="editor-host">
             <Editor
               height="100%"
-              language={activeFile.language === "javascript" && /\.jsx$/.test(activeFile.name) ? "jsx" : activeFile.language}
+              language={
+                activeFile.language === "javascript" &&
+                /\.jsx$/.test(activeFile.name)
+                  ? "jsx"
+                  : activeFile.language
+              }
               theme={theme === "light" ? "syntax-light" : "syntax-dark"}
               beforeMount={(monaco) => {
                 definePlatformThemes(monaco);
@@ -1258,11 +1425,17 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                 editorRef.current = editor;
                 window.__syntaxEditor = editor; // E2E-хук: установка кода из puppeteer
                 // Ctrl/⌘+Enter — Run: базовая привычка кодеров (аудит #9)
-                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runRef.current());
+                editor.addCommand(
+                  monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+                  () => runRef.current(),
+                );
               }}
               value={contents[activeFile.id] ?? ""}
               onChange={(value) =>
-                setContents((prev) => ({ ...prev, [activeFile.id]: value ?? "" }))
+                setContents((prev) => ({
+                  ...prev,
+                  [activeFile.id]: value ?? "",
+                }))
               }
               options={{
                 fontSize: 14,
@@ -1298,9 +1471,15 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                       ? t("editor.testsRunning")
                       : `0 / ${jobTests.length}`}
                 </span>
-                {job.taskDone && <span className="editor-tests__done">{t("editor.taskDone")}</span>}
+                {job.taskDone && (
+                  <span className="editor-tests__done">
+                    {t("editor.taskDone")}
+                  </span>
+                )}
                 {justCompleted && (
-                  <span className="editor-tests__xp">+{justCompleted.taskXp + justCompleted.dailyXp} XP</span>
+                  <span className="editor-tests__xp">
+                    +{justCompleted.taskXp + justCompleted.dailyXp} XP
+                  </span>
                 )}
                 {testResults &&
                   testResults.length === jobTests.length &&
@@ -1321,14 +1500,32 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
               <div className="editor-tests__body">
                 {jobTests.map((tst, i) => {
                   const r = testResults && testResults[i];
-                  const state = !r ? (ranOnce ? "pending" : "idle") : r.pass ? "pass" : "fail";
+                  const state = !r
+                    ? ranOnce
+                      ? "pending"
+                      : "idle"
+                    : r.pass
+                      ? "pass"
+                      : "fail";
                   return (
-                    <div key={i} className={`test-line test-line--${state}`} title={r && r.error ? r.error : undefined}>
+                    <div
+                      key={i}
+                      className={`test-line test-line--${state}`}
+                      title={r && r.error ? r.error : undefined}
+                    >
                       <span className="test-line__icon" aria-hidden="true">
-                        {state === "pass" ? "✓" : state === "fail" ? "✗" : state === "pending" ? "…" : "•"}
+                        {state === "pass"
+                          ? "✓"
+                          : state === "fail"
+                            ? "✗"
+                            : state === "pending"
+                              ? "…"
+                              : "•"}
                       </span>
                       <span className="test-line__name">{tst.name}</span>
-                      {state === "fail" && r.error && <span className="test-line__err">{r.error}</span>}
+                      {state === "fail" && r.error && (
+                        <span className="test-line__err">{r.error}</span>
+                      )}
                     </div>
                   );
                 })}
@@ -1337,7 +1534,10 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
           )}
 
           {/* Консоль ВСЕГДА в кадре (аудит #1): до первого Run — подсказка */}
-          <div className={`editor-console ${consoleFlash ? "editor-console--flash" : ""}`} ref={consoleRef}>
+          <div
+            className={`editor-console ${consoleFlash ? "editor-console--flash" : ""}`}
+            ref={consoleRef}
+          >
             <div className="editor-console__head">
               <span>{t("editor.console")}</span>
               <button
@@ -1359,7 +1559,9 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                   if (log.type === "markup") {
                     return (
                       <div key={i} className="log-markup">
-                        <span className="log-markup__label">{t("editor.markupLabel")}</span>
+                        <span className="log-markup__label">
+                          {t("editor.markupLabel")}
+                        </span>
                         <pre className="log-markup__pre">{log.text}</pre>
                       </div>
                     );
@@ -1375,7 +1577,10 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                               const ed = editorRef.current;
                               if (!ed) return;
                               ed.revealLineInCenter(log.line);
-                              ed.setPosition({ lineNumber: log.line, column: 1 });
+                              ed.setPosition({
+                                lineNumber: log.line,
+                                column: 1,
+                              });
                               ed.focus();
                             }
                           : undefined
@@ -1391,12 +1596,22 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
         </div>
         {hasHtml && (
           <>
-            {showPreview && <div className="editor-split-handle" onMouseDown={startSplitDrag} aria-hidden="true"></div>}
+            {showPreview && (
+              <div
+                className="editor-split-handle"
+                onMouseDown={startSplitDrag}
+                aria-hidden="true"
+              ></div>
+            )}
             {/* iframe для HTML всегда смонтирован (даже при скрытом превью):
                 именно его onLoad собирает логи — иначе Run/Submit молчат без превью */}
             <div
               className={`editor-preview-wrap ${showPreview ? "" : "editor-preview-wrap--hidden"}`}
-              style={showPreview ? { flex: `${(1 - split).toFixed(4)} 1 0px` } : undefined}
+              style={
+                showPreview
+                  ? { flex: `${(1 - split).toFixed(4)} 1 0px` }
+                  : undefined
+              }
             >
               <iframe
                 className="editor-preview"
@@ -1420,7 +1635,14 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
                   aria-label={t("editor.closePreview")}
                   onClick={() => setShowPreview(false)}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
                     <path d="M6 6l12 12M18 6 6 18" />
                   </svg>
                 </button>
@@ -1428,7 +1650,15 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
               {/* M6: пустая страница в превью — не «сбой», а ожидание: подсказка поверх */}
               {showPreview && previewBodyEmpty && (
                 <div className="editor-preview-hint" role="note">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 8v4M12 16h.01" />
                   </svg>

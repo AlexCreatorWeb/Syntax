@@ -11,7 +11,9 @@ function TechCardsGrid({ activeTech, onOpenTech, dbLessons }) {
   // UX-аудит: «Lesson 1: {title}» вместо абстрактного «16 lessons» — что внутри трека
   const firstTitle = (tech) => {
     const lesson = (dbLessons || []).find((l) => l.tech === tech.id);
-    return lesson ? localizedLessonTitle(tech.id, 1, lesson.title, langCode) : null;
+    return lesson
+      ? localizedLessonTitle(tech.id, 1, lesson.title, langCode)
+      : null;
   };
   return (
     <div className="tech-row">
@@ -28,8 +30,14 @@ function TechCardsGrid({ activeTech, onOpenTech, dbLessons }) {
             <Logo />
             <span className="tech-card__body">
               <span className="tech-card__name">{t(tech.label)}</span>
-              <span className="tech-card__meta">{t("home.lessons", { n: tech.lessons })}</span>
-              {lesson1 && <span className="tech-card__first">{t("home.lesson1", { title: lesson1 })}</span>}
+              <span className="tech-card__meta">
+                {t("home.lessons", { n: tech.lessons })}
+              </span>
+              {lesson1 && (
+                <span className="tech-card__first">
+                  {t("home.lesson1", { title: lesson1 })}
+                </span>
+              )}
             </span>
           </button>
         );

@@ -10,7 +10,9 @@ function read(uid) {
   try {
     const s = localStorage.getItem(KEY(uid));
     const d = s ? JSON.parse(s) : null;
-    return d && typeof d === "object" ? { total: 0, granted: {}, daily: {}, ...d } : { total: 0, granted: {}, daily: {} };
+    return d && typeof d === "object"
+      ? { total: 0, granted: {}, daily: {}, ...d }
+      : { total: 0, granted: {}, daily: {} };
   } catch {
     return { total: 0, granted: {}, daily: {} };
   }
@@ -31,7 +33,11 @@ function inheritGuest(uid) {
   const guest = read(null);
   if (!Object.keys(user.granted).length && Object.keys(guest.granted).length) {
     const total = user.total + guest.total;
-    write(uid, { total, granted: { ...guest.granted }, daily: { ...guest.daily } });
+    write(uid, {
+      total,
+      granted: { ...guest.granted },
+      daily: { ...guest.daily },
+    });
   }
 }
 
@@ -43,7 +49,12 @@ export function getXpState() {
 
 // Начислить XP за задачу (один раз) + daily-бонус (+500, раз в день, если задача дня).
 // Возвращает { taskXp, dailyXp, total }.
-export function grantTaskXp(taskId, taskXp, isDaily = false, date = new Date()) {
+export function grantTaskXp(
+  taskId,
+  taskXp,
+  isDaily = false,
+  date = new Date(),
+) {
   const uid = currentUid();
   inheritGuest(uid);
   const data = read(uid);

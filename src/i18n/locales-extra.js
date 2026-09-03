@@ -335,13 +335,17 @@ export const LOCALES_EXTRA = {
       signup: "Зареєструватися безкоштовно",
       getsTitle: "Що дає акаунт",
       gets1t: "Прогрес в хмарі",
-      gets1d: "Уроки та завдання зберігаються в акаунті — продовжуйте з того ж місця на будь-якому пристрої.",
+      gets1d:
+        "Уроки та завдання зберігаються в акаунті — продовжуйте з того ж місця на будь-якому пристрої.",
       gets2t: "XP та рівні",
-      gets2d: "Набирайте XP за уроки та завдання, піднімайтеся в рівні та глобальному рейтингу.",
+      gets2d:
+        "Набирайте XP за уроки та завдання, піднімайтеся в рівні та глобальному рейтингу.",
       gets3t: "Стрік та Daily Challenge",
-      gets3d: "Розв'язуйте челендж дня, тримайте стрік і отримуйте бонус +500 XP.",
+      gets3d:
+        "Розв'язуйте челендж дня, тримайте стрік і отримуйте бонус +500 XP.",
       gets4t: "Ком'юніті та AI-асистент",
-      gets4d: "Ставте питання, отримуйте відповіді ком'юніті та допомогу AI-асистента 24/7.",
+      gets4d:
+        "Ставте питання, отримуйте відповіді ком'юніті та допомогу AI-асистента 24/7.",
       memberSince: "На платформі з {date}",
       progress: "Прогрес курсів",
       progressEmpty:
@@ -451,7 +455,8 @@ export const LOCALES_EXTRA = {
       nextRank: "До рангу (CodeNinja)",
       guestRow: "Зареєструйтесь, щоб бачити свій ранг",
       railCta: "Зареєструватись",
-      railGuestNote: "Рейтинг особистий — зареєструйтеся і починайте накопичувати XP.",
+      railGuestNote:
+        "Рейтинг особистий — зареєструйтеся і починайте накопичувати XP.",
       needXp: "280 XP",
       weekly: "Тижневий прогрес",
       today: "Сьогодні",
@@ -980,13 +985,17 @@ export const LOCALES_EXTRA = {
       signup: "Regístrate gratis",
       getsTitle: "Qué obtienes con una cuenta",
       gets1t: "Progreso en la nube",
-      gets1d: "Lecciones y tareas se guardan en tu cuenta — continúa donde lo dejaste en cualquier dispositivo.",
+      gets1d:
+        "Lecciones y tareas se guardan en tu cuenta — continúa donde lo dejaste en cualquier dispositivo.",
       gets2t: "XP y niveles",
-      gets2d: "Gana XP por lecciones y tareas, sube de nivel y escala el ranking global.",
+      gets2d:
+        "Gana XP por lecciones y tareas, sube de nivel y escala el ranking global.",
       gets3t: "Racha y Daily Challenge",
-      gets3d: "Resuelve el desafío diario, mantén tu racha y recibe el bono de +500 XP.",
+      gets3d:
+        "Resuelve el desafío diario, mantén tu racha y recibe el bono de +500 XP.",
       gets4t: "Comunidad y asistente IA",
-      gets4d: "Pregunta, recibe respuestas de la comunidad y ayuda del asistente IA 24/7.",
+      gets4d:
+        "Pregunta, recibe respuestas de la comunidad y ayuda del asistente IA 24/7.",
       memberSince: "Miembro desde {date}",
       progress: "Progreso de cursos",
       progressEmpty:
@@ -1098,7 +1107,8 @@ export const LOCALES_EXTRA = {
       nextRank: "Siguiente rango (CodeNinja)",
       guestRow: "Regístrate para ver tu puesto",
       railCta: "Regístrate",
-      railGuestNote: "El ranking es personal — regístrate y empieza a ganar XP para competir.",
+      railGuestNote:
+        "El ranking es personal — regístrate y empieza a ganar XP para competir.",
       needXp: "280 XP",
       weekly: "Progreso semanal",
       today: "Hoy",
@@ -1633,13 +1643,17 @@ export const LOCALES_EXTRA = {
       signup: "Kostenlos registrieren",
       getsTitle: "Was ein Konto dir bringt",
       gets1t: "Fortschritt in der Cloud",
-      gets1d: "Lektionen und Aufgaben werden im Konto gespeichert — mach dort weiter, wo du aufgehört hast, auf jedem Gerät.",
+      gets1d:
+        "Lektionen und Aufgaben werden im Konto gespeichert — mach dort weiter, wo du aufgehört hast, auf jedem Gerät.",
       gets2t: "XP und Level",
-      gets2d: "Verdiene XP für Lektionen und Aufgaben, steige im Level und globalen Ranking auf.",
+      gets2d:
+        "Verdiene XP für Lektionen und Aufgaben, steige im Level und globalen Ranking auf.",
       gets3t: "Streak und Daily Challenge",
-      gets3d: "Löse die tägliche Herausforderung, halte deinen Streak und hol dir den +500-XP-Bonus.",
+      gets3d:
+        "Löse die tägliche Herausforderung, halte deinen Streak und hol dir den +500-XP-Bonus.",
       gets4t: "Community und KI-Assistent",
-      gets4d: "Stelle Fragen, erhalte Community-Antworten und 24/7 Hilfe vom KI-Assistenten.",
+      gets4d:
+        "Stelle Fragen, erhalte Community-Antworten und 24/7 Hilfe vom KI-Assistenten.",
       memberSince: "Mitglied seit {date}",
       progress: "Kursfortschritt",
       progressEmpty:
@@ -1748,7 +1762,8 @@ export const LOCALES_EXTRA = {
       nextRank: "Bis zum Rang (CodeNinja)",
       guestRow: "Registriere dich, um deinen Rang zu sehen",
       railCta: "Registrieren",
-      railGuestNote: "Das Ranking ist persönlich — registriere dich und sammle XP, um mitzuspielen.",
+      railGuestNote:
+        "Das Ranking ist persönlich — registriere dich und sammle XP, um mitzuspielen.",
       needXp: "280 XP",
       weekly: "Wochenfortschritt",
       today: "Heute",
