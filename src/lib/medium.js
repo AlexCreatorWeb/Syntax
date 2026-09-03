@@ -17,6 +17,9 @@ const gwFail = { rss2json: 0, allorigins: 0 };
 const GW_DEAD = 2;
 const TOP_N = 8; // сколько новостей показать в дропдауне (round-robin по техам)
 const FEED_GAP_MS = 1050; // ~1 req/с — последовательно, иначе 429
+// Прокси-база (Vercel): в prod — same-origin (/api/medium); в dev — prod-деплой
+// (тот же VITE_AI_PROXY_URL, что и для AI — один и тот же Vercel-проект).
+const PROXY_BASE = (import.meta.env.VITE_AI_PROXY_URL || "").replace(/\/+$/, "");
 let newsPending = null; // in-flight дедупликация (StrictMode дублирует mount-эффект)
 
 // Технология платформы → тег Medium + фильтр релевантности.
@@ -132,6 +135,17 @@ function writeLsCache(items) {
 async function fetchFeedItems(feed) {
   const xmlUrl = `https://medium.com/feed/tag/${feed.tag}`;
   const gateways = [
+    // Vercel-прокси: читает Medium RSS напрямую с IP Vercel (без CORS/дневных квот
+    // публичных шлюзов) — самая надёжная нога, ставим первой.
+    {
+      id: "vercel",
+      url: `${PROXY_BASE ? PROXY_BASE + "/api/medium?tag=" : "/api/medium?tag="}${feed.tag}`,
+      toItems: async (res) => {
+        const json = await res.json();
+        if (!Array.isArray(json.items)) throw new Error("bad proxy response");
+        return json.items;
+      },
+    },
     {
       id: "rss2json",
       url: `${RSS2JSON}?rss_url=${encodeURIComponent(xmlUrl)}`,
@@ -226,7 +240,7 @@ export async function fetchMediumNews({ refresh = false } = {}) {
   if (newsCache && !refresh) return newsCache;
   if (!refresh) {
     const ls = readLsCache();
-    if (ls) {
+    if (ls && ls.length) {
       newsCache = ls;
       return ls;
     }
@@ -278,9 +292,13 @@ export async function fetchMediumNews({ refresh = false } = {}) {
       }
       if (!added) break;
     }
-    newsCache = picked;
-    writeLsCache(picked);
-    return newsCache;
+    // Пустой результат НЕ кэшируем: иначе сбой всех шлюзов «залипает» до TTL кэша
+    // (2ч) и фид пустует дольше, чем надо. Следующий поллинг (10 мин) перечитает ленты.
+    if (picked.length) {
+      newsCache = picked;
+      writeLsCache(picked);
+    }
+    return picked;
     } finally {
       newsPending = null;
     }
