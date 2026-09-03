@@ -596,7 +596,7 @@ export default {
       javascript:
         "Language fundamentals, arrays, objects, the DOM, events, async/await and the event loop — the reference from variables to fetch.",
       react:
-        "Components, JSX, state, effects and hooks, custom hooks and Context — the complete React 18 reference, from the first component to a production app.",
+        "Components, JSX, state, effects and hooks, custom hooks and Context — the complete React 19 reference, from the first component to a production app.",
       vue: "Templates, reactivity, components, Vue Router and Pinia — the complete Vue 3 reference built on the Composition API.",
       node: "Architecture and the event loop, core modules, Express, PostgreSQL and MongoDB, auth and security — the full server-side reference.",
       mongo:
@@ -624,6 +624,7 @@ export default {
     askCommunity: "Ask the community",
     askAi: "Ask the AI assistant",
     catalogTitle: "All {tech} pages",
+    popularGuides: "Popular Guides",
     practiceLabel: "Related task",
     practiceCta: "Practice this",
     guidesTitle: "Guides",

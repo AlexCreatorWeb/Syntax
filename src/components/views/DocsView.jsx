@@ -3,8 +3,18 @@ import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
 import TECHS from "../../lib/techs";
 import { getTech } from "../../lib/techs";
-import { formatDocsDate, isMacOS, docsPathFor, DEFAULT_DOCS_TRACK } from "../../lib/docs-route";
-import { docsPagesForTrack, docsTracks, docsCountForTrack, ALL_DOC_PAGES } from "../../lib/docs-content";
+import {
+  formatDocsDate,
+  isMacOS,
+  docsPathFor,
+  DEFAULT_DOCS_TRACK,
+} from "../../lib/docs-route";
+import {
+  docsPagesForTrack,
+  docsTracks,
+  docsCountForTrack,
+  ALL_DOC_PAGES,
+} from "../../lib/docs-content";
 import { getTaskById, locField } from "../../lib/tasks";
 
 const TRACK_LOGOS = Object.fromEntries(TECHS.map((tc) => [tc.id, tc.Logo]));
@@ -17,7 +27,10 @@ const localizePage = (p, lang) => ({
   ...p,
   title: (p.title && (p.title[lang] || p.title.en)) || p.id,
   desc: (p.excerpt && (p.excerpt[lang] || p.excerpt.en)) || "",
-  body: (p.body && p.body[lang] && p.body[lang].length ? p.body[lang] : p.body.en) || [],
+  body:
+    (p.body && p.body[lang] && p.body[lang].length
+      ? p.body[lang]
+      : p.body.en) || [],
 });
 
 /* ————— Подсветка Python (лёгкий regex-токенайзер; код в доках — статика) ————— */
@@ -32,11 +45,19 @@ function highlightPy(code) {
   PY_TOKEN.lastIndex = 0;
   while ((m = PY_TOKEN.exec(code))) {
     if (m.index > last) out.push(code.slice(last, m.index));
-    const cls = m[1] ? "tok-comment" : m[2] ? "tok-string" : m[3] ? "tok-keyword" : m[4] ? "tok-number" : null;
+    const cls = m[1]
+      ? "tok-comment"
+      : m[2]
+        ? "tok-string"
+        : m[3]
+          ? "tok-keyword"
+          : m[4]
+            ? "tok-number"
+            : null;
     out.push(
       <span key={k++} className={cls}>
         {m[0]}
-      </span>
+      </span>,
     );
     last = m.index + m[0].length;
   }
@@ -60,8 +81,18 @@ function buildGenericTokenizer(lang) {
   const L = (lang || "").toLowerCase();
   if (L === "html" || L === "sfc") {
     return {
-      pattern: /(<!--[\s\S]*?-->)|(<\/?[a-zA-Z][\w.-]*|\/?>)|("([^"\n]*")|'([^'\n]*)')|\b(\d+(?:\.\d+)?)\b/g,
-      map: (m) => (m[1] ? "tok-comment" : m[2] ? "tok-keyword" : m[3] ? "tok-string" : m[6] ? "tok-number" : null),
+      pattern:
+        /(<!--[\s\S]*?-->)|(<\/?[a-zA-Z][\w.-]*|\/?>)|("([^"\n]*")|'([^'\n]*)')|\b(\d+(?:\.\d+)?)\b/g,
+      map: (m) =>
+        m[1]
+          ? "tok-comment"
+          : m[2]
+            ? "tok-keyword"
+            : m[3]
+              ? "tok-string"
+              : m[6]
+                ? "tok-number"
+                : null,
     };
   }
   const kws = GENERIC_KEYWORDS[L] || GENERIC_KEYWORDS.js;
@@ -69,13 +100,33 @@ function buildGenericTokenizer(lang) {
   const commentBits = ["//[^\\n]*", "/\\*[\\s\\S]*?\\*\\/"];
   if (L === "bash" || L === "sh") commentBits.push("#[^\\n]*");
   if (L === "sql" || L === "mongodb") commentBits.push("--[^\\n]*");
-  const stringBit = '(?:"(?:[^"\\\\\\n]|\\\\.)*"|\'(?:[^\'\\\\\\n]|\\\\.)*\'|`[^`\\n]*`)';
-  const keywordBit = kws ? "\\b(?:" + kws + ")\\b" : L === "css" ? "\\b[a-zA-Z-]+(?=\\s*:)" : "";
-  const src = "(" + commentBits.join("|") + ")|(" + stringBit + ")|\\b(\\d+(?:\\.\\d+)?)\\b" + (keywordBit ? "|(" + keywordBit + ")" : "");
+  const stringBit =
+    "(?:\"(?:[^\"\\\\\\n]|\\\\.)*\"|'(?:[^'\\\\\\n]|\\\\.)*'|`[^`\\n]*`)";
+  const keywordBit = kws
+    ? "\\b(?:" + kws + ")\\b"
+    : L === "css"
+      ? "\\b[a-zA-Z-]+(?=\\s*:)"
+      : "";
+  const src =
+    "(" +
+    commentBits.join("|") +
+    ")|(" +
+    stringBit +
+    ")|\\b(\\d+(?:\\.\\d+)?)\\b" +
+    (keywordBit ? "|(" + keywordBit + ")" : "");
   const pattern = new RegExp(src, "g");
   return {
     pattern,
-    map: (m) => (m[1] ? "tok-comment" : m[2] ? "tok-string" : m[3] ? "tok-number" : m[4] ? "tok-keyword" : null),
+    map: (m) =>
+      m[1]
+        ? "tok-comment"
+        : m[2]
+          ? "tok-string"
+          : m[3]
+            ? "tok-number"
+            : m[4]
+              ? "tok-keyword"
+              : null,
   };
 }
 const TOKENIZER_CACHE = {};
@@ -95,7 +146,7 @@ function highlightCode(code, lang) {
     out.push(
       <span key={k++} className={cls || undefined}>
         {m[0]}
-      </span>
+      </span>,
     );
     last = m.index + m[0].length;
     if (m.index === pattern.lastIndex) pattern.lastIndex += 1; // защита от пустых матчей
@@ -119,13 +170,34 @@ function CodeBlock({ code, lang, version, t }) {
     <div className="code-block">
       <div className="code-block__bar">
         <span className="code-chip">{version}</span>
-        <button type="button" className="code-block__copy" onClick={copy} aria-label={t("docs.copy")}>
+        <button
+          type="button"
+          className="code-block__copy"
+          onClick={copy}
+          aria-label={t("docs.copy")}
+        >
           {copied ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="m5 13 4 4L19 7" />
             </svg>
           ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <rect x="9" y="9" width="12" height="12" rx="2" />
               <path d="M5 15V5a2 2 0 0 1 2-2h10" />
             </svg>
@@ -158,7 +230,7 @@ const anchorsFor = (article) =>
         ? { id: `h-${i}`, text: b.text, level: 2 }
         : b.type === "h3"
           ? { id: `h3-${i}`, text: b.text, level: 3 }
-          : null
+          : null,
     )
     .filter(Boolean);
 
@@ -168,7 +240,8 @@ function sectionForQuery(article, q) {
   for (let i = 0; i < article.body.length; i += 1) {
     const b = article.body[i];
     if (b.type === "h2" || b.type === "h3") {
-      if (b.text.toLowerCase().includes(q)) return b.type === "h3" ? `h3-${i}` : `h-${i}`;
+      if (b.text.toLowerCase().includes(q))
+        return b.type === "h3" ? `h3-${i}` : `h-${i}`;
       lastId = b.type === "h3" ? `h3-${i}` : `h-${i}`;
     } else if (lastId && (b.text || "").toLowerCase().includes(q)) {
       return lastId;
@@ -181,7 +254,19 @@ function sectionForQuery(article, q) {
 let pendingSectionId = null;
 
 /* ————— Детальная страница статьи ————— */
-function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextPosLabel, t, onDocsRoute, langCode, onOpenTask }) {
+function ArticleView({
+  article,
+  track,
+  techName,
+  prev,
+  next,
+  prevPosLabel,
+  nextPosLabel,
+  t,
+  onDocsRoute,
+  langCode,
+  onOpenTask,
+}) {
   const feedbackKey = `syntax-docs-feedback-${article.slug}`;
   // Один голос на страницу на клиента: persist в localStorage (после голоса — «thanks»)
   const [helpful, setHelpful] = useState(() => {
@@ -201,7 +286,9 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
   };
 
   // CTA «Practice this» → связанная задача из раздела Tasks
-  const relatedTask = article.relatedTask ? getTaskById(article.relatedTask) : null;
+  const relatedTask = article.relatedTask
+    ? getTaskById(article.relatedTask)
+    : null;
 
   const anchors = useMemo(() => anchorsFor(article), [article]);
 
@@ -227,21 +314,40 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
   return (
     <article className="docs-article">
       <nav className="docs-breadcrumb" aria-label="Breadcrumb">
-        <a href={docsPathFor({ track })} onClick={(e) => { e.preventDefault(); onDocsRoute({ track, page: null }); }}>
+        <a
+          href={docsPathFor({ track })}
+          onClick={(e) => {
+            e.preventDefault();
+            onDocsRoute({ track, page: null });
+          }}
+        >
           {t("docs.breadcrumb")}
         </a>
-        <span className="docs-breadcrumb__sep" aria-hidden="true">/</span>
+        <span className="docs-breadcrumb__sep" aria-hidden="true">
+          /
+        </span>
         <span>{techName}</span>
-        <span className="docs-breadcrumb__sep" aria-hidden="true">/</span>
+        <span className="docs-breadcrumb__sep" aria-hidden="true">
+          /
+        </span>
         <span className="docs-breadcrumb__current">{article.title}</span>
       </nav>
 
       {anchors.length > 0 && (
-        <details className="docs-toc-mobile" open={tocOpen} onToggle={(e) => setTocOpen(e.target.open)}>
+        <details
+          className="docs-toc-mobile"
+          open={tocOpen}
+          onToggle={(e) => setTocOpen(e.target.open)}
+        >
           <summary>{t("docs.tocPage")}</summary>
           <nav className="toc toc--mobile" aria-label={t("docs.tocPage")}>
             {anchors.map((a) => (
-              <button key={a.id} type="button" className={`toc__item ${a.level === 3 ? "toc__item--h3" : ""}`} onClick={() => jump(a.id)}>
+              <button
+                key={a.id}
+                type="button"
+                className={`toc__item ${a.level === 3 ? "toc__item--h3" : ""}`}
+                onClick={() => jump(a.id)}
+              >
                 {a.text}
               </button>
             ))}
@@ -253,7 +359,11 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
       <div className="docs-article__meta">
         <span>{t("docs.minRead", { n: article.minutes })}</span>
         <span aria-hidden="true">·</span>
-        <span>{t("docs.updated", { date: formatDocsDate(article.updated, langCode) })}</span>
+        <span>
+          {t("docs.updated", {
+            date: formatDocsDate(article.updated, langCode),
+          })}
+        </span>
         <span className="code-chip">{article.version}</span>
       </div>
       <div className="docs-article__body">
@@ -272,8 +382,18 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
               </h3>
             );
           }
-          if (block.type === "code") return <CodeBlock key={i} code={block.text} lang={block.lang} version={article.version} t={t} />;
-          if (block.type === "callout") return <Callout key={i} kind={block.kind} text={block.text} />;
+          if (block.type === "code")
+            return (
+              <CodeBlock
+                key={i}
+                code={block.text}
+                lang={block.lang}
+                version={article.version}
+                t={t}
+              />
+            );
+          if (block.type === "callout")
+            return <Callout key={i} kind={block.kind} text={block.text} />;
           if (block.type === "table") {
             const [head, ...rows] = block.rows;
             return (
@@ -306,13 +426,28 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
       {relatedTask && (
         <div className="card docs-practice">
           <span className="label-caps">{t("docs.practiceLabel")}</span>
-          <p className="docs-practice__title">{locField(relatedTask.title, langCode)}</p>
-          <p className="docs-practice__meta">
-            {t(`tasks.${relatedTask.difficulty}`)} · {relatedTask.minutes} {t("tasks.minutes")} · +{relatedTask.xp} {t("tasks.xp")}
+          <p className="docs-practice__title">
+            {locField(relatedTask.title, langCode)}
           </p>
-          <button type="button" className="btn btn--primary" onClick={() => onOpenTask && onOpenTask(relatedTask)}>
+          <p className="docs-practice__meta">
+            {t(`tasks.${relatedTask.difficulty}`)} · {relatedTask.minutes}{" "}
+            {t("tasks.minutes")} · +{relatedTask.xp} {t("tasks.xp")}
+          </p>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => onOpenTask && onOpenTask(relatedTask)}
+          >
             {t("docs.practiceCta")}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
           </button>
@@ -324,20 +459,29 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
           <a
             className="card docs-prevnext__item"
             href={docsPathFor({ track, page: prev.slug })}
-            onClick={(e) => { e.preventDefault(); onDocsRoute({ track, page: prev.slug }); }}
+            onClick={(e) => {
+              e.preventDefault();
+              onDocsRoute({ track, page: prev.slug });
+            }}
           >
             <span className="docs-prevnext__dir">← {t("docs.prev")}</span>
             <span className="docs-prevnext__pos">{prevPosLabel}</span>
             <strong>{prev.title}</strong>
           </a>
         ) : (
-          <span className="docs-prevnext__item docs-prevnext__item--empty" aria-hidden="true" />
+          <span
+            className="docs-prevnext__item docs-prevnext__item--empty"
+            aria-hidden="true"
+          />
         )}
         {next ? (
           <a
             className="card docs-prevnext__item docs-prevnext__item--next"
             href={docsPathFor({ track, page: next.slug })}
-            onClick={(e) => { e.preventDefault(); onDocsRoute({ track, page: next.slug }); }}
+            onClick={(e) => {
+              e.preventDefault();
+              onDocsRoute({ track, page: next.slug });
+            }}
           >
             <span className="docs-prevnext__dir">{t("docs.next")} →</span>
             <span className="docs-prevnext__pos">{nextPosLabel}</span>
@@ -347,10 +491,17 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
           <a
             className="card docs-prevnext__item docs-prevnext__item--next"
             href={docsPathFor({ track })}
-            onClick={(e) => { e.preventDefault(); onDocsRoute({ track, page: null }); }}
+            onClick={(e) => {
+              e.preventDefault();
+              onDocsRoute({ track, page: null });
+            }}
           >
-            <span className="docs-prevnext__dir">{t("docs.backToDocs", { tech: techName })} →</span>
-            <strong className="docs-prevnext__cta">{t("docs.breadcrumb")}</strong>
+            <span className="docs-prevnext__dir">
+              {t("docs.backToDocs", { tech: techName })} →
+            </span>
+            <strong className="docs-prevnext__cta">
+              {t("docs.breadcrumb")}
+            </strong>
           </a>
         )}
       </nav>
@@ -360,10 +511,20 @@ function ArticleView({ article, track, techName, prev, next, prevPosLabel, nextP
           <>
             <span className="docs-helpful__q">{t("docs.helpful")}</span>
             <div className="docs-helpful__btns">
-              <button type="button" className="btn btn--ghost" onClick={() => vote("yes")} aria-label={t("docs.yes")}>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => vote("yes")}
+                aria-label={t("docs.yes")}
+              >
                 👍
               </button>
-              <button type="button" className="btn btn--ghost" onClick={() => vote("no")} aria-label={t("docs.no")}>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => vote("no")}
+                aria-label={t("docs.no")}
+              >
                 👎
               </button>
             </div>
@@ -387,13 +548,19 @@ function TrackEmpty({ tech, t, onSwitchToPython }) {
       <span className="docs-empty__logo" aria-hidden="true">
         {Logo ? <Logo /> : null}
       </span>
-      <h2 className="docs-empty__title">{t("docs.emptyTitle", { tech: t(tech.label) })}</h2>
-      <p className="docs-empty__body">{t("docs.emptyBody", { tech: t(tech.label) })}</p>
+      <h2 className="docs-empty__title">
+        {t("docs.emptyTitle", { tech: t(tech.label) })}
+      </h2>
+      <p className="docs-empty__body">
+        {t("docs.emptyBody", { tech: t(tech.label) })}
+      </p>
       <div className="docs-empty__progress">
         <div className="docs-empty__bar">
           <span style={{ width: `${Math.max(4, have * 10)}%` }} />
         </div>
-        <span className="docs-empty__pct">{t("docs.emptyProgress", { a: have, b: 10 })}</span>
+        <span className="docs-empty__pct">
+          {t("docs.emptyProgress", { a: have, b: 10 })}
+        </span>
       </div>
       <div className="docs-empty__actions">
         <button
@@ -404,7 +571,11 @@ function TrackEmpty({ tech, t, onSwitchToPython }) {
         >
           {notified ? t("docs.notified") : t("docs.notify")}
         </button>
-        <button type="button" className="btn btn--ghost" onClick={onSwitchToPython}>
+        <button
+          type="button"
+          className="btn btn--ghost"
+          onClick={onSwitchToPython}
+        >
           {t("docs.meanwhile")}
         </button>
       </div>
@@ -418,14 +589,21 @@ function CatalogItem({ a, n, track, t, onDocsRoute }) {
     <a
       className="docs-catalog__item"
       href={docsPathFor({ track, page: a.slug })}
-      onClick={(e) => { e.preventDefault(); onDocsRoute({ track, page: a.slug }); }}
+      onClick={(e) => {
+        e.preventDefault();
+        onDocsRoute({ track, page: a.slug });
+      }}
     >
-      <span className="docs-catalog__num" aria-hidden="true">{n}</span>
+      <span className="docs-catalog__num" aria-hidden="true">
+        {n}
+      </span>
       <span className="docs-catalog__body">
         <strong>{a.title}</strong>
         <span className="docs-catalog__desc">{a.desc}</span>
       </span>
-      <span className="docs-catalog__meta">{t("docs.minRead", { n: a.minutes })}</span>
+      <span className="docs-catalog__meta">
+        {t("docs.minRead", { n: a.minutes })}
+      </span>
     </a>
   );
 }
@@ -433,7 +611,15 @@ function DocsCatalog({ track, techName, guides, refs, t, onDocsRoute }) {
   return (
     <section className="docs-catalog">
       <h2 className="section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
         </svg>
@@ -443,15 +629,78 @@ function DocsCatalog({ track, techName, guides, refs, t, onDocsRoute }) {
         <div className="docs-catalog__col">
           <span className="label-caps">{t("docs.guidesTitle")}</span>
           {guides.map((a, i) => (
-            <CatalogItem key={a.slug} a={a} n={i + 1} track={track} t={t} onDocsRoute={onDocsRoute} />
+            <CatalogItem
+              key={a.slug}
+              a={a}
+              n={i + 1}
+              track={track}
+              t={t}
+              onDocsRoute={onDocsRoute}
+            />
           ))}
         </div>
         <div className="docs-catalog__col">
           <span className="label-caps">{t("docs.referenceTitle")}</span>
           {refs.map((a, i) => (
-            <CatalogItem key={a.slug} a={a} n={i + 1} track={track} t={t} onDocsRoute={onDocsRoute} />
+            <CatalogItem
+              key={a.slug}
+              a={a}
+              n={i + 1}
+              track={track}
+              t={t}
+              onDocsRoute={onDocsRoute}
+            />
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ————— Популярные гайды: топ-4 гайда трека (карточки) ————— */
+function PopularGuides({ track, guides, t, onDocsRoute }) {
+  const top = guides.slice(0, 4);
+  if (top.length === 0) return null;
+  return (
+    <section className="docs-popular">
+      <h2 className="section-title">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z" />
+        </svg>
+        {t("docs.popularGuides")}
+      </h2>
+      <div className="docs-popular__grid">
+        {top.map((a, i) => (
+          <a
+            key={a.slug}
+            className="docs-popular__card card"
+            href={docsPathFor({ track, page: a.slug })}
+            onClick={(e) => {
+              e.preventDefault();
+              onDocsRoute({ track, page: a.slug });
+            }}
+          >
+            <div className="docs-popular__top">
+              <span className="docs-popular__num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <span className="code-chip">{a.version}</span>
+              <span className="docs-popular__min">
+                {t("docs.minRead", { n: a.minutes })}
+              </span>
+            </div>
+            <strong className="docs-popular__title">{a.title}</strong>
+            <span className="docs-popular__desc">{a.desc}</span>
+          </a>
+        ))}
       </div>
     </section>
   );
@@ -489,16 +738,36 @@ function ReferenceLibrary({ track, t, articles, onDocsRoute }) {
               </div>
               <p className="reference__doc-desc">{active.desc}</p>
               {(() => {
-                const codeBlock = (active.body || []).find((b) => b.type === "code");
-                return codeBlock ? <CodeBlock code={codeBlock.text} lang={codeBlock.lang} version={active.version} t={t} /> : null;
+                const codeBlock = (active.body || []).find(
+                  (b) => b.type === "code",
+                );
+                return codeBlock ? (
+                  <CodeBlock
+                    code={codeBlock.text}
+                    lang={codeBlock.lang}
+                    version={active.version}
+                    t={t}
+                  />
+                ) : null;
               })()}
               <a
                 className="read-link reference__open"
                 href={docsPathFor({ track, page: active.slug })}
-                onClick={(e) => { e.preventDefault(); onDocsRoute({ track, page: active.slug }); }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onDocsRoute({ track, page: active.slug });
+                }}
               >
                 {t("docs.readGuide")}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
               </a>
@@ -510,7 +779,13 @@ function ReferenceLibrary({ track, t, articles, onDocsRoute }) {
   );
 }
 
-function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }) {
+function DocsView({
+  docsRoute,
+  onDocsRoute,
+  activeTech,
+  onNavigate,
+  onOpenTask,
+}) {
   const t = useT();
   const { langCode } = useLanguage();
   const docLang = docLangFor(langCode);
@@ -530,9 +805,16 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
     const list = docsPagesForTrack(track).map((p) => localizePage(p, docLang));
     return hasDocs ? list : [];
   }, [track, docLang, hasDocs]);
-  const sorted = (list) => [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
-  const guides = useMemo(() => sorted(pages.filter((p) => p.type === "guide")), [pages]);
-  const refs = useMemo(() => sorted(pages.filter((p) => p.type === "reference")), [pages]);
+  const sorted = (list) =>
+    [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const guides = useMemo(
+    () => sorted(pages.filter((p) => p.type === "guide")),
+    [pages],
+  );
+  const refs = useMemo(
+    () => sorted(pages.filter((p) => p.type === "reference")),
+    [pages],
+  );
 
   // Статья — из пути /docs/{track}/{pageId}
   const pageId = docsRoute && docsRoute.page;
@@ -540,16 +822,26 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
   const catList = current ? (current.type === "guide" ? guides : refs) : [];
   const currentIdx = current ? catList.indexOf(current) : -1;
   const prev = currentIdx > 0 ? catList[currentIdx - 1] : null;
-  const next = currentIdx > -1 && currentIdx < catList.length - 1 ? catList[currentIdx + 1] : null;
+  const next =
+    currentIdx > -1 && currentIdx < catList.length - 1
+      ? catList[currentIdx + 1]
+      : null;
   const posLabelFor = (p) =>
     p.type === "guide"
       ? t("docs.posGuide", { a: guides.indexOf(p) + 1, b: guides.length })
       : t("docs.posRef", { a: refs.indexOf(p) + 1, b: refs.length });
 
   // Правый рейл: on-page TOC текущей статьи (CustomEvent — DocsAside; h3 — вложенные)
-  const tocDetail = useMemo(() => (current ? { title: current.title, anchors: anchorsFor(current) } : null), [current]);
+  const tocDetail = useMemo(
+    () =>
+      current ? { title: current.title, anchors: anchorsFor(current) } : null,
+    [current],
+  );
   useEffect(() => {
-    const send = () => window.dispatchEvent(new CustomEvent("syntax-docs-toc", { detail: tocDetail }));
+    const send = () =>
+      window.dispatchEvent(
+        new CustomEvent("syntax-docs-toc", { detail: tocDetail }),
+      );
     send();
     window.addEventListener("syntax-docs-toc-request", send);
     return () => window.removeEventListener("syntax-docs-toc-request", send);
@@ -558,7 +850,8 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
   // Невалидная страница в URL (удалённый/переименованный slug): лендинг рендерится,
   // URL чистим через replaceState — share-ссылка ведёт на валидный адрес
   useEffect(() => {
-    if (pageId && !current) onDocsRoute({ track, page: null }, { replace: true });
+    if (pageId && !current)
+      onDocsRoute({ track, page: null }, { replace: true });
   }, [pageId, current, track, onDocsRoute]);
 
   // ————— Живой поиск по базе знаний —————
@@ -574,19 +867,36 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
   }, []);
 
   const allPages = useMemo(() => {
-    const bodyText = (blocks) => (blocks || []).map((b) => (b.type === "table" ? b.rows.flat().join(" ") : b.text || "")).join(" ");
+    const bodyText = (blocks) =>
+      (blocks || [])
+        .map((b) =>
+          b.type === "table" ? b.rows.flat().join(" ") : b.text || "",
+        )
+        .join(" ");
     return ALL_DOC_PAGES.map((p) => ({
       ...p,
       title: (p.title && (p.title[docLang] || p.title.en)) || p.id,
       desc: (p.excerpt && (p.excerpt[docLang] || p.excerpt.en)) || "",
-      body: (p.body && p.body[docLang] && p.body[docLang].length ? p.body[docLang] : p.body.en) || [],
+      body:
+        (p.body && p.body[docLang] && p.body[docLang].length
+          ? p.body[docLang]
+          : p.body.en) || [],
       text: [
-        p.title.en, p.title.ru, p.excerpt.en, p.excerpt.ru,
-        bodyText(p.body.en), bodyText(p.body.ru),
-      ].join(" ").toLowerCase(),
+        p.title.en,
+        p.title.ru,
+        p.excerpt.en,
+        p.excerpt.ru,
+        bodyText(p.body.en),
+        bodyText(p.body.ru),
+      ]
+        .join(" ")
+        .toLowerCase(),
     }));
   }, [docLang]);
-  const tracksWithPages = useMemo(() => new Set(allPages.map((p) => p.track)), [allPages]);
+  const tracksWithPages = useMemo(
+    () => new Set(allPages.map((p) => p.track)),
+    [allPages],
+  );
   const q = query.trim().toLowerCase();
   const hits = q ? allPages.filter((p) => p.text.includes(q)).slice(0, 12) : [];
   const guideHits = hits.filter((p) => p.type === "guide");
@@ -626,8 +936,14 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
               <p className="page-head__desc">{introText}</p>
             </div>
             <div className="docs-for">
-              <span className="label-caps docs-for__label">{t("docs.forTrack")}</span>
-              <div className="tech-switch" role="tablist" aria-label={t("docs.forTrack")}>
+              <span className="label-caps docs-for__label">
+                {t("docs.forTrack")}
+              </span>
+              <div
+                className="tech-switch"
+                role="tablist"
+                aria-label={t("docs.forTrack")}
+              >
                 {TECHS.map((tc) => {
                   const Logo = TRACK_LOGOS[tc.id];
                   const has = DOCS_TRACK_SET.has(tc.id);
@@ -638,14 +954,20 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
                       role="tab"
                       aria-selected={track === tc.id}
                       className={`tech-switch__item ${track === tc.id ? "tech-switch__item--active" : ""}`}
-                      title={has ? t(tc.label) : t("docs.emptyTitle", { tech: t(tc.label) })}
+                      title={
+                        has
+                          ? t(tc.label)
+                          : t("docs.emptyTitle", { tech: t(tc.label) })
+                      }
                       onClick={() => onDocsRoute({ track: tc.id, page: null })}
                     >
                       <span className="tech-switch__icon-glyph">
                         <Logo />
                       </span>
                       <span className="tech-switch__name">{t(tc.label)}</span>
-                      {!has && <span className="tech-switch__soon-badge">Soon</span>}
+                      {!has && (
+                        <span className="tech-switch__soon-badge">Soon</span>
+                      )}
                     </button>
                   );
                 })}
@@ -697,7 +1019,9 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
                 <div className="docs-search-drop" role="listbox">
                   {hits.length === 0 ? (
                     <div className="docs-search-drop__empty">
-                      <strong>{t("docs.nothingFound", { q: query.trim() })}</strong>
+                      <strong>
+                        {t("docs.nothingFound", { q: query.trim() })}
+                      </strong>
                       <ul className="docs-search-drop__hints">
                         {(t("docs.nothingFoundHints") || []).map((h, i) => (
                           <li key={i}>{h}</li>
@@ -729,12 +1053,17 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
                       </span>
                       {guideHits.length > 0 && (
                         <div className="docs-search-drop__group">
-                          <span className="docs-search-drop__group-label">{t("docs.resultsGuides")}</span>
+                          <span className="docs-search-drop__group-label">
+                            {t("docs.resultsGuides")}
+                          </span>
                           {guideHits.map((a) => (
                             <a
                               key={a.slug}
                               className="docs-search-drop__item"
-                              href={docsPathFor({ track: a.track, page: a.slug })}
+                              href={docsPathFor({
+                                track: a.track,
+                                page: a.slug,
+                              })}
                               onMouseDown={(e) => {
                                 e.preventDefault();
                                 openResult(a);
@@ -743,7 +1072,9 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
                               <span className="docs-search-drop__item-head">
                                 <strong>{mark(a.title)}</strong>
                                 {tracksWithPages.size > 1 && (
-                                  <span className="docs-search-drop__badge">{t(`techs.${a.track}.label`)}</span>
+                                  <span className="docs-search-drop__badge">
+                                    {t(`techs.${a.track}.label`)}
+                                  </span>
                                 )}
                               </span>
                               <span>{mark(a.desc)}</span>
@@ -753,12 +1084,17 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
                       )}
                       {refHits.length > 0 && (
                         <div className="docs-search-drop__group">
-                          <span className="docs-search-drop__group-label">{t("docs.resultsReference")}</span>
+                          <span className="docs-search-drop__group-label">
+                            {t("docs.resultsReference")}
+                          </span>
                           {refHits.map((a) => (
                             <a
                               key={a.slug}
                               className="docs-search-drop__item"
-                              href={docsPathFor({ track: a.track, page: a.slug })}
+                              href={docsPathFor({
+                                track: a.track,
+                                page: a.slug,
+                              })}
                               onMouseDown={(e) => {
                                 e.preventDefault();
                                 openResult(a);
@@ -767,7 +1103,9 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
                               <span className="docs-search-drop__item-head">
                                 <strong>{mark(a.title)}</strong>
                                 {tracksWithPages.size > 1 && (
-                                  <span className="docs-search-drop__badge">{t(`techs.${a.track}.label`)}</span>
+                                  <span className="docs-search-drop__badge">
+                                    {t(`techs.${a.track}.label`)}
+                                  </span>
                                 )}
                               </span>
                               <span>{mark(a.desc)}</span>
@@ -793,7 +1131,10 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
                 <a
                   key={a.slug}
                   href={docsPathFor({ track: a.track, page: a.slug })}
-                  onClick={(e) => { e.preventDefault(); onDocsRoute({ track: a.track, page: a.slug }); }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onDocsRoute({ track: a.track, page: a.slug });
+                  }}
                   className={`docs-tree__item ${a.slug === current.slug ? "is-active" : ""}`}
                   aria-current={a.slug === current.slug ? "page" : undefined}
                 >
@@ -821,12 +1162,36 @@ function DocsView({ docsRoute, onDocsRoute, activeTech, onNavigate, onOpenTask }
       ) : hasDocs ? (
         /* Обзор трека: каталог всех страниц + справочная библиотека с превью */
         <div className="docs-main">
-          <DocsCatalog track={track} techName={techName} guides={guides} refs={refs} t={t} onDocsRoute={onDocsRoute} />
-          <ReferenceLibrary track={track} t={t} articles={refs} onDocsRoute={onDocsRoute} />
+          <PopularGuides
+            track={track}
+            guides={guides}
+            t={t}
+            onDocsRoute={onDocsRoute}
+          />
+          <DocsCatalog
+            track={track}
+            techName={techName}
+            guides={guides}
+            refs={refs}
+            t={t}
+            onDocsRoute={onDocsRoute}
+          />
+          <ReferenceLibrary
+            track={track}
+            t={t}
+            articles={refs}
+            onDocsRoute={onDocsRoute}
+          />
         </div>
       ) : (
         /* Трек без статей */
-        <TrackEmpty tech={tech} t={t} onSwitchToPython={() => onDocsRoute({ track: DEFAULT_DOCS_TRACK, page: null })} />
+        <TrackEmpty
+          tech={tech}
+          t={t}
+          onSwitchToPython={() =>
+            onDocsRoute({ track: DEFAULT_DOCS_TRACK, page: null })
+          }
+        />
       )}
     </div>
   );

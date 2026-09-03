@@ -8720,6 +8720,70 @@ code {
 
 /* ---------- Documentation: UX-аудит (2026-09) ---------- */
 /* Каталог страниц трека (Guides / Reference, порядок по order) */
+.docs-popular {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.docs-popular__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.docs-popular__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.docs-popular__card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--glow);
+}
+.docs-popular__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.docs-popular__num {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-hover);
+  background: var(--primary-soft);
+  border: 1px solid rgba(48, 224, 161, 0.25);
+}
+.docs-popular__min {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.docs-popular__title {
+  font-size: 15px;
+  color: var(--text);
+}
+.docs-popular__desc {
+  font-size: 12.5px;
+  color: var(--text-variant);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .docs-catalog {
   display: flex;
   flex-direction: column;
@@ -8957,6 +9021,9 @@ code {
     padding-bottom: 6px;
   }
   .docs-catalog__grid {
+    grid-template-columns: 1fr;
+  }
+  .docs-popular__grid {
     grid-template-columns: 1fr;
   }
   .docs-catalog__meta {

@@ -610,7 +610,7 @@ export const LOCALES = {
         javascript:
           "Основы языка, массивы, объекты, DOM, события, async/await и event loop — справочник от переменных до fetch.",
         react:
-          "Компоненты, JSX, state, эффекты и хуки, кастомные хуки и Context — полный справочник по React 18: от первого компонента до продакшн-приложения.",
+          "Компоненты, JSX, state, эффекты и хуки, кастомные хуки и Context — полный справочник по React 19: от первого компонента до продакшн-приложения.",
         vue: "Шаблоны, реактивность, компоненты, Vue Router и Pinia — полный справочник по Vue 3 на Composition API.",
         node: "Архитектура и event loop, встроенные модули, Express, PostgreSQL и MongoDB, auth и безопасность — полный серверный справочник.",
         mongo:
@@ -637,6 +637,7 @@ export const LOCALES = {
       askCommunity: "Спросить в сообществе",
       askAi: "Спросить ИИ-помощника",
       catalogTitle: "Все страницы {tech}",
+      popularGuides: "Популярные гайды",
       practiceLabel: "Связанная задача",
       practiceCta: "Потренироваться",
       guidesTitle: "Гайды",
