@@ -41,6 +41,19 @@ function formatTime(sec) {
 // он перехватывает hover и гасит YouTube-хад: «Другие видео», карточку
 // канала, тултипы). Свои контролы снизу: Play/Pause + прогресс (drag =
 // перемотка) + время. Логотип YouTube нельзя убрать полностью (ToS).
+// Заглушка для уроков без ролика (задезейблена): та же брендовая обложка,
+// без кнопки Play + чип «Видео скоро». Компонент без хуков (ветка рендера).
+function LessonVideoPlaceholder({ video, soonText }) {
+  return (
+    <figure className="lesson-view__video lesson-view__video--soon">
+      <div className="lesson-view__video-poster" aria-disabled="true">
+        <img src={video.thumb} alt="" loading="lazy" />
+        <span className="lesson-view__video-soon">{soonText}</span>
+      </div>
+    </figure>
+  );
+}
+
 function LessonVideo({ video, label }) {
   const [playing, setPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -304,6 +317,13 @@ function LessonView({
       : false);
   const neighborTitle = (lesson, n) =>
     lesson ? localizedLessonTitle(job.techId, n, lesson.title, langCode) : "";
+
+  // UX-аудит H2: только что сдал урок — выводим на вкладку Task (там панель
+  // «Урок пройден» + CTA); setTab — в обработчике (не в effect)
+  const handleSuccess = () => {
+    setJustDone(true);
+    setTab("task");
+  };
   const prevTitle =
     lessonCtx && lessonCtx.prev
       ? neighborTitle(lessonCtx.prev, lessonCtx.n - 1)
@@ -317,7 +337,6 @@ function LessonView({
     setTab("task");
     setTaskVisited(true);
   };
-  const handleSuccess = () => setJustDone(true);
   const listHref = tech
     ? `#/technology/${tech.id}`
     : `#/${job.backTab || "roadmap"}`;
@@ -399,7 +418,15 @@ function LessonView({
         className={`lesson-view__panel ${tab !== "material" ? "lesson-view__panel--hidden" : ""}`}
       >
         <div className="card lesson-view__material">
-          {video && <LessonVideo video={video} label={t("lessonView.video")} />}
+          {video &&
+            (video.placeholder ? (
+              <LessonVideoPlaceholder
+                video={video}
+                soonText={t("lessonView.videoSoon")}
+              />
+            ) : (
+              <LessonVideo video={video} label={t("lessonView.video")} />
+            ))}
           <MdContent src={job.content} t={t} />
           <button
             type="button"

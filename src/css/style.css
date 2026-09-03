@@ -2717,6 +2717,26 @@ code {
   background: var(--surface-3);
   cursor: pointer;
 }
+/* Заглушка «видео скоро»: та же обложка, без Play, приглушённая */
+.lesson-view__video--soon .lesson-view__video-poster {
+  cursor: default;
+}
+.lesson-view__video--soon .lesson-view__video-poster img {
+  opacity: 0.55;
+}
+.lesson-view__video-soon {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: rgba(5, 20, 36, 0.85);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-variant);
+}
 .lesson-view__video-poster img {
   position: absolute;
   inset: 0;
@@ -9584,4 +9604,130 @@ code {
     flex: 1;
     justify-content: center;
   }
+}
+
+/* ===== UX-аудит 2026-09 (раунд 2): гостевые состояния, bоt-бейдж, OPEN TRACK, lesson-1, docs-пилюли ===== */
+/* BOT-бейдж у автоматизированных аккаунтов (trust: DataBot_v2 = 33% постов) */
+.bot-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(135, 148, 140, 0.4);
+  background: rgba(135, 148, 140, 0.12);
+  color: var(--text-variant);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+}
+
+/* Гостевой профиль: «Что даёт аккаунт» (пустота под CTA убрана) */
+.profile__gets {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.profile__gets-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.profile__gets-list {
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+.profile__gets-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.profile__gets-ico {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.profile__gets-body strong {
+  display: block;
+  font-size: 13.5px;
+}
+.profile__gets-body p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--text-variant);
+}
+
+/* Рейтинги: гостевая строка-CTA (клик = signup) + рейл-карта гостя */
+.rankings__row--cta {
+  cursor: pointer;
+}
+.rankings__row--cta:hover td {
+  background: var(--primary-soft);
+}
+.rank-card__sample {
+  margin-left: 8px;
+}
+.rank-card__cta {
+  flex: 0 0 auto;
+  padding: 10px 18px;
+  font-size: 13.5px;
+}
+.rank-card__guest-note {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-variant);
+}
+
+/* Тех-страница: строка CTA (Start Learning + OPEN TRACK) + пометка языка курса */
+.tech-page__cta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.tech-page__lang-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.tech-page__section-head {
+  align-items: baseline;
+  gap: 12px;
+}
+
+/* Карточки треков: «Урок 1: {название}» вместо абстрактного числа */
+.tech-card__first {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Docs: 9 пилюль треков — горизонтальный скролл вместо переноса (≤1280) */
+@media (max-width: 1280px) {
+  .docs-for__list,
+  .tech-switch {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+  }
+}
+
+/* Footer: Legal — Soon-бейдж (кнопки без действия) */
+.footer__legal .soon-badge {
+  margin-left: 6px;
 }

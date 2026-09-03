@@ -10,7 +10,7 @@ import TechSwitch from "../TechSwitch";
 // Страница технологии (макет: technology-page).
 // Контент (описание, модули, ресурсы, AI-пример, урок) — в i18n: `techs.{id}`
 // (EN base + RU; uk/es/de откатываются на EN). UI-строки — `techPage.*` (5 языков).
-function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectTech, isAuthed = false }) {
+function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectTech, onNavigate, isAuthed = false }) {
   const t = useT();
   const { langCode } = useLanguage();
   const tech = getTech(techId) || getTech("javascript");
@@ -83,12 +83,21 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectT
             <div className="bar__fill" style={{ width: `${pct}%` }}></div>
           </div>
         )}
-        <button type="button" className="btn btn--primary tech-page__cta" onClick={() => onResume(tech.id)}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m8 6 8 6-8 6V6Z" />
-          </svg>
-          {isAuthed ? t("techPage.continue") : t("techPage.start")}
-        </button>
+        <div className="tech-page__cta-row">
+          <button type="button" className="btn btn--primary tech-page__cta" onClick={() => onResume(tech.id)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m8 6 8 6-8 6V6Z" />
+            </svg>
+            {isAuthed ? t("techPage.continue") : t("techPage.start")}
+          </button>
+          {/* UX-аудит: OPEN TRACK — явная кнопка перехода в карту курса (hero-статус не читается как CTA) */}
+          <button type="button" className="btn btn--ghost tech-page__cta" onClick={() => onNavigate("roadmap")}>
+            {t("techPage.openTrack")}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
       </section>
 
       {/* Lessons: уроки трека из базы (Supabase), кликабельны — открываются в редакторе */}
@@ -96,6 +105,8 @@ function TechnologyView({ techId, onResume, onOpenDbLesson, dbLessons, onSelectT
         <section className="tech-page__dblessons">
           <div className="tech-page__section-head">
             <h2 className="tech-page__section-title">{t("techPage.dbLessons")}</h2>
+            {/* UX-аудит: язык курса честный (контент RU, UI любой) — мелкая пометка, не чип */}
+            <span className="tech-page__lang-note">{t("lessonView.courseLangNote")}</span>
           </div>
           <div className="techmod-list">
             {/* NEW-лейбл: только если урок про НОВУЮ технологию (фича ≤ 3 лет — словарь web-features.js),

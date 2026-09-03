@@ -6,50 +6,111 @@ import { getTech } from "../../lib/techs";
 // Метаданные постов (статичные данные; контент постов и ответов — в i18n community.posts)
 const POST_META = [
   {
-    tech: "python", live: true, time: "2m", activeMin: 2, createdMin: 300,
-    votes: 142, views: "1.2k", author: { name: "ana_data", rep: "8,420", hue: 30 },
+    tech: "python",
+    live: true,
+    time: "2m",
+    activeMin: 2,
+    createdMin: 300,
+    votes: 142,
+    views: "1.2k",
+    author: { name: "ana_data", rep: "8,420", hue: 30 },
   },
   {
-    tech: "react", time: "1h", activeMin: 58, createdMin: 60,
-    votes: 89, views: "986", solved: true, isMine: true, newReplies: 3,
+    tech: "react",
+    time: "1h",
+    activeMin: 58,
+    createdMin: 60,
+    votes: 89,
+    views: "986",
+    solved: true,
+    isMine: true,
+    newReplies: 3,
     author: { name: "NeoCoder", rep: "1,240", hue: 160 },
   },
   {
-    tech: "node", time: "3h", activeMin: 170, createdMin: 180,
-    votes: 45, views: "540", author: { name: "sys_admin", rep: "12,760", hue: 260 },
+    tech: "node",
+    time: "3h",
+    activeMin: 170,
+    createdMin: 180,
+    votes: 45,
+    views: "540",
+    author: { name: "sys_admin", rep: "12,760", hue: 260 },
   },
   // — новые сид-посты (UX-аудит: фид «пустой» — 3 поста на 9 треков) —
   {
-    tech: "css", time: "4h", activeMin: 250, createdMin: 240,
-    votes: 9, views: "118", solved: true, author: { name: "maria_sofia", rep: "3,210", hue: 330 },
+    tech: "css",
+    time: "4h",
+    activeMin: 250,
+    createdMin: 240,
+    votes: 9,
+    views: "118",
+    solved: true,
+    author: { name: "maria_sofia", rep: "3,210", hue: 330 },
   },
   {
-    tech: "javascript", time: "5h", activeMin: 300, createdMin: 300,
-    votes: 17, views: "286", author: { name: "neo_oleg", rep: "2,940", hue: 30 },
+    tech: "javascript",
+    time: "5h",
+    activeMin: 300,
+    createdMin: 300,
+    votes: 17,
+    views: "286",
+    author: { name: "neo_oleg", rep: "2,940", hue: 30 },
   },
   {
-    tech: "html", time: "6h", activeMin: 360, createdMin: 360,
-    votes: 6, views: "94", author: { name: "data_vlad", rep: "3,120", hue: 260 },
+    tech: "html",
+    time: "6h",
+    activeMin: 360,
+    createdMin: 360,
+    votes: 6,
+    views: "94",
+    author: { name: "data_vlad", rep: "3,120", hue: 260 },
   },
   {
-    tech: "node", time: "7h", activeMin: 420, createdMin: 420,
-    votes: 21, views: "402", solved: true, author: { name: "dev_priya", rep: "5,120", hue: 280 },
+    tech: "node",
+    time: "7h",
+    activeMin: 420,
+    createdMin: 420,
+    votes: 21,
+    views: "402",
+    solved: true,
+    author: { name: "dev_priya", rep: "5,120", hue: 280 },
   },
   {
-    tech: "mongo", time: "9h", activeMin: 540, createdMin: 540,
-    votes: 11, views: "176", author: { name: "data_vlad", rep: "3,120", hue: 260 },
+    tech: "mongo",
+    time: "9h",
+    activeMin: 540,
+    createdMin: 540,
+    votes: 11,
+    views: "176",
+    author: { name: "data_vlad", rep: "3,120", hue: 260 },
   },
   {
-    tech: "postgres", time: "11h", activeMin: 660, createdMin: 660,
-    votes: 15, views: "229", solved: true, author: { name: "sys_admin", rep: "12,760", hue: 200 },
+    tech: "postgres",
+    time: "11h",
+    activeMin: 660,
+    createdMin: 660,
+    votes: 15,
+    views: "229",
+    solved: true,
+    author: { name: "sys_admin", rep: "12,760", hue: 200 },
   },
   {
-    tech: "python", time: "13h", activeMin: 780, createdMin: 780,
-    votes: 8, views: "141", author: { name: "ana_data", rep: "8,420", hue: 40 },
+    tech: "python",
+    time: "13h",
+    activeMin: 780,
+    createdMin: 780,
+    votes: 8,
+    views: "141",
+    author: { name: "ana_data", rep: "8,420", hue: 40 },
   },
   {
-    tech: "react", time: "16h", activeMin: 960, createdMin: 960,
-    votes: 5, views: "73", author: { name: "alex_mercer", rep: "14.2k", hue: 158 },
+    tech: "react",
+    time: "16h",
+    activeMin: 960,
+    createdMin: 960,
+    votes: 5,
+    views: "73",
+    author: { name: "alex_mercer", rep: "14.2k", hue: 158 },
   },
 ];
 
@@ -87,7 +148,12 @@ function inlineMd(s) {
   let k = 0;
   while ((m = re.exec(s))) {
     if (m.index > last) out.push(s.slice(last, m.index));
-    if (m[1]) out.push(<code key={k++} className="md-inline">{m[1].slice(1, -1)}</code>);
+    if (m[1])
+      out.push(
+        <code key={k++} className="md-inline">
+          {m[1].slice(1, -1)}
+        </code>,
+      );
     else if (m[2]) out.push(<strong key={k++}>{m[2].slice(2, -2)}</strong>);
     else out.push(<em key={k++}>{m[3].slice(1, -1)}</em>);
     last = m.index + m[0].length;
@@ -100,16 +166,26 @@ function MdText({ src }) {
   const parts = String(src || "").split(/```(\w*)\n?([\s\S]*?)```/g);
   const nodes = [];
   for (let i = 0; i < parts.length; i += 3) {
-    if (parts[i]) nodes.push(<p key={i} className="md-p">{inlineMd(parts[i])}</p>);
+    if (parts[i])
+      nodes.push(
+        <p key={i} className="md-p">
+          {inlineMd(parts[i])}
+        </p>,
+      );
     if (parts[i + 1] !== undefined) {
       nodes.push(
         <pre key={`c${i}`} className="md-code">
           <code>{parts[i + 2]}</code>
-        </pre>
+        </pre>,
       );
     }
   }
-  if (!nodes.length) nodes.push(<p key="e" className="md-p">—</p>);
+  if (!nodes.length)
+    nodes.push(
+      <p key="e" className="md-p">
+        —
+      </p>,
+    );
   return <div className="md">{nodes}</div>;
 }
 
@@ -117,9 +193,15 @@ function MdText({ src }) {
 function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
-  const author = { name: reply.author, rep: reply.rep, hue: reply.hue ?? hueOf(reply.author) };
+  const author = {
+    name: reply.author,
+    rep: reply.rep,
+    hue: reply.hue ?? hueOf(reply.author),
+  };
   return (
-    <div className={`reply ${depth > 1 ? "reply--nested" : ""} ${reply.accepted ? "reply--accepted" : ""} ${reply.mine ? "reply--mine" : ""}`}>
+    <div
+      className={`reply ${depth > 1 ? "reply--nested" : ""} ${reply.accepted ? "reply--accepted" : ""} ${reply.mine ? "reply--mine" : ""}`}
+    >
       <div className="reply__head">
         <Avatar name={author.name} hue={author.hue} size="xs" />
         <button
@@ -134,13 +216,25 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
         <span className="reply__time">{reply.time}</span>
         {reply.accepted && (
           <span className="reply__accepted">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="m5 13 4 4L19 7" />
             </svg>
             {t("community.accepted")}
           </span>
         )}
-        {reply.mine && <span className="reply__mine-badge">{t("community.yourQuestion")}</span>}
+        {reply.mine && (
+          <span className="reply__mine-badge">
+            {t("community.yourQuestion")}
+          </span>
+        )}
       </div>
       <MdText src={reply.body} />
       {reply.code && (
@@ -149,8 +243,20 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
         </pre>
       )}
       {reply.lesson && (
-        <button type="button" className="reply__lesson" title={t("community.relatedLesson", { lesson: reply.lesson })}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <button
+          type="button"
+          className="reply__lesson"
+          title={t("community.relatedLesson", { lesson: reply.lesson })}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13" />
           </svg>
           {t("community.relatedLesson", { lesson: reply.lesson })}
@@ -158,7 +264,11 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
       )}
       {depth === 1 && (
         <div className="reply__actions">
-          <button type="button" className="reply__to" onClick={() => setOpen((v) => !v)}>
+          <button
+            type="button"
+            className="reply__to"
+            onClick={() => setOpen((v) => !v)}
+          >
             {t("community.replyTo")}
           </button>
         </div>
@@ -188,7 +298,14 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
         </div>
       )}
       {(reply.replies || []).map((r, i) => (
-        <ReplyItem key={i} reply={r} depth={depth + 1} t={t} onReplyTo={onReplyTo} onOpenProfile={onOpenProfile} />
+        <ReplyItem
+          key={i}
+          reply={r}
+          depth={depth + 1}
+          t={t}
+          onReplyTo={onReplyTo}
+          onOpenProfile={onOpenProfile}
+        />
       ))}
     </div>
   );
@@ -201,18 +318,37 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
   const replies = [...(post.replies || []), ...item.extra];
   const author = meta.author;
   return (
-    <div className="community-modal" role="dialog" aria-modal="true" aria-label={post.title} onClick={onClose}>
-      <div className="community-modal__panel" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="community-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label={post.title}
+      onClick={onClose}
+    >
+      <div
+        className="community-modal__panel"
+        onClick={(e) => e.stopPropagation()}
+      >
         <header className="community-modal__head">
           <div className="community-modal__meta">
             <Avatar name={author.name} hue={author.hue} size="sm" />
             <div>
               <strong>{author.name}</strong>
-              <span>{author.rep} REP · {meta.time}</span>
+              <span>
+                {author.rep} REP · {meta.time}
+              </span>
             </div>
             {meta.solved && (
               <span className="post__solved">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <circle cx="12" cy="12" r="9" />
                   <path d="m8.5 12.5 2.5 2.5 5-5.5" />
                 </svg>
@@ -223,7 +359,9 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
           <h2 className="community-modal__title">{post.title}</h2>
           <div className="community-modal__tags">
             {(post.tags || []).map((tag) => (
-              <span key={tag} className="post__tag">#{tag}</span>
+              <span key={tag} className="post__tag">
+                #{tag}
+              </span>
             ))}
           </div>
           <MdText src={post.excerpt} />
@@ -233,7 +371,9 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
           <span className="label-caps community-modal__count">
             {t("community.threadReplies", { n: replies.length })}
           </span>
-          {replies.length === 0 && <div className="tasks-empty">{t("community.threadEmpty")}</div>}
+          {replies.length === 0 && (
+            <div className="tasks-empty">{t("community.threadEmpty")}</div>
+          )}
           {replies.map((r, i) => (
             <ReplyItem
               key={i}
@@ -254,7 +394,9 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
               aria-label={t("community.replyPlaceholder")}
             />
             <div className="thread-composer__foot">
-              <span className="thread-composer__hint">{t("community.composerSub")}</span>
+              <span className="thread-composer__hint">
+                {t("community.composerSub")}
+              </span>
               <button
                 type="button"
                 className="btn btn--primary"
@@ -269,8 +411,20 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
             </div>
           </div>
         </div>
-        <button type="button" className="community-modal__close" onClick={onClose} aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <button
+          type="button"
+          className="community-modal__close"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -287,15 +441,36 @@ function ComposerModal({ t, tagPool, defaultLang, onClose, onPublish }) {
   const [mode, setMode] = useState("write");
   const canPost = title.trim() && body.trim();
   const toggleTag = (tag) =>
-    setTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : prev.length < 4 ? [...prev, tag] : prev));
+    setTags((prev) =>
+      prev.includes(tag)
+        ? prev.filter((x) => x !== tag)
+        : prev.length < 4
+          ? [...prev, tag]
+          : prev,
+    );
   const insertCode = () =>
-    setBody((b) => `${b}${b ? "\n" : ""}\`\`\`${defaultLang}\n// your code\n\`\`\`\n`);
+    setBody(
+      (b) => `${b}${b ? "\n" : ""}\`\`\`${defaultLang}\n// your code\n\`\`\`\n`,
+    );
   return (
-    <div className="community-modal" role="dialog" aria-modal="true" aria-label={t("community.newDiscussion")} onClick={onClose}>
-      <div className="community-modal__panel community-modal__panel--composer" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="community-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t("community.newDiscussion")}
+      onClick={onClose}
+    >
+      <div
+        className="community-modal__panel community-modal__panel--composer"
+        onClick={(e) => e.stopPropagation()}
+      >
         <header className="community-modal__head">
-          <h2 className="community-modal__title">{t("community.newDiscussion")}</h2>
-          <span className="thread-composer__hint">{t("community.composerSub")}</span>
+          <h2 className="community-modal__title">
+            {t("community.newDiscussion")}
+          </h2>
+          <span className="thread-composer__hint">
+            {t("community.composerSub")}
+          </span>
         </header>
         <div className="community-modal__body composer">
           <input
@@ -321,8 +496,21 @@ function ComposerModal({ t, tagPool, defaultLang, onClose, onPublish }) {
                 {t(`community.composer${m[0].toUpperCase()}${m.slice(1)}`)}
               </button>
             ))}
-            <button type="button" className="btn btn--ghost composer__code" onClick={insertCode} title={t("community.composerCodeBtn")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <button
+              type="button"
+              className="btn btn--ghost composer__code"
+              onClick={insertCode}
+              title={t("community.composerCodeBtn")}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="m8 8-4 4 4 4M16 8l4 4-4 4" />
               </svg>
               {t("community.composerCodeBtn")}
@@ -343,7 +531,9 @@ function ComposerModal({ t, tagPool, defaultLang, onClose, onPublish }) {
             </div>
           )}
           <div className="composer__tags">
-            <span className="label-caps composer__tags-label">{t("community.composerTags")}</span>
+            <span className="label-caps composer__tags-label">
+              {t("community.composerTags")}
+            </span>
             <div className="composer__tag-pool">
               {tagPool.map((tag) => (
                 <button
@@ -359,14 +549,33 @@ function ComposerModal({ t, tagPool, defaultLang, onClose, onPublish }) {
             </div>
           </div>
           <div className="composer__foot">
-            <button type="button" className="btn btn--ghost" onClick={onClose}>{t("editor.cancel")}</button>
-            <button type="button" className="btn btn--primary" disabled={!canPost} onClick={() => onPublish(title.trim(), body.trim(), tags)}>
+            <button type="button" className="btn btn--ghost" onClick={onClose}>
+              {t("editor.cancel")}
+            </button>
+            <button
+              type="button"
+              className="btn btn--primary"
+              disabled={!canPost}
+              onClick={() => onPublish(title.trim(), body.trim(), tags)}
+            >
               {t("community.composerPublish")}
             </button>
           </div>
         </div>
-        <button type="button" className="community-modal__close" onClick={onClose} aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <button
+          type="button"
+          className="community-modal__close"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -395,7 +604,8 @@ function CommunityView({ activeTech }) {
   // Клик по трендовому тегу (рейл) или тегу поста — один и тот же фильтр (без дубля #);
   // карточка трека в рейле включает track-фильтр
   useEffect(() => {
-    const onTag = (e) => setFilter((f) => (f === `#${e.detail}` ? "" : `#${e.detail}`));
+    const onTag = (e) =>
+      setFilter((f) => (f === `#${e.detail}` ? "" : `#${e.detail}`));
     const onTrack = () => setMyTrack(true);
     window.addEventListener("syntax-community-tag", onTag);
     window.addEventListener("syntax-community-track", onTrack);
@@ -420,15 +630,26 @@ function CommunityView({ activeTech }) {
 
   // Итоговый список: i18n-посты + опубликованные локально
   const items = useMemo(() => {
-    const base = posts.map((post, i) => ({ key: `p${i}`, post, meta: POST_META[i] }));
-    const local = localPosts.map((p) => ({ key: `l${p.id}`, post: p.post, meta: p.meta }));
+    const base = posts.map((post, i) => ({
+      key: `p${i}`,
+      post,
+      meta: POST_META[i],
+    }));
+    const local = localPosts.map((p) => ({
+      key: `l${p.id}`,
+      post: p.post,
+      meta: p.meta,
+    }));
     return [...base, ...local];
   }, [posts, localPosts]);
 
-  const repliesCount = (it) => (it.post.replies || []).length + (extraReplies[it.key] || []).length;
+  const repliesCount = (it) =>
+    (it.post.replies || []).length + (extraReplies[it.key] || []).length;
 
   // Счётчики табов (учитывает track-фильтр, но не поиск)
-  const trackList = tech ? items.filter((it) => !myTrack || it.meta.tech === tech) : items;
+  const trackList = tech
+    ? items.filter((it) => !myTrack || it.meta.tech === tech)
+    : items;
   const tabCounts = {
     active: trackList.length,
     newest: trackList.length,
@@ -440,25 +661,50 @@ function CommunityView({ activeTech }) {
     let list = trackList;
     if (q) {
       list = list.filter((it) =>
-        (it.post.title + " " + it.post.excerpt + " " + (it.post.tags || []).join(" ")).toLowerCase().includes(q)
+        (
+          it.post.title +
+          " " +
+          it.post.excerpt +
+          " " +
+          (it.post.tags || []).join(" ")
+        )
+          .toLowerCase()
+          .includes(q),
       );
     }
-    if (tab === "unanswered") list = list.filter((it) => repliesCount(it) === 0);
+    if (tab === "unanswered")
+      list = list.filter((it) => repliesCount(it) === 0);
     return [...list].sort((a, b) =>
-      tab === "newest" ? a.meta.createdMin - b.meta.createdMin : a.meta.activeMin - b.meta.activeMin
+      tab === "newest"
+        ? a.meta.createdMin - b.meta.createdMin
+        : a.meta.activeMin - b.meta.activeMin,
     );
   })();
 
   const handleVote = (key, base) => {
     setVoted((prev) => ({ ...prev, [key]: !prev[key] }));
-    setVotes((prev) => ({ ...prev, [key]: (prev[key] ?? base) + (voted[key] ? -1 : 1) }));
+    setVotes((prev) => ({
+      ...prev,
+      [key]: (prev[key] ?? base) + (voted[key] ? -1 : 1),
+    }));
   };
 
   const addReply = (key, text, parent) => {
-    const reply = { author: YOU.name, rep: YOU.rep, hue: YOU.hue, time: t("community.justNow"), body: text, mine: true, replies: [] };
+    const reply = {
+      author: YOU.name,
+      rep: YOU.rep,
+      hue: YOU.hue,
+      time: t("community.justNow"),
+      body: text,
+      mine: true,
+      replies: [],
+    };
     // Демо: ответ добавляется в топ-лист ветки (parent используется для UI-контекста)
     void parent;
-    setExtraReplies((prev) => ({ ...prev, [key]: [...(prev[key] || []), reply] }));
+    setExtraReplies((prev) => ({
+      ...prev,
+      [key]: [...(prev[key] || []), reply],
+    }));
   };
 
   const publish = (title, body, tags) => {
@@ -468,9 +714,14 @@ function CommunityView({ activeTech }) {
         id,
         post: { title, excerpt: body, tags, replies: [] },
         meta: {
-          tech: tech || "javascript", time: t("community.justNow"),
-          activeMin: 0, createdMin: 0, votes: 0, views: "0",
-          isMine: true, author: YOU,
+          tech: tech || "javascript",
+          time: t("community.justNow"),
+          activeMin: 0,
+          createdMin: 0,
+          votes: 0,
+          views: "0",
+          isMine: true,
+          author: YOU,
         },
       },
       ...prev,
@@ -485,7 +736,15 @@ function CommunityView({ activeTech }) {
     return [...s];
   }, [posts]);
 
-  const defaultLang = { javascript: "js", node: "js", python: "python", html: "html", css: "css", postgresql: "sql" }[tech] || "js";
+  const defaultLang =
+    {
+      javascript: "js",
+      node: "js",
+      python: "python",
+      html: "html",
+      css: "css",
+      postgresql: "sql",
+    }[tech] || "js";
 
   const feedTabs = [
     { id: "active", label: t("community.tabActive") },
@@ -493,7 +752,9 @@ function CommunityView({ activeTech }) {
     { id: "unanswered", label: t("community.tabUnanswered") },
   ];
 
-  const threadItem = threadKey ? items.find((it) => it.key === threadKey) : null;
+  const threadItem = threadKey
+    ? items.find((it) => it.key === threadKey)
+    : null;
 
   return (
     <div className="community">
@@ -525,7 +786,11 @@ function CommunityView({ activeTech }) {
                 aria-label={t("community.filter")}
               />
             </div>
-            <button type="button" className="btn btn--primary community__new" onClick={() => setComposerOpen(true)}>
+            <button
+              type="button"
+              className="btn btn--primary community__new"
+              onClick={() => setComposerOpen(true)}
+            >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -537,7 +802,9 @@ function CommunityView({ activeTech }) {
               >
                 <path d="M12 5v14M5 12h14" />
               </svg>
-              <span className="community__new-label">{t("community.newDiscussion")}</span>
+              <span className="community__new-label">
+                {t("community.newDiscussion")}
+              </span>
             </button>
           </div>
         </div>
@@ -555,7 +822,9 @@ function CommunityView({ activeTech }) {
                 onClick={() => setTab(item.id)}
               >
                 {item.label}
-                <span className="community__tab-count">{tabCounts[item.id]}</span>
+                <span className="community__tab-count">
+                  {tabCounts[item.id]}
+                </span>
               </button>
             ))}
           </div>
@@ -572,7 +841,9 @@ function CommunityView({ activeTech }) {
         </div>
 
         {/* Счётчик видимых постов — снимает «сайт сломался» при фильтрах */}
-        <div className="community__showing">{t("community.showing", { a: visible.length, b: items.length })}</div>
+        <div className="community__showing">
+          {t("community.showing", { a: visible.length, b: items.length })}
+        </div>
 
         {/* Лента обсуждений */}
         <div className="community__feed">
@@ -610,7 +881,11 @@ function CommunityView({ activeTech }) {
                 </button>
                 <div className="post__body">
                   <div className="post__meta">
-                    <Avatar name={meta.author.name} hue={meta.author.hue} size="xs" />
+                    <Avatar
+                      name={meta.author.name}
+                      hue={meta.author.hue}
+                      size="xs"
+                    />
                     <span className="post__author">
                       {meta.author.name}
                       <span className="post__rep">{meta.author.rep}</span>
@@ -621,16 +896,25 @@ function CommunityView({ activeTech }) {
                           <span className="post__live-dot" aria-hidden="true" />
                           {t("community.live")}
                         </span>
-                        <span className="post__time">{t("community.activeAgo", { time: meta.time })}</span>
+                        <span className="post__time">
+                          {t("community.activeAgo", { time: meta.time })}
+                        </span>
                       </>
                     ) : (
                       <span className="post__time">
-                        {t("community.postedBy", { author: meta.author.name, time: meta.time })}
+                        {t("community.postedBy", {
+                          author: meta.author.name,
+                          time: meta.time,
+                        })}
                       </span>
                     )}
                   </div>
                   <div className="post__badges">
-                    {meta.isMine && <span className="post__mine">{t("community.yourQuestion")}</span>}
+                    {meta.isMine && (
+                      <span className="post__mine">
+                        {t("community.yourQuestion")}
+                      </span>
+                    )}
                     {meta.newReplies > 0 && (
                       <span className="post__new-replies">
                         <span className="post__new-dot" aria-hidden="true" />
@@ -649,7 +933,11 @@ function CommunityView({ activeTech }) {
                           className="post__tag"
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.dispatchEvent(new CustomEvent("syntax-community-tag", { detail: tag }));
+                            window.dispatchEvent(
+                              new CustomEvent("syntax-community-tag", {
+                                detail: tag,
+                              }),
+                            );
                           }}
                         >
                           #{tag}
@@ -659,7 +947,15 @@ function CommunityView({ activeTech }) {
                     <div className="post__stats">
                       {meta.solved && (
                         <span className="post__solved">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
                             <circle cx="12" cy="12" r="9" />
                             <path d="m8.5 12.5 2.5 2.5 5-5.5" />
                           </svg>
@@ -667,14 +963,30 @@ function CommunityView({ activeTech }) {
                         </span>
                       )}
                       <span className="post__stat">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M21 12a8 8 0 0 1-8 8H4l2.5-3A8 8 0 1 1 21 12Z" />
                         </svg>
                         {repliesCount(it)}
                       </span>
                       {meta.views && (
                         <span className="post__stat">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
                             <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
                             <circle cx="12" cy="12" r="3" />
                           </svg>
@@ -690,17 +1002,36 @@ function CommunityView({ activeTech }) {
 
           {visible.length === 0 && (
             <div className="tasks-empty community-empty">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3M8 11h6" />
               </svg>
               <strong>{t("community.nothingTitle")}</strong>
               <span>{t("community.nothingReason")}</span>
               <div className="community-empty__actions">
-                <button type="button" className="btn btn--ghost" onClick={() => { setFilter(""); setMyTrack(false); }}>
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => {
+                    setFilter("");
+                    setMyTrack(false);
+                  }}
+                >
                   {t("community.resetFilters")}
                 </button>
-                <button type="button" className="btn btn--primary" onClick={() => setComposerOpen(true)}>
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={() => setComposerOpen(true)}
+                >
                   {t("community.askFirst")}
                 </button>
               </div>
@@ -719,7 +1050,13 @@ function CommunityView({ activeTech }) {
         />
       )}
       {composerOpen && (
-        <ComposerModal t={t} tagPool={tagPool} defaultLang={defaultLang} onClose={() => setComposerOpen(false)} onPublish={publish} />
+        <ComposerModal
+          t={t}
+          tagPool={tagPool}
+          defaultLang={defaultLang}
+          onClose={() => setComposerOpen(false)}
+          onPublish={publish}
+        />
       )}
     </div>
   );

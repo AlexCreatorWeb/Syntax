@@ -341,6 +341,7 @@ function MainView({
         <p className="home__section-sub">{t("home.section.programDesc")}</p>
         <TechCardsGrid
           activeTech={activeTech}
+          dbLessons={dbLessons}
           onOpenTech={(id) => {
             onSelectTech(id); // выбор трека (лого в хедере) — К4: персистится
             onNavigate("technology", { techId: id }); // сразу на страницу технологии
@@ -587,7 +588,7 @@ function MainView({
             </button>
           </div>
           <div className="home__footer-col">
-            <h5>{t("footer.legal")}</h5>
+            <h5>{t("footer.legal")} <span className="soon-badge">{t("home.soon")}</span></h5>
             <button type="button">{t("footer.privacy")}</button>
             <button type="button">{t("footer.terms")}</button>
           </div>

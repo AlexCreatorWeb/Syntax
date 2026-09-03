@@ -364,6 +364,7 @@ export default {
     tabTask: "Task",
     goToTask: "Go to the task",
     video: "Video lesson",
+    videoSoon: "Video coming soon",
     courseLang: "RU",
     courseLangNote:
       "Course content is in Russian for now — more languages are coming",
@@ -392,6 +393,7 @@ export default {
     progress: "Course Progress",
     course: "Course",
     start: "Start Learning",
+    openTrack: "Open track",
     guestLine: "{m} lessons in this course — start with the first one",
     continue: "Continue Learning",
     curriculum: "Curriculum",
@@ -438,7 +440,7 @@ export default {
     markAllRead: "Mark all as read",
   },
   news: {
-    empty: "No new posts yet",
+    empty: "No notifications yet — check back soon",
     source: "Medium · {feed}",
     translatingProgress: "Translating… {done} of {total}",
     loading: "Loading article…",
@@ -724,13 +726,17 @@ export default {
     signup: "Sign up free",
     getsTitle: "What you get with an account",
     gets1t: "Cloud progress",
-    gets1d: "Lessons and tasks save to your account — pick up where you left off on any device.",
+    gets1d:
+      "Lessons and tasks save to your account — pick up where you left off on any device.",
     gets2t: "XP and levels",
-    gets2d: "Earn XP for lessons and tasks, grow your level and climb the global leaderboard.",
+    gets2d:
+      "Earn XP for lessons and tasks, grow your level and climb the global leaderboard.",
     gets3t: "Streak and Daily Challenge",
-    gets3d: "Solve the daily challenge, keep your streak alive, collect the +500 XP bonus.",
+    gets3d:
+      "Solve the daily challenge, keep your streak alive, collect the +500 XP bonus.",
     gets4t: "Community and AI assistant",
-    gets4d: "Ask questions, get community answers and 24/7 help from the AI assistant.",
+    gets4d:
+      "Ask questions, get community answers and 24/7 help from the AI assistant.",
     memberSince: "Member since {date}",
     progress: "Course progress",
     progressEmpty:
@@ -792,6 +798,7 @@ export default {
       "Live preview — this is what your dashboard looks like after you sign up",
     proof: "Joined by 50,000+ developers",
     lessons: "{n} lessons · Beginner → Pro",
+    lesson1: "Lesson 1: {title}",
     quote: {
       name: "Maya K.",
       role: "Frontend intern",
@@ -837,7 +844,8 @@ export default {
     nextRank: "Next Rank (CodeNinja)",
     guestRow: "Sign up to see your rank",
     railCta: "Sign up",
-    railGuestNote: "Rankings are personal — sign up and start earning XP to compete.",
+    railGuestNote:
+      "Rankings are personal — sign up and start earning XP to compete.",
     needXp: "280 XP",
     weekly: "Weekly Progress",
     today: "Today",
@@ -910,6 +918,7 @@ export default {
     resetFilters: "Reset filters",
     askFirst: "Ask the first question",
     follow: "Follow",
+    bot: "Automated account",
     following: "Following",
     profilePosts: "{n} posts",
     profileStreak: "{n}-day streak",

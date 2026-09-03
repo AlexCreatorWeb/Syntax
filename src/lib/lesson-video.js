@@ -1,10 +1,26 @@
 // YouTube-видео на странице урока (вкладка «Материал», над контентом).
-// Этап 1 (2026-09): один фиксированный ролик (NP2NJVfgWm8) на ПЕРВОМ уроке
-// курса — оттачиваем на HTML. Размножить на все технологии = дописать id
-// трека в TECHS_WITH_VIDEO (+ логотип в COVER_LOGOS).
-// Этап 2 (план): поиск видео по каждому уроку (по названию/треку) —
-// здесь появится мапа lessonId → videoId вместо общего LESSON_VIDEO_ID.
-export const LESSON_VIDEO_ID = "NP2NJVfgWm8";
+// Этап 1 (2026-09): один фиксированный ролик на первом уроке HTML —
+// оттачиваем плеер. Этап 2 (2026-09): мапа lessonNumber → videoId для HTML
+// (подбор: не старше 5 лет, ≤ 10 мин, максимум просмотров, точное
+// совпадение с темой; авторы — WebAkademia / Friendly Frontend / Listen IT).
+// Уроки без видео (2, 7, 14, 16) — задезейбленная заглушка «Video coming
+// soon»; агент подбирает актуальных авторов, id впишем в мапу позже.
+// Размножить на все технологии = дописать id трека в TECHS_WITH_VIDEO
+// (+ логотип в COVER_LOGOS).
+export const LESSON_VIDEO_IDS = {
+  1: "NP2NJVfgWm8", // WebAkademia — структура страницы, html/head/meta/body
+  3: "ny-ouhU-cCc", // Friendly Frontend — h1-h6, p, ol, ul, li
+  4: "scB2C0uNV1s", // Friendly Frontend — a/button, якоря, mailto/tel, target
+  5: "wKHiuEeV1gU", // WebAkademia — ссылки в шапке (портфолио, контакты)
+  6: "uCXwmupsoMY", // Friendly Frontend — img, относительные/абсолютные пути
+  8: "jWXGLAD2BUU", // Friendly Frontend — table/tr/td/th, thead/tbody/tfoot
+  9: "_in4LAdxAUA", // Friendly Frontend — form/fieldset/legend/label/input
+  10: "ScPhhvz1z5Q", // Friendly Frontend — input type: tel/email/password/…
+  11: "7ZZK9Iprw5c", // Friendly Frontend — header/main/footer/section/aside/nav
+  12: "6PL2TqBdz0I", // Friendly Frontend — video/audio/iframe/source
+  13: "3wsvVLOrI3g", // Friendly Frontend — Frontend Accessibility 2024 (11:39)
+  15: "pznMUqqotpk", // Friendly Frontend — модальное окно, тег dialog
+};
 export const TECHS_WITH_VIDEO = ["html"];
 
 // Обложка постера генерируется как SVG (data-URI): современная «сочная»
@@ -69,26 +85,31 @@ function coverSvg(name, logo, num) {
 // Обложка по треку (нет логотипа → фолбэк на hqdefault YouTube)
 function makeThumb(techId, name, num) {
   const logo = COVER_LOGOS[techId];
-  if (!logo) return `https://i.ytimg.com/vi/${LESSON_VIDEO_ID}/hqdefault.jpg`;
+  if (!logo) return `https://i.ytimg.com/vi/NP2NJVfgWm8/hqdefault.jpg`;
   return `data:image/svg+xml,${encodeURIComponent(coverSvg(name, logo, num))}`;
 }
 
 /**
  * @param {object} job job-контекст урока (lessonJobFor)
- * @returns {null | { id: string, src: string, thumb: string }} — видео для встраивания
+ * @returns {null | { id?: string, src?: string, num: number, thumb: string, placeholder?: boolean }}
+ *   — видео для встраивания; для уроков без ролика — placeholder (заглушка)
  */
 export function getLessonVideo(job) {
   if (!job || job.kind !== "lesson" || !job.fromDb || !job.techId) return null;
   if (!TECHS_WITH_VIDEO.includes(job.techId)) return null;
-  // Пока — только первый урок курса (n=1). У demo-урока без номера — не показываем.
-  if (job.lessonNumber !== 1) return null;
+  const num = job.lessonNumber;
+  if (!num) return null; // demo-урок без номера — без видео
+  const id = LESSON_VIDEO_IDS[num];
+  if (!id) {
+    return { num, placeholder: true, thumb: makeThumb(job.techId, job.techId.toUpperCase(), num) };
+  }
   return {
-    id: LESSON_VIDEO_ID,
-    num: job.lessonNumber,
-    // Штатный embed: все дефолтные контроллы YouTube, только rel=0 — без
-    // «следующих видео». Ловушка: &playlist=<id> включает playlist-режим и
-    // ВЫЗЫВАЕТ «Up next»-карточку — не добавлять.
-    src: `https://www.youtube.com/embed/${LESSON_VIDEO_ID}?autoplay=1&rel=0&playsinline=1`,
-    thumb: makeThumb(job.techId, job.techId.toUpperCase(), job.lessonNumber),
+    id,
+    num,
+    // Кастомный плеер: controls=0 через IFrame API, свои контролы. src —
+    // для прямой вставки (без API): только rel=0. Ловушка: &playlist=<id>
+    // включает playlist-режим и ВЫЗЫВАЕТ «Up next»-карточку — не добавлять.
+    src: `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`,
+    thumb: makeThumb(job.techId, job.techId.toUpperCase(), num),
   };
 }
