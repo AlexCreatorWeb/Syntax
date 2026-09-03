@@ -810,7 +810,11 @@ function CodeEditor({ language = "javascript", theme = "dark", job = null, onNav
         else if (!hasTaskTests && todosLeft > 0) setSubmitStatus("todos");
         else setSubmitStatus("ok");
         // Урок из БД: успешный Submit = отметка выполнения (прогресс курса) — только полный успех
-        if (!failed && !hasTaskTests && todosLeft === 0 && job && job.onComplete) job.onComplete();
+        if (!failed && !hasTaskTests && todosLeft === 0) {
+          if (job && job.onComplete) job.onComplete();
+          // UX-аудит H2: сигнал LessonView — показать панель «Урок пройден» + CTA дальше
+          if (job && job.onSuccess) job.onSuccess();
+        }
         // «check the console» должен сопровождаться видимой консолью (аудит #1)
         scrollConsoleToView(failed || (!hasTaskTests && todosLeft > 0));
       } else {

@@ -227,6 +227,9 @@ function App() {
     const onHash = () => {
       // Доки управляет hash сама (pushState); hashchange на /docs-пути игнорируем
       if (isDocsPath()) return;
+      // UX-аудит H3: внешняя смена hash = новая страница — скролл к верху
+      // (не сравниваем с activeTab: у effect deps [selectTech] — closure устарел бы)
+      window.scrollTo(0, 0);
       const { tab, param } = parseHash();
       setActiveTab(tab || "home");
       // Deep-link #/technology/<id>: трек из URL становится выбранным (переживает refresh)
@@ -270,6 +273,9 @@ function App() {
         navigateDocs({ track, page: null });
         return;
       }
+      // UX-аудит H3: смена вкладки = новая страница — скролл к верху (без него
+      // roadmap/tasks открывались «с середины», а мобилка — уроки снизу)
+      window.scrollTo(0, 0);
       // Страница трека пишет трек в URL — bookmark/refresh ведут на тот же трек
       const wantHash =
         tab === "technology" && newJob && newJob.techId

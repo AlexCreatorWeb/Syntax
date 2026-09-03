@@ -2480,33 +2480,6 @@ code {
   margin: 0 20px 14px 0;
   position: relative;
 }
-/* Индикатор просмотра: тонкий прогресс-бар внизу плеера (controls=0 —
-   YouTube-HUD отключён). Всегда виден, клик = перемотка. */
-.lesson-view__video-progress {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 14px;
-  display: flex;
-  align-items: flex-end;
-  cursor: pointer;
-}
-.lesson-view__video-progress::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.16);
-}
-.lesson-view__video-progress-fill {
-  position: relative;
-  display: block;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--accent-2));
-}
 .lesson-view__video-frame {
   display: block;
   width: 100%;

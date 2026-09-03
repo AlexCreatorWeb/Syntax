@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import CodeEditor from "../CodeEditor";
 import { MdContent } from "../../lib/markdown-view";
 import TechList, { getTech } from "../../lib/techs";
@@ -8,89 +8,21 @@ import { useT } from "../../i18n/useT";
 // Статическая мапа логов (react-compiler: без getTech().Logo в рендере)
 const LOGO_MAP = Object.fromEntries(TechList.map((x) => [x.id, x.Logo]));
 
-// Видео урока: до клика — наша обложка + кнопка Play. По клику — чистый
-// iframe (rel=0, controls=0, IFrame API) и НИЧЕГО сверху, кроме индикатора
-// просмотра: тонкий прогресс-бар внизу (клик = перемотка). Без масок и
-// лишних кнопок.
+// Видео урока: до клика — наша обложка + кнопка Play. По клику — штатный
+// YouTube-embed со ВСЕМИ дефолтными контроллами (только rel=0 — без
+// «следующих видео»). Ничего своего поверх плеера.
 function LessonVideo({ video, label }) {
   const [playing, setPlaying] = useState(false);
-  const [time, setTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const iframeRef = useRef(null);
-  const barRef = useRef(null);
-
-  const cmd = (func, args = []) => {
-    const win = iframeRef.current && iframeRef.current.contentWindow;
-    if (win)
-      win.postMessage(JSON.stringify({ event: "command", func, args }), "*");
-  };
-
-  // IFrame API (enablejsapi=1): onReady → длительность; ответы команд
-  useEffect(() => {
-    if (!playing) return undefined;
-    const onMsg = (e) => {
-      if (e.origin !== "https://www.youtube.com") return;
-      let d;
-      try {
-        d = JSON.parse(e.data);
-      } catch {
-        return;
-      }
-      if (d.event === "onReady") cmd("getDuration");
-      if (d.func === "getDuration")
-        setDuration(Number(d.args && d.args[0]) || 0);
-      if (d.func === "getCurrentTime" && d.playerTime != null)
-        setTime(d.playerTime);
-    };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
-  }, [playing]);
-
-  // Опрос позиции раз в секунду (в IFrame API нет push-событий времени)
-  useEffect(() => {
-    if (!playing) return undefined;
-    const id = setInterval(() => cmd("getCurrentTime"), 1000);
-    return () => clearInterval(id);
-  }, [playing]);
-
-  const seek = (e) => {
-    const bar = barRef.current;
-    if (!bar || !duration) return;
-    const rect = bar.getBoundingClientRect();
-    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    cmd("seekTo", [frac * duration, true]);
-  };
-  const pct = duration ? (time / duration) * 100 : 0;
-
   return (
     <figure className="lesson-view__video">
       {playing ? (
-        <>
-          <iframe
-            ref={iframeRef}
-            className="lesson-view__video-frame"
-            src={video.src}
-            title={label}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-          <div
-            className="lesson-view__video-progress"
-            ref={barRef}
-            onClick={seek}
-            role="slider"
-            aria-label={label}
-            aria-valuemin={0}
-            aria-valuemax={Math.round(duration)}
-            aria-valuenow={Math.round(time)}
-            tabIndex={-1}
-          >
-            <span
-              className="lesson-view__video-progress-fill"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </>
+        <iframe
+          className="lesson-view__video-frame"
+          src={video.src}
+          title={label}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
       ) : (
         <button
           type="button"

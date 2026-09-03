@@ -68,6 +68,28 @@ export function hasGrantedTask(taskId) {
   return Boolean(getXpState().granted[taskId]);
 }
 
+// XP за урок (UX-аудит M4): один раз на урок, guest-наследование то же.
+// Ключ с префиксом lesson:, чтобы не конфликтовать с taskId в granted.
+export const LESSON_XP = 20;
+export function grantLessonXp(lessonId) {
+  const uid = currentUid();
+  inheritGuest(uid);
+  const data = read(uid);
+  const key = `lesson:${lessonId}`;
+  let gained = 0;
+  if (!data.granted[key]) {
+    data.granted[key] = LESSON_XP;
+    data.total += LESSON_XP;
+    gained = LESSON_XP;
+  }
+  write(uid, data);
+  return gained;
+}
+
+export function hasGrantedLesson(lessonId) {
+  return Boolean(getXpState().granted[`lesson:${lessonId}`]);
+}
+
 // Суммарный XP (для профиля/рейтинга)
 export function totalXp() {
   return getXpState().total;

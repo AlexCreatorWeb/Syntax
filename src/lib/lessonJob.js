@@ -3,6 +3,7 @@
 // (сайдбар) собирают одинаковый формат — один источник правды.
 import { markComplete } from "./progress";
 import { pushLessonComplete } from "./db-progress";
+import { grantLessonXp } from "./xp";
 import { localizedLessonTitle } from "./lessonTitles";
 
 // Файл редактора по треку (имя/расширение соответствуют технологии)
@@ -49,6 +50,7 @@ export function lessonJobFor(
       ? () => {
           markComplete(techId, lesson.id);
           pushLessonComplete(lesson.id); // Supabase: строка lesson_progress
+          grantLessonXp(lesson.id); // UX-аудит M4: +XP за урок (один раз)
         }
       : undefined,
     fromDb: true,

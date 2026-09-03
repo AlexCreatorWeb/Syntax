@@ -84,17 +84,31 @@ function MainContent({
   // Без techId (демо-урок с главной) — первая строка БД целиком / исходный JavaScript-урок.
   // Приоритет: таблица `lessons` в Supabase (строка с tech = трек) → i18n-статика (fallback).
   const dbLessonsArr = dbLessons || [];
+  // UX-аудит: курс-контекст открытого урока (n/m, prev, next) для LessonView
+  const lessonCtx = (() => {
+    if (!job || job.kind !== "lesson" || !job.lessonId || !job.techId) return null;
+    const rows = dbLessonsArr.filter((l) => l.tech === job.techId);
+    const n = rows.findIndex((l) => l.id === job.lessonId) + 1;
+    if (!n) return null;
+    return { n, m: rows.length, prev: rows[n - 2] || null, next: rows[n] || null };
+  })();
+  const openCourseLesson = (lesson, techId, backTab) =>
+    doOpenDbLesson(lesson, techId, backTab || (job && job.backTab) || "technology");
   const doOpenDbLesson = (lesson, techId, backTab = "technology") => {
-    const staticFor = techId ? t(`techs.${techId}.lesson`) : null;
+    // UX-аудит H1: без явного трека (демо-урок с главной, Continue без трека) —
+    // трек берём из самой строки урока: верный файл (index.html), язык Monaco,
+    // live-превью, номер в курсе, EN-заголовок и запись прогресса.
+    const tid = techId || (lesson && lesson.tech) || null;
+    const staticFor = tid ? t(`techs.${tid}.lesson`) : null;
     // n = номер урока в курсе (порядок id) — для EN-локализации заголовка
-    const rows = techId ? dbLessonsArr.filter((l) => l.tech === techId) : [];
+    const rows = tid ? dbLessonsArr.filter((l) => l.tech === tid) : [];
     const n = rows.findIndex((l) => l.id === lesson.id) + 1;
     // Урок из БД = отдельная вкладка «lesson»: материал (markdown) + редактор с заданием
     onNavigate(
       "lesson",
       lessonJobFor(
         lesson,
-        techId,
+        tid,
         backTab,
         (staticFor && staticFor.desc) || "",
         n || null,
@@ -105,8 +119,9 @@ function MainContent({
   // Гость → auth-гейт. Исключение (2026-09): ПЕРВЫЙ урок любого курса открыт
   // всем — обещание лендинга «first lesson in 2 minutes», демо-урок без регистрации.
   const lessonNumber = (lesson, techId) => {
-    const rows = techId
-      ? dbLessonsArr.filter((l) => l.tech === techId)
+    const tid = techId || (lesson && lesson.tech) || null;
+    const rows = tid
+      ? dbLessonsArr.filter((l) => l.tech === tid)
       : dbLessonsArr;
     return rows.findIndex((l) => l.id === lesson.id) + 1;
   };
@@ -300,7 +315,13 @@ function MainContent({
       case "lesson":
         // Урок из базы: материал + редактор (job = строка lessons); без job — редирект в effect
         return job ? (
-          <LessonView job={job} theme={theme} onNavigate={onNavigate} />
+          <LessonView
+            job={job}
+            theme={theme}
+            onNavigate={onNavigate}
+            lessonCtx={lessonCtx}
+            onOpenLesson={openCourseLesson}
+          />
         ) : null;
       case "tasks":
         // key=activeTech: смена трека перемонтирует вьюху — tech-фильтр синхронен с выбранным треком
