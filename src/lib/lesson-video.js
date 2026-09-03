@@ -84,12 +84,11 @@ export function getLessonVideo(job) {
   if (job.lessonNumber !== 1) return null;
   return {
     id: LESSON_VIDEO_ID,
-    // autoplay — только после клика по постеру; controls=0 — НУЛЕВОЙ
-    // YouTube-HUD (контроллы/субтитры/«Другие видео»/карточка канала не
-    // рендерятся) — управление своим HUD через IFrame API (enablejsapi=1);
-    // cc_load_policy=0 — без субтитров; rel=0 — без related на end-screen.
+    // Чистый embed: rel=0 — без «следующих видео»; controls=0 — без
+    // YouTube-HUD (управление = только наш индикатор просмотра); enablejsapi
+    // — опрос позиции для индикатора; cc_load_policy=0 — без субтитров.
     // Ловушка: &playlist=<id> включает playlist-режим и ВЫЗЫВАЕТ «Up next».
-    src: `https://www.youtube.com/embed/${LESSON_VIDEO_ID}?autoplay=1&rel=0&modestbranding=1&color=white&playsinline=1&cc_load_policy=0&controls=0&enablejsapi=1`,
+    src: `https://www.youtube.com/embed/${LESSON_VIDEO_ID}?rel=0&controls=0&playsinline=1&autoplay=1&cc_load_policy=0&enablejsapi=1`,
     thumb: makeThumb(job.techId, job.techId.toUpperCase(), job.lessonNumber),
   };
 }

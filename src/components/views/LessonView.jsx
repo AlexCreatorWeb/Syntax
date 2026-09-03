@@ -8,21 +8,12 @@ import { useT } from "../../i18n/useT";
 // Статическая мапа логов (react-compiler: без getTech().Logo в рендере)
 const LOGO_MAP = Object.fromEntries(TechList.map((x) => [x.id, x.Logo]));
 
-function formatTime(s) {
-  if (!isFinite(s) || s < 0) s = 0;
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${String(sec).padStart(2, "0")}`;
-}
-
-// Видео урока: до клика — постер + Play (свой дизайн). iframe — с controls=0
-// (НУЛЕВОЙ YouTube-HUD: ни контроллов, ни субтитров, ни «Другие видео», ни
-// карточки канала). Управление — своим минимальным HUD (появляется по
-// hover): play/pause + прогресс (клик = seek) + время, через IFrame API
-// (postMessage). Фуллскрин — своя кнопка (iframe.requestFullscreen).
+// Видео урока: до клика — наша обложка + кнопка Play. По клику — чистый
+// iframe (rel=0, controls=0, IFrame API) и НИЧЕГО сверху, кроме индикатора
+// просмотра: тонкий прогресс-бар внизу (клик = перемотка). Без масок и
+// лишних кнопок.
 function LessonVideo({ video, label }) {
   const [playing, setPlaying] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const iframeRef = useRef(null);
@@ -30,10 +21,11 @@ function LessonVideo({ video, label }) {
 
   const cmd = (func, args = []) => {
     const win = iframeRef.current && iframeRef.current.contentWindow;
-    if (win) win.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+    if (win)
+      win.postMessage(JSON.stringify({ event: "command", func, args }), "*");
   };
 
-  // Подписка на события IFrame API (enablejsapi=1: onReady/onStateChange/ответы команд)
+  // IFrame API (enablejsapi=1): onReady → длительность; ответы команд
   useEffect(() => {
     if (!playing) return undefined;
     const onMsg = (e) => {
@@ -44,10 +36,11 @@ function LessonVideo({ video, label }) {
       } catch {
         return;
       }
-      if (d.event === "onStateChange") setIsPlaying(Number(d.info) === 1);
       if (d.event === "onReady") cmd("getDuration");
-      if (d.func === "getDuration") setDuration(Number(d.args && d.args[0]) || 0);
-      if (d.func === "getCurrentTime" && d.playerTime != null) setTime(d.playerTime);
+      if (d.func === "getDuration")
+        setDuration(Number(d.args && d.args[0]) || 0);
+      if (d.func === "getCurrentTime" && d.playerTime != null)
+        setTime(d.playerTime);
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
@@ -60,17 +53,12 @@ function LessonVideo({ video, label }) {
     return () => clearInterval(id);
   }, [playing]);
 
-  const toggle = () => cmd(isPlaying ? "pauseVideo" : "playVideo");
   const seek = (e) => {
     const bar = barRef.current;
     if (!bar || !duration) return;
     const rect = bar.getBoundingClientRect();
     const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     cmd("seekTo", [frac * duration, true]);
-  };
-  const openFullscreen = () => {
-    const el = iframeRef.current;
-    if (el && el.requestFullscreen) el.requestFullscreen();
   };
   const pct = duration ? (time / duration) * 100 : 0;
 
@@ -86,61 +74,21 @@ function LessonVideo({ video, label }) {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
-          <span className="lesson-view__video-mask" aria-hidden="true" />
-          <button
-            type="button"
-            className="lesson-view__video-fs"
-            onClick={openFullscreen}
-            aria-label="Full screen"
-            title="Full screen"
+          <div
+            className="lesson-view__video-progress"
+            ref={barRef}
+            onClick={seek}
+            role="slider"
+            aria-label={label}
+            aria-valuemin={0}
+            aria-valuemax={Math.round(duration)}
+            aria-valuenow={Math.round(time)}
+            tabIndex={-1}
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
-            </svg>
-          </button>
-          <div className="lesson-view__video-hud">
-            <button
-              type="button"
-              className="lesson-view__video-hud-btn"
-              onClick={toggle}
-              aria-label={isPlaying ? "Pause" : "Play"}
-            >
-              {isPlaying ? (
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M8 5.5v13l11-6.5Z" />
-                </svg>
-              )}
-            </button>
-            <div
-              className="lesson-view__video-hud-bar"
-              ref={barRef}
-              onClick={seek}
-              role="slider"
-              aria-label="Seek"
-              aria-valuemin={0}
-              aria-valuemax={Math.round(duration)}
-              aria-valuenow={Math.round(time)}
-              tabIndex={-1}
-            >
-              <span
-                className="lesson-view__video-hud-fill"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <span className="lesson-view__video-hud-time">
-              {formatTime(time)} / {formatTime(duration)}
-            </span>
+            <span
+              className="lesson-view__video-progress-fill"
+              style={{ width: `${pct}%` }}
+            />
           </div>
         </>
       ) : (
