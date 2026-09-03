@@ -85,10 +85,13 @@ export function getLessonVideo(job) {
   return {
     id: LESSON_VIDEO_ID,
     // autoplay — только после клика по постеру; modestbranding/color —
-    // минимальный YouTube-хром (тёмная тема плеера); playlist=<сам ролик> —
-    // стандартный трюк: на end-screen нет «следующих видео», только он сам.
-    // «Поделиться» в embed не выключается параметром — маскируется CSS'ом.
-    src: `https://www.youtube.com/embed/${LESSON_VIDEO_ID}?autoplay=1&rel=0&modestbranding=1&color=white&playsinline=1&playlist=${LESSON_VIDEO_ID}`,
+    // минимальный YouTube-хром (тёмная тема плеера); rel=0 — без «следующих
+    // видео» на end-screen; cc_load_policy=0 — без авто-субтитров (и без CC
+    // кнопки). Ловушка: &playlist=<id> включает playlist-режим и ВЫЗЫВАЕТ
+    // «Up next»-карточку при старте — потому убран.
+    // «Поделиться» и карточка канала в embed не выключаются параметром —
+    // маскируются CSS'ом (перехват hover-зоны).
+    src: `https://www.youtube.com/embed/${LESSON_VIDEO_ID}?autoplay=1&rel=0&modestbranding=1&color=white&playsinline=1&cc_load_policy=0`,
     thumb: makeThumb(job.techId, job.techId.toUpperCase(), job.lessonNumber),
   };
 }

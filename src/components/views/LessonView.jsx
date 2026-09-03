@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import CodeEditor from "../CodeEditor";
 import { MdContent } from "../../lib/markdown-view";
 import TechList, { getTech } from "../../lib/techs";
@@ -10,14 +10,22 @@ const LOGO_MAP = Object.fromEntries(TechList.map((x) => [x.id, x.Logo]));
 
 // Видео урока: до клика — только постер + кнопка Play (ноль YouTube-хрома,
 // свой дизайн). iframe с уменьшенным брендингом монтируется по клику;
-// маска сверху прикрывает «поделиться» (у embed нет параметра его убрать).
+// маски перехватывают hover-зоны YouTube-худа (у embed нет параметров их
+// убрать). Полный верх + низ-справа закрыты масками, поэтому фуллскрин —
+// своя кнопка поверх маски (iframe.requestFullscreen).
 function LessonVideo({ video, label }) {
   const [playing, setPlaying] = useState(false);
+  const iframeRef = useRef(null);
+  const openFullscreen = () => {
+    const el = iframeRef.current;
+    if (el && el.requestFullscreen) el.requestFullscreen();
+  };
   return (
     <figure className="lesson-view__video">
       {playing ? (
         <>
           <iframe
+            ref={iframeRef}
             className="lesson-view__video-frame"
             src={video.src}
             title={label}
@@ -25,6 +33,21 @@ function LessonVideo({ video, label }) {
             allowFullScreen
           />
           <span className="lesson-view__video-mask" aria-hidden="true" />
+          <span
+            className="lesson-view__video-mask lesson-view__video-mask--channel"
+            aria-hidden="true"
+          />
+          <button
+            type="button"
+            className="lesson-view__video-fs"
+            onClick={openFullscreen}
+            aria-label="Full screen"
+            title="Full screen"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+            </svg>
+          </button>
         </>
       ) : (
         <button
