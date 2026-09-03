@@ -378,6 +378,7 @@ export const LOCALES = {
       tabMaterial: "Материал",
       tabTask: "Задание",
       goToTask: "Перейти к заданию",
+      video: "Видео по уроку",
       courseLang: "RU",
       courseLangNote: "Контент курса пока на русском — другие языки скоро",
     },

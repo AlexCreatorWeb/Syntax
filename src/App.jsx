@@ -8,9 +8,23 @@ import NewsModal from "./components/NewsModal";
 import { getTech } from "./lib/techs";
 import { parseDocsPath, docsPathFor } from "./lib/docs-route";
 import { fetchDbLessons } from "./lib/supabase";
-import { readStoredSession, getSession, onAuthChange, signOut, syncProfile, displayName } from "./lib/auth";
+import {
+  readStoredSession,
+  getSession,
+  onAuthChange,
+  signOut,
+  syncProfile,
+  displayName,
+} from "./lib/auth";
 import { syncProgressFromDb, pushProgressToDb } from "./lib/db-progress";
-import { fetchMediumNews, getSeenLinks, markLinkSeen, clearSeenLinks, mediumDayKey, markAllLinksSeen } from "./lib/medium";
+import {
+  fetchMediumNews,
+  getSeenLinks,
+  markLinkSeen,
+  clearSeenLinks,
+  mediumDayKey,
+  markAllLinksSeen,
+} from "./lib/medium";
 import RouteErrorBoundary from "./components/RouteErrorBoundary";
 
 // URL-роутинг: #/<tab>[/param] — refresh не теряет вкладку, работают bookmarks и back-кнопка.
@@ -47,12 +61,15 @@ function App() {
     if (parseHash().tab === "documentation") {
       const saved = localStorage.getItem("syntax-tech");
       const track = saved && getTech(saved) ? saved : "python";
-      history.replaceState(null, "", `${docsPathFor({ track })}#/documentation`);
+      history.replaceState(
+        null,
+        "",
+        `${docsPathFor({ track })}#/documentation`,
+      );
       return { track, page: null };
     }
     return null;
   });
-
 
   // Уроки из Supabase (таблица lessons): null = ещё грузится, [] = пусто/сбой (fallback на i18n)
   const [dbLessons, setDbLessons] = useState(null);
@@ -84,9 +101,17 @@ function App() {
   const [seenNewsLinks, setSeenNewsLinks] = useState(() => {
     const day = mediumDayKey();
     let savedDay;
-    try { savedDay = localStorage.getItem("syntax-medium-day"); } catch { /* некритично */ }
+    try {
+      savedDay = localStorage.getItem("syntax-medium-day");
+    } catch {
+      /* некритично */
+    }
     if (savedDay !== day) {
-      try { localStorage.setItem("syntax-medium-day", day); } catch { /* некритично */ }
+      try {
+        localStorage.setItem("syntax-medium-day", day);
+      } catch {
+        /* некритично */
+      }
       clearSeenLinks();
     }
     return getSeenLinks();
@@ -101,9 +126,17 @@ function App() {
       // (async-контекст), поэтому setState здесь легально.
       const day = mediumDayKey();
       let savedDay;
-      try { savedDay = localStorage.getItem("syntax-medium-day"); } catch { /* некритично */ }
+      try {
+        savedDay = localStorage.getItem("syntax-medium-day");
+      } catch {
+        /* некритично */
+      }
       if (savedDay !== day) {
-        try { localStorage.setItem("syntax-medium-day", day); } catch { /* некритично */ }
+        try {
+          localStorage.setItem("syntax-medium-day", day);
+        } catch {
+          /* некритично */
+        }
         clearSeenLinks();
         setSeenNewsLinks(getSeenLinks());
         refresh = true;
@@ -148,17 +181,25 @@ function App() {
     if (id && id !== "none") localStorage.setItem("syntax-tech", id);
     // Deep-link согласованность: на странице трека переключение пилюлей обновляет URL,
     // чтобы refresh вёл на тот же трек (hashchange → onHash → selectTech(id) — идемпотентно)
-    if (id && id !== "none" && window.location.hash.startsWith("#/technology/")) {
+    if (
+      id &&
+      id !== "none" &&
+      window.location.hash.startsWith("#/technology/")
+    ) {
       window.location.hash = `#/technology/${id}`;
     }
   }, []);
 
   // Доки-навигация: pushState на /docs-путь (hash остаётся #/documentation) —
-// один history-энтри на переход, back/forward через popstate.
+  // один history-энтри на переход, back/forward через popstate.
   const navigateDocs = useCallback((route, { replace = false } = {}) => {
     const path = docsPathFor(route);
     const url = `${path}#/documentation`;
-    if (window.location.pathname === path && window.location.hash === "#/documentation" && !replace) {
+    if (
+      window.location.pathname === path &&
+      window.location.hash === "#/documentation" &&
+      !replace
+    ) {
       setDocsRoute(route);
       setActiveTab("documentation");
       return;
@@ -175,7 +216,11 @@ function App() {
     // Начальная нормализация: #/documentation без /docs-пути обрабатывается в initializer docsRoute
     const initialDocs = parseDocsPath();
     if (initialDocs && window.location.hash !== "#/documentation") {
-      history.replaceState(null, "", `${docsPathFor(initialDocs)}#/documentation`);
+      history.replaceState(
+        null,
+        "",
+        `${docsPathFor(initialDocs)}#/documentation`,
+      );
     } else if (!window.location.hash) {
       history.replaceState(null, "", "#/home");
     }
@@ -192,7 +237,7 @@ function App() {
       pendingJob.current = null;
     };
     // Back/forward: docs-энтри меняют только путь (hash тот же) — hashchange не стреляет,
-// поэтому синхронизация из пути идёт здесь
+    // поэтому синхронизация из пути идёт здесь
     const onPop = () => {
       const dp = parseDocsPath();
       if (dp) {
@@ -215,34 +260,41 @@ function App() {
     };
   }, [selectTech]);
 
-  const openTab = useCallback((tab, newJob = null) => {
-    // Доки: путь — источник правды; из сайдбара/хедера всегда в лендинг текущего трека
-    if (tab === "documentation") {
-      const track =
-        (docsRoute && docsRoute.track) || (activeTech && activeTech !== "none" ? activeTech : "python");
-      navigateDocs({ track, page: null });
-      return;
-    }
-    // Страница трека пишет трек в URL — bookmark/refresh ведут на тот же трек
-    const wantHash = tab === "technology" && newJob && newJob.techId ? `#/technology/${newJob.techId}` : `#/${tab}`;
-    // Покидаем docs-путь: refresh с /docs/{...}#/home вёл бы обратно в доки — правим путь
-    if (isDocsPath()) {
-      history.replaceState(null, "", `/${wantHash}`);
-      const { param } = parseHash(wantHash);
-      setDocsRoute(null);
-      setActiveTab(tab);
-      if (tab === "technology" && param && getTech(param)) selectTech(param);
-      setJob(newJob);
-      return;
-    }
-    if (window.location.hash === wantHash) {
-      setActiveTab(tab);
-      setJob(newJob);
-    } else {
-      pendingJob.current = newJob;
-      window.location.hash = wantHash;
-    }
-  }, [docsRoute, activeTech, navigateDocs, selectTech]);
+  const openTab = useCallback(
+    (tab, newJob = null) => {
+      // Доки: путь — источник правды; из сайдбара/хедера всегда в лендинг текущего трека
+      if (tab === "documentation") {
+        const track =
+          (docsRoute && docsRoute.track) ||
+          (activeTech && activeTech !== "none" ? activeTech : "python");
+        navigateDocs({ track, page: null });
+        return;
+      }
+      // Страница трека пишет трек в URL — bookmark/refresh ведут на тот же трек
+      const wantHash =
+        tab === "technology" && newJob && newJob.techId
+          ? `#/technology/${newJob.techId}`
+          : `#/${tab}`;
+      // Покидаем docs-путь: refresh с /docs/{...}#/home вёл бы обратно в доки — правим путь
+      if (isDocsPath()) {
+        history.replaceState(null, "", `/${wantHash}`);
+        const { param } = parseHash(wantHash);
+        setDocsRoute(null);
+        setActiveTab(tab);
+        if (tab === "technology" && param && getTech(param)) selectTech(param);
+        setJob(newJob);
+        return;
+      }
+      if (window.location.hash === wantHash) {
+        setActiveTab(tab);
+        setJob(newJob);
+      } else {
+        pendingJob.current = newJob;
+        window.location.hash = wantHash;
+      }
+    },
+    [docsRoute, activeTech, navigateDocs, selectTech],
+  );
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -265,7 +317,6 @@ function App() {
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
-
 
   // Auth (Supabase): сессия — localStorage (readStoredSession синхронно, чтобы не мигать
   // «гость» при загрузке; асинхронный getSession + onAuthStateChange подтверждают/следят).
@@ -302,7 +353,10 @@ function App() {
   // ctx: "challenge" — заголовок под контекст тригера (M5-аудит: не терять цель регистрации)
   const [authMode, setAuthMode] = useState(null);
   const [authCtx, setAuthCtx] = useState(null);
-  const openAuth = useCallback((mode = "signup", ctx = null) => { setAuthMode(mode); setAuthCtx(ctx); }, []);
+  const openAuth = useCallback((mode = "signup", ctx = null) => {
+    setAuthMode(mode);
+    setAuthCtx(ctx);
+  }, []);
   const closeAuth = useCallback(() => setAuthMode(null), []);
 
   return (
@@ -355,9 +409,18 @@ function App() {
           activeTech={activeTech}
           isAuthed={isAuthed}
           dbLessons={dbLessons}
+          docsRoute={docsRoute}
         />
       </div>
-      {authMode && <AuthModal key={authMode} mode={authMode} ctx={authCtx} onClose={closeAuth} onSwitchMode={openAuth} />}
+      {authMode && (
+        <AuthModal
+          key={authMode}
+          mode={authMode}
+          ctx={authCtx}
+          onClose={closeAuth}
+          onSwitchMode={openAuth}
+        />
+      )}
       {newsItem && <NewsModal item={newsItem} onClose={closeNews} />}
     </div>
   );

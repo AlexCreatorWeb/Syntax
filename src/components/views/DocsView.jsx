@@ -1123,26 +1123,7 @@ function DocsView({
       )}
 
       {current ? (
-        /* Статья: дерево | статья (правый on-page TOC — во внешнем рейле через DocsAside) */
         <div className="docs-layout docs-layout--article">
-          <nav className="docs-tree" aria-label="Documentation sections">
-            <div className="docs-tree__items docs-tree__items--chips">
-              {[...guides, ...refs].map((a) => (
-                <a
-                  key={a.slug}
-                  href={docsPathFor({ track: a.track, page: a.slug })}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onDocsRoute({ track: a.track, page: a.slug });
-                  }}
-                  className={`docs-tree__item ${a.slug === current.slug ? "is-active" : ""}`}
-                  aria-current={a.slug === current.slug ? "page" : undefined}
-                >
-                  {a.title}
-                </a>
-              ))}
-            </div>
-          </nav>
           <div className="docs-main">
             <ArticleView
               article={current}

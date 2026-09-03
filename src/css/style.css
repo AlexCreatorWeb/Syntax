@@ -24,6 +24,7 @@
 :root[data-theme="dark"] {
   --bg: #051424;
   --surface: #0d1c2d;
+  --surface-1: #0f1e2f;
   --surface-2: #122131;
   --surface-3: #1c2b3c;
   --code-bg: #081827;
@@ -70,6 +71,7 @@
 :root[data-theme="light"] {
   --bg: #f8fafc;
   --surface: #ffffff;
+  --surface-1: #f6f9fc;
   --surface-2: #f1f5f9;
   --surface-3: #e8edf3;
   --code-bg: #ffffff;
@@ -2469,6 +2471,82 @@ code {
   overflow-y: auto;
   padding: 22px 26px;
 }
+/* Видео урока (этап 1: первый урок HTML): до клика — постер + Play (свой
+   дизайн, нуль YouTube-хрома); iframe появляется только после клика.
+   50% ширины контента, текст материала обтекает справа */
+.lesson-view__video {
+  float: left;
+  width: 50%;
+  margin: 0 20px 14px 0;
+  position: relative;
+}
+/* Маска над верхним баром плеера: «поделиться» в embed не выключается
+   параметром URL — перекрываем его (в фуллскрине маски нет) */
+.lesson-view__video-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+}
+.lesson-view__video-frame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-3);
+}
+.lesson-view__video-poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-3);
+  cursor: pointer;
+}
+.lesson-view__video-poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lesson-view__video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(5, 20, 36, 0.72);
+  border: 1px solid var(--border-strong);
+  color: var(--primary-hover);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.lesson-view__video-play svg {
+  width: 26px;
+  height: 26px;
+  margin-left: 3px;
+}
+.lesson-view__video-poster:hover .lesson-view__video-play {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: var(--glow);
+}
+.lesson-view__video-poster:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--glow);
+}
 /* Хлебные крошки: выход на список уроков технологии */
 .lesson-view__crumbs {
   display: flex;
@@ -2616,6 +2694,7 @@ code {
   margin: 12px 0 14px;
 }
 .lesson-view__goto {
+  clear: both;
   margin-top: 22px;
 }
 /* Таб «Задание»: редактор во всю высоту панели (head + tabs + wrapper flex:1 —
@@ -2674,6 +2753,11 @@ code {
   }
   .lesson-view__material {
     padding: 18px 18px;
+  }
+  .lesson-view__video {
+    float: none;
+    width: 100%;
+    margin: 0 0 20px;
   }
   .lesson-view__panel--editor .code-card--full {
     height: 100%;
@@ -3803,10 +3887,12 @@ code {
 
 /* Трёхколоночный шаблон статьи: дерево | статья (правый TOC — во внешнем рейле) */
 .docs-layout--article {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  gap: 32px;
-  align-items: start;
+  display: flex;
+  justify-content: center;
+}
+.docs-layout--article .docs-main {
+  width: 100%;
+  max-width: 760px;
 }
 .docs-tree {
   position: sticky;

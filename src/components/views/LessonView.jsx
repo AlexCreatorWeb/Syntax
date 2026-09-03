@@ -2,10 +2,48 @@ import { useState } from "react";
 import CodeEditor from "../CodeEditor";
 import { MdContent } from "../../lib/markdown-view";
 import TechList, { getTech } from "../../lib/techs";
+import { getLessonVideo } from "../../lib/lesson-video";
 import { useT } from "../../i18n/useT";
 
 // Статическая мапа логов (react-compiler: без getTech().Logo в рендере)
 const LOGO_MAP = Object.fromEntries(TechList.map((x) => [x.id, x.Logo]));
+
+// Видео урока: до клика — только постер + кнопка Play (ноль YouTube-хрома,
+// свой дизайн). iframe с уменьшенным брендингом монтируется по клику;
+// маска сверху прикрывает «поделиться» (у embed нет параметра его убрать).
+function LessonVideo({ video, label }) {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <figure className="lesson-view__video">
+      {playing ? (
+        <>
+          <iframe
+            className="lesson-view__video-frame"
+            src={video.src}
+            title={label}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+          <span className="lesson-view__video-mask" aria-hidden="true" />
+        </>
+      ) : (
+        <button
+          type="button"
+          className="lesson-view__video-poster"
+          onClick={() => setPlaying(true)}
+          aria-label={label}
+        >
+          <img src={video.thumb} alt="" loading="lazy" />
+          <span className="lesson-view__video-play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5.5v13l11-6.5Z" />
+            </svg>
+          </span>
+        </button>
+      )}
+    </figure>
+  );
+}
 
 // Страница урока из базы (Supabase `lessons`):
 // хлебные крошки (тех › Уроки) → заголовок → ТАБЫ «Материал | Задание».
@@ -18,12 +56,15 @@ function LessonView({ job, theme, onNavigate }) {
 
   const tech = job && job.techId ? getTech(job.techId) : null;
   const Logo = job && job.techId ? LOGO_MAP[job.techId] : null;
+  const video = getLessonVideo(job);
 
   const goTask = () => {
     setTab("task");
     setTaskVisited(true);
   };
-  const listHref = tech ? `#/technology/${tech.id}` : `#/${job.backTab || "roadmap"}`;
+  const listHref = tech
+    ? `#/technology/${tech.id}`
+    : `#/${job.backTab || "roadmap"}`;
 
   return (
     <div className="lesson-view">
@@ -33,11 +74,22 @@ function LessonView({ job, theme, onNavigate }) {
           <>
             <a className="crumb crumb--tech" href={listHref}>
               {Logo && (
-                <span className="crumb__logo" aria-hidden="true"><Logo /></span>
+                <span className="crumb__logo" aria-hidden="true">
+                  <Logo />
+                </span>
               )}
               {t(tech.label)}
             </a>
-            <svg className="crumb__sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              className="crumb__sep"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="m9 6 6 6-6 6" />
             </svg>
           </>
@@ -71,23 +123,42 @@ function LessonView({ job, theme, onNavigate }) {
           onClick={goTask}
         >
           {t("lessonView.tabTask")}
-          {!taskVisited && <span className="lesson-view__tab-dot" aria-hidden="true" />}
+          {!taskVisited && (
+            <span className="lesson-view__tab-dot" aria-hidden="true" />
+          )}
         </button>
       </div>
 
       {/* Панели: обе смонтированы, неактивная — display:none (состояние Monaco сохраняется) */}
-      <div className={`lesson-view__panel ${tab !== "material" ? "lesson-view__panel--hidden" : ""}`}>
+      <div
+        className={`lesson-view__panel ${tab !== "material" ? "lesson-view__panel--hidden" : ""}`}
+      >
         <div className="card lesson-view__material">
+          {video && <LessonVideo video={video} label={t("lessonView.video")} />}
           <MdContent src={job.content} t={t} />
-          <button type="button" className="btn btn--primary lesson-view__goto" onClick={goTask}>
+          <button
+            type="button"
+            className="btn btn--primary lesson-view__goto"
+            onClick={goTask}
+          >
             {t("lessonView.goToTask")}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
           </button>
         </div>
       </div>
-      <div className={`lesson-view__panel lesson-view__panel--editor ${tab !== "task" ? "lesson-view__panel--hidden" : ""}`}>
+      <div
+        className={`lesson-view__panel lesson-view__panel--editor ${tab !== "task" ? "lesson-view__panel--hidden" : ""}`}
+      >
         <CodeEditor
           language="javascript"
           theme={theme}

@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import { useT } from "../../i18n/useT";
+import AiChat from "../AiChat";
+import { parseDocsPath } from "../../lib/docs-route";
 
 // Правый сайдбар вкладки Documentation (монтируется во внешнюю rail):
 // on-page TOC текущей статьи (h2/h3, scrollspy) + help-карточка (Community + AI assistant).
 // Контент TOC приходит CustomEvent-ом от DocsView (паттерн community-тегов).
-function DocsAside({ onNavigate }) {
+function DocsAside({ onNavigate, docsRoute, techId }) {
   const t = useT();
+  // Трек, по которому читаем доки (/docs/{track}) — контекст для AI-ассистента
+  const docsTrack =
+    (docsRoute && docsRoute.track) ||
+    techId ||
+    (parseDocsPath() && parseDocsPath().track) ||
+    "python";
   const [toc, setToc] = useState(null); // { title, anchors: [{id, text, level}] }
   const [activeId, setActiveId] = useState(null);
 
@@ -61,22 +69,28 @@ function DocsAside({ onNavigate }) {
           </nav>
         </section>
       )}
+      <AiChat techId={docsTrack} />
       <section className="card docs-rail-card help-card">
         <span className="label-caps">{t("docs.helpTitle")}</span>
         <p>{t("docs.helpText")}</p>
         <div className="help-card__btns">
-          <button type="button" className="btn btn--secondary btn--full" onClick={() => onNavigate && onNavigate("community")}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <button
+            type="button"
+            className="btn btn--secondary btn--full"
+            onClick={() => onNavigate && onNavigate("community")}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M21 12a8 8 0 0 1-8 8H4l2.5-3A8 8 0 1 1 21 12Z" />
             </svg>
             {t("docs.community")}
-          </button>
-          <button type="button" className="btn btn--ghost btn--full" onClick={() => onNavigate && onNavigate("technology")}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z" />
-              <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" />
-            </svg>
-            {t("docs.aiAssistant")}
           </button>
         </div>
       </section>

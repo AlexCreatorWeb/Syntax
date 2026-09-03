@@ -15,13 +15,29 @@ function setCors(res) {
   res.setHeader("Access-Control-Max-Age", "86400");
 }
 
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?alt=sse";
+const GEMINI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?alt=sse";
 
-const TRACKS = ["HTML", "CSS", "JavaScript", "Python", "React", "Vue.js", "Node.js", "MongoDB", "PostgreSQL"];
+const TRACKS = [
+  "HTML",
+  "CSS",
+  "JavaScript",
+  "Python",
+  "React",
+  "Vue.js",
+  "Node.js",
+  "MongoDB",
+  "PostgreSQL",
+];
 
 function buildSystemPrompt(techName) {
   // Модель (cutoff — прошлые годы) не знает, какой сегодня день: дату подставляем в промпт на лету.
-  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const today = new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
   return [
     "You are Syntax AI, the friendly coding tutor of the Syntax learning platform (people learn programming right in the browser).",
     "Platform facts — use ONLY these when the student asks about Syntax itself; never invent extra tracks, courses or features:",
@@ -32,7 +48,9 @@ function buildSystemPrompt(techName) {
     `- Current date: today is ${today} (the exact day-of-year may differ by a day if the student is in a far timezone). Use this for ANY question about today's date, day of the week or "how many days until…" — NEVER answer dates from your training data.`,
     `- Status and history: Syntax launched in 2026 and is in early access — it is very new. There is NO public student count, no ratings, no long history. The leaderboards, XP numbers and forum posts students may see are sample/demo data, not real users. If asked about history, user numbers or statistics, say the platform just launched and no statistics are published yet — do NOT invent years, user counts or "thousands of students".`,
     `- If the student leaves negative feedback or complains: stay friendly and non-defensive, acknowledge their point, and briefly mention the platform is in early stage. Do not argue or invent excuses.`,
-    techName ? `The student is currently on the "${techName}" track — prefer examples in that technology when relevant.` : "",
+    techName
+      ? `The student is currently on the "${techName}" track — prefer examples in that technology when relevant.`
+      : "",
     "Answer platform questions strictly from the facts above; for pure coding questions use general best practices. If you are not sure about a fact, say so instead of guessing.",
     "Rules: answer in the student's own language; be concise (under 200 words) and practical; show code in fenced blocks with a language tag.",
     "Formatting: use **bold**, `inline code` and ``` fenced code blocks. Do NOT use markdown tables, links with images, or ordered/unordered list syntax (no leading - or 1.) — write plain paragraphs instead; separate items with blank lines.",
@@ -51,7 +69,14 @@ export default async function handler(req, res) {
   }
   // Диагностика: GET возвращает окружение
   if (req.method === "GET") {
-    res.status(200).json({ ok: true, node: process.version, fetch: typeof fetch, hasKey: Boolean(process.env.GEMINI_API_KEY) });
+    res
+      .status(200)
+      .json({
+        ok: true,
+        node: process.version,
+        fetch: typeof fetch,
+        hasKey: Boolean(process.env.GEMINI_API_KEY),
+      });
     return;
   }
   try {
@@ -72,7 +97,12 @@ async function handle(req, res) {
   }
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
-    res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel env (Project → Settings → Environment Variables)" });
+    res
+      .status(500)
+      .json({
+        error:
+          "GEMINI_API_KEY is not set in Vercel env (Project → Settings → Environment Variables)",
+      });
     return;
   }
   const { techName, history, question } = req.body || {};
@@ -92,7 +122,10 @@ async function handle(req, res) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: buildSystemPrompt(techName) }] },
         contents: [
-          ...(Array.isArray(history) ? history.slice(-10) : []).map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+          ...(Array.isArray(history) ? history.slice(-10) : []).map((m) => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }],
+          })),
           { role: "user", parts: [{ text: question }] },
         ],
         generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
@@ -117,7 +150,10 @@ async function handle(req, res) {
 
   // Passthrough SSE
   res.status(upstream.status || 200);
-  res.setHeader("Content-Type", upstream.headers.get("content-type") || "text/event-stream");
+  res.setHeader(
+    "Content-Type",
+    upstream.headers.get("content-type") || "text/event-stream",
+  );
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("X-Accel-Buffering", "no");
   const reader = upstream.body.getReader();

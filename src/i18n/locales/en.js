@@ -363,6 +363,7 @@ export default {
     tabMaterial: "Material",
     tabTask: "Task",
     goToTask: "Go to the task",
+    video: "Video lesson",
     courseLang: "RU",
     courseLangNote:
       "Course content is in Russian for now — more languages are coming",

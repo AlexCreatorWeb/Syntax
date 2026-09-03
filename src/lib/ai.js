@@ -18,12 +18,17 @@ const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 // Внешний AI-прокси (обычно prod-Vercel): нужен, когда прямой запрос к Google из этого
 // окружения гео-блокирован ("User location is not supported for the API use").
 // Задаётся VITE_AI_PROXY_URL (без хвостового /), например https://syntax-sooty.vercel.app.
-const AI_PROXY_BASE = (import.meta.env.VITE_AI_PROXY_URL || "").replace(/\/+$/, "");
-const proxyTarget = () => (AI_PROXY_BASE ? `${AI_PROXY_BASE}/api/ai` : "/api/ai");
+const AI_PROXY_BASE = (import.meta.env.VITE_AI_PROXY_URL || "").replace(
+  /\/+$/,
+  "",
+);
+const proxyTarget = () =>
+  AI_PROXY_BASE ? `${AI_PROXY_BASE}/api/ai` : "/api/ai";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:streamGenerateContent?alt=sse`;
 
 // Dev: настроен, если есть локальный ключ ИЛИ внешний прокси ИЛИ prod (есть /api/ai).
-export const isAiConfigured = () => Boolean(GEMINI_KEY || AI_PROXY_BASE || import.meta.env.PROD);
+export const isAiConfigured = () =>
+  Boolean(GEMINI_KEY || AI_PROXY_BASE || import.meta.env.PROD);
 
 // Ошибка с «человечным» кодом: badKey / credits / rateLimit / modelLoading / network / http.
 export class AiError extends Error {
@@ -36,7 +41,12 @@ export class AiError extends Error {
 // Прогоняет SSE-поток Gemini, вызывает onToken(text) по мере прихода дельт.
 // Возвращает полное собрание текста. signal — для отмены.
 async function streamChatCompletion({ headers, body, signal, onToken }) {
-  const res = await fetch(GEMINI_URL, { method: "POST", signal, headers, body: JSON.stringify(body) });
+  const res = await fetch(GEMINI_URL, {
+    method: "POST",
+    signal,
+    headers,
+    body: JSON.stringify(body),
+  });
 
   if (!res.ok) {
     let code = "http";
@@ -45,7 +55,8 @@ async function streamChatCompletion({ headers, body, signal, onToken }) {
       const data = await res.json();
       const e = (data && data.error) || data;
       message = e.message || e.status || message;
-      if (typeof e.message === "string" && /API key not valid/i.test(e.message)) code = "badKey";
+      if (typeof e.message === "string" && /API key not valid/i.test(e.message))
+        code = "badKey";
     } catch {
       /* тело не JSON */
     }
@@ -79,10 +90,14 @@ async function streamChatCompletion({ headers, body, signal, onToken }) {
       }
       if (json.error) {
         const e = json.error;
-        throw new AiError(e.status === "RESOURCE_EXHAUSTED" ? "rateLimit" : "http", e.message || "Stream error");
+        throw new AiError(
+          e.status === "RESOURCE_EXHAUSTED" ? "rateLimit" : "http",
+          e.message || "Stream error",
+        );
       }
       const cand = json.candidates && json.candidates[0];
-      if (cand && cand.finishReason === "SAFETY") throw new AiError("http", "Answer blocked by safety filter");
+      if (cand && cand.finishReason === "SAFETY")
+        throw new AiError("http", "Answer blocked by safety filter");
       const parts = cand && cand.content && cand.content.parts;
       if (parts) {
         for (const p of parts) {
@@ -100,7 +115,10 @@ async function streamChatCompletion({ headers, body, signal, onToken }) {
 // История {role: "user"|"assistant", content} → Gemini contents [{role: "user"|"model", parts}].
 function toGeminiContents(hist, question) {
   return [
-    ...hist.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+    ...hist.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    })),
     { role: "user", parts: [{ text: question }] },
   ];
 }
@@ -118,8 +136,18 @@ function geminiBody(techName, hist, question) {
  * history — массив {role, content} предыдущих сообщений (без сис-промпта).
  * @returns {Promise<string>} полный ответ; onToken получает накапливаемый текст
  */
-export async function askAssistant({ techName, history, question, onToken, signal }) {
-  if (!isAiConfigured()) throw new AiError("noKey", "VITE_GEMINI_API_KEY is not set (dev) or GEMINI_API_KEY in Vercel env (prod)");
+export async function askAssistant({
+  techName,
+  history,
+  question,
+  onToken,
+  signal,
+}) {
+  if (!isAiConfigured())
+    throw new AiError(
+      "noKey",
+      "VITE_GEMINI_API_KEY is not set (dev) or GEMINI_API_KEY in Vercel env (prod)",
+    );
   const hist = Array.isArray(history) ? history.slice(-10) : [];
 
   let acc = "";
@@ -134,13 +162,21 @@ export async function askAssistant({ techName, history, question, onToken, signa
   try {
     if (useDirect) {
       await streamChatCompletion({
-        headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": GEMINI_KEY,
+        },
         body: geminiBody(techName, hist, question),
         signal,
         onToken: token,
       });
     } else {
-      await proxyStream({ url: proxyTarget(), signal, onToken: token, body: { techName, history: hist, question } });
+      await proxyStream({
+        url: proxyTarget(),
+        signal,
+        onToken: token,
+        body: { techName, history: hist, question },
+      });
     }
   } catch (e) {
     if (e && e.name === "AbortError") throw e;

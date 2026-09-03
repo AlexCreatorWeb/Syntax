@@ -38,6 +38,7 @@ export const LOCALES_EXTRA = {
       tabMaterial: "Матеріал",
       tabTask: "Завдання",
       goToTask: "Перейти до завдання",
+      video: "Відео до уроку",
       courseLang: "RU",
       courseLangNote: "Контент курсу поки російською — інші мови скоро",
     },
@@ -654,6 +655,7 @@ export const LOCALES_EXTRA = {
       tabMaterial: "Material",
       tabTask: "Tarea",
       goToTask: "Ir a la tarea",
+      video: "Lección en vídeo",
       courseLang: "RU",
       courseLangNote:
         "El contenido del curso está en ruso por ahora — pronto más idiomas",
@@ -1278,6 +1280,7 @@ export const LOCALES_EXTRA = {
       tabMaterial: "Material",
       tabTask: "Aufgabe",
       goToTask: "Zur Aufgabe",
+      video: "Videolektion",
       courseLang: "RU",
       courseLangNote:
         "Kursinhalte vorerst auf Russisch — weitere Sprachen folgen",

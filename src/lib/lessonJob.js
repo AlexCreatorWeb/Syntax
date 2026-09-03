@@ -26,7 +26,14 @@ export const TASK_FILE = {
  * @param {number} [n] номер урока в курсе (с 1) — для EN-локализации заголовка
  * @param {string} [langCode] язык интерфейса (ru → оригинал, остальное → EN-карта)
  */
-export function lessonJobFor(lesson, techId, backTab = "technology", desc = "", n = null, langCode = "en") {
+export function lessonJobFor(
+  lesson,
+  techId,
+  backTab = "technology",
+  desc = "",
+  n = null,
+  langCode = "en",
+) {
   return {
     kind: "lesson",
     title: localizedLessonTitle(techId, n, lesson.title, langCode),
@@ -37,6 +44,7 @@ export function lessonJobFor(lesson, techId, backTab = "technology", desc = "", 
     file: (techId && TASK_FILE[techId]) || "index.js",
     code: typeof lesson.code === "string" ? lesson.code : undefined,
     lessonId: lesson.id,
+    lessonNumber: n,
     onComplete: techId
       ? () => {
           markComplete(techId, lesson.id);
