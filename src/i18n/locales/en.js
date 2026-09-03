@@ -722,6 +722,15 @@ export default {
       "Log in to keep your progress in your account and pick up right where you left off.",
     login: "Log in",
     signup: "Sign up free",
+    getsTitle: "What you get with an account",
+    gets1t: "Cloud progress",
+    gets1d: "Lessons and tasks save to your account — pick up where you left off on any device.",
+    gets2t: "XP and levels",
+    gets2d: "Earn XP for lessons and tasks, grow your level and climb the global leaderboard.",
+    gets3t: "Streak and Daily Challenge",
+    gets3d: "Solve the daily challenge, keep your streak alive, collect the +500 XP bonus.",
+    gets4t: "Community and AI assistant",
+    gets4d: "Ask questions, get community answers and 24/7 help from the AI assistant.",
     memberSince: "Member since {date}",
     progress: "Course progress",
     progressEmpty:
@@ -826,6 +835,9 @@ export default {
     thXp: "Total XP",
     yourRank: "Your Rank",
     nextRank: "Next Rank (CodeNinja)",
+    guestRow: "Sign up to see your rank",
+    railCta: "Sign up",
+    railGuestNote: "Rankings are personal — sign up and start earning XP to compete.",
     needXp: "280 XP",
     weekly: "Weekly Progress",
     today: "Today",
@@ -967,6 +979,131 @@ export default {
         excerpt:
           "Our image size is ballooning over 1.5GB. I'm trying to implement multi-stage builds to strip out dev dependencies, but I keep breaking the entrypoint script. What's your go-to Dockerfile structure for monoliths?",
         tags: ["Docker", "DevOps", "NodeJS"],
+        replies: [],
+      },
+      {
+        title: "Sticky header jumps when the page scrolls — why?",
+        excerpt:
+          "My `position: sticky` header stays put in Chrome but «jumps» in Safari when I scroll fast. The container has `overflow: hidden` on a grandparent — is that the known sticky-killer, or am I missing something else?",
+        tags: ["CSS", "Layout"],
+        replies: [
+          {
+            author: "sarah_chen",
+            rep: "12.8k",
+            time: "3h",
+            accepted: true,
+            body: "Yes — any `overflow: hidden` (or `auto`/`scroll`) on an ancestor breaks `position: sticky`: the element sticks inside that overflow container, not the viewport. Move the clip or switch to `overflow: clip` — it clips without creating a scroll container.",
+            code: ".wrapper { overflow: clip; } /* sticky survives */\n.wrapper { overflow: hidden; } /* sticky dies */",
+          },
+        ],
+      },
+      {
+        title: "let vs var — does it still matter in modern JS?",
+        excerpt:
+          "Our linter forbids var entirely, and after a week I get it… mostly. Can someone explain the one case where var actually bites: loops and closures?",
+        tags: ["JavaScript", "Basics"],
+        replies: [
+          {
+            author: "alex_mercer",
+            rep: "14.2k",
+            time: "4h",
+            body: "The classic one: `for (var i = 0; i < 3; i++) setTimeout(() => console.log(i))` prints 3, 3, 3 — one shared `i`. With `let` each iteration gets its own binding: 0, 1, 2.",
+            code: "for (let i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i));\n} // 0, 1, 2",
+          },
+          {
+            author: "neo_oleg",
+            rep: "2,940",
+            time: "2h",
+            body: "Rule I use: `const` by default, `let` when it changes, `var` — never. Hoisting surprises vanish and the code reads like it was written with intent.",
+          },
+        ],
+      },
+      {
+        title: "Does <article> vs <div> actually affect SEO?",
+        excerpt:
+          "I've read both «semantics are a ranking signal» and «Google doesn't care, use <div>». What's the current consensus in 2026?",
+        tags: ["HTML", "SEO"],
+        replies: [
+          {
+            author: "sys_admin",
+            rep: "12,760",
+            time: "5h",
+            body: "Direct ranking impact is small; the real wins are accessibility (screen readers navigate by landmarks) and maintainability. Google reads <article> as a hint about content boundaries — useful, not magic.",
+          },
+        ],
+      },
+      {
+        title: "Express 4 silently swallows async errors — bug?",
+        excerpt:
+          "A rejected promise in an async route handler just hangs the request in Express 4. No 500, no log. Is this expected behavior or a bug?",
+        tags: ["NodeJS", "Express"],
+        replies: [
+          {
+            author: "alex_mercer",
+            rep: "14.2k",
+            time: "6h",
+            accepted: true,
+            body: "Expected in v4: the router only catches errors from `next(err)`, and a rejected promise never calls it. Express 5 fixed this natively; on v4 wrap handlers in an `asyncHandler` that forwards rejections to `next`.",
+            code: "const asyncHandler = (fn) => (req, res, next) =>\n  fn(req, res, next).catch(next);",
+          },
+          {
+            author: "dev_priya",
+            rep: "5,120",
+            time: "5h",
+            body: "Adding to this: even on v5, a missing error-middleware (4 args) means the default handler returns a bare HTML 500 — in an API that's a JSON 500 or nothing. Keep an error middleware as the last one.",
+          },
+        ],
+      },
+      {
+        title: "Embed vs reference: storing comments on 500k posts",
+        excerpt:
+          "Blogs: one collection with `comments` array embedded, or a separate `comments` collection referencing `postId`? Comments are unbounded (some posts have 2k+).",
+        tags: ["MongoDB", "Modeling"],
+        replies: [
+          {
+            author: "data_vlad",
+            rep: "3,120",
+            time: "8h",
+            body: "Unbounded + paginated = separate collection, no brainer. Embedding has the 16MB ceiling and you'd load the whole array for one page of comments. Reference `postId`, index it, paginate with `_id > lastId`.",
+          },
+        ],
+      },
+      {
+        title: "EXPLAIN shows Seq Scan on 2M rows — where do I start?",
+        excerpt:
+          "`SELECT ... WHERE created_at > now() - interval '7 days'` does a sequential scan on a 2M-row table. Obvious I need an index, but which one and how to verify it's used?",
+        tags: ["PostgreSQL", "Performance"],
+        replies: [
+          {
+            author: "sys_admin",
+            rep: "12,760",
+            time: "10h",
+            accepted: true,
+            body: "Index the predicate column first:",
+            code: "CREATE INDEX idx_events_created ON events (created_at);\nEXPLAIN (ANALYZE, BUFFERS) SELECT ...; -- watch Seq Scan → Index Scan",
+            lesson: "Lesson 15 — Indexes",
+          },
+        ],
+      },
+      {
+        title: "venv vs virtualenv vs uv — what should a beginner use?",
+        excerpt:
+          "Three tools for the same job and every tutorial recommends a different one. In 2026, what's the sane default for a learning environment?",
+        tags: ["Python", "Tooling"],
+        replies: [
+          {
+            author: "ana_data",
+            rep: "8,420",
+            time: "12h",
+            body: "Standard library `venv` is the safe default — zero installs, works everywhere. Reach for `uv` when you're managing several projects: it's a drop-in replacement and 10-100× faster at resolving dependencies.",
+          },
+        ],
+      },
+      {
+        title: "When is useCallback actually needed? My linter says always.",
+        excerpt:
+          "I added `useCallback` everywhere my exhaustive-deps rule complained, and now the code is worse. When does a stable function reference actually matter — and when is it noise?",
+        tags: ["React", "Hooks"],
         replies: [],
       },
     ],

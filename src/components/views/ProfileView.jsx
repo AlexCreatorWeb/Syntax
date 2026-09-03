@@ -72,6 +72,26 @@ function ProfileView({ session, userName, onAuth, onNavigate, onLogout, dbLesson
                 {t("profile.login")}
               </button>
             </div>
+            {/* UX-аудит L20: продаём аккаунт — что даёт регистрация (пустота под CTA убрана) */}
+            <div className="profile__gets">
+              <h2 className="profile__gets-title">{t("profile.getsTitle")}</h2>
+              <ul className="profile__gets-list">
+                {[
+                  ["profile.gets1t", "profile.gets1d"],
+                  ["profile.gets2t", "profile.gets2d"],
+                  ["profile.gets3t", "profile.gets3d"],
+                  ["profile.gets4t", "profile.gets4d"],
+                ].map(([tk, dk], i) => (
+                  <li key={i} className="profile__gets-item">
+                    <span className="profile__gets-ico" aria-hidden="true">✓</span>
+                    <div className="profile__gets-body">
+                      <strong>{t(tk)}</strong>
+                      <p>{t(dk)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </>
         )}
       </section>

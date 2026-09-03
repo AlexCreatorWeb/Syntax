@@ -84,6 +84,7 @@ export function getLessonVideo(job) {
   if (job.lessonNumber !== 1) return null;
   return {
     id: LESSON_VIDEO_ID,
+    num: job.lessonNumber,
     // Штатный embed: все дефолтные контроллы YouTube, только rel=0 — без
     // «следующих видео». Ловушка: &playlist=<id> включает playlist-режим и
     // ВЫЗЫВАЕТ «Up next»-карточку — не добавлять.

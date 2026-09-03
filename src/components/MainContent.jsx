@@ -86,14 +86,24 @@ function MainContent({
   const dbLessonsArr = dbLessons || [];
   // UX-аудит: курс-контекст открытого урока (n/m, prev, next) для LessonView
   const lessonCtx = (() => {
-    if (!job || job.kind !== "lesson" || !job.lessonId || !job.techId) return null;
+    if (!job || job.kind !== "lesson" || !job.lessonId || !job.techId)
+      return null;
     const rows = dbLessonsArr.filter((l) => l.tech === job.techId);
     const n = rows.findIndex((l) => l.id === job.lessonId) + 1;
     if (!n) return null;
-    return { n, m: rows.length, prev: rows[n - 2] || null, next: rows[n] || null };
+    return {
+      n,
+      m: rows.length,
+      prev: rows[n - 2] || null,
+      next: rows[n] || null,
+    };
   })();
   const openCourseLesson = (lesson, techId, backTab) =>
-    doOpenDbLesson(lesson, techId, backTab || (job && job.backTab) || "technology");
+    doOpenDbLesson(
+      lesson,
+      techId,
+      backTab || (job && job.backTab) || "technology",
+    );
   const doOpenDbLesson = (lesson, techId, backTab = "technology") => {
     // UX-аудит H1: без явного трека (демо-урок с главной, Continue без трека) —
     // трек берём из самой строки урока: верный файл (index.html), язык Monaco,

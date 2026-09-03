@@ -52,6 +52,12 @@ function LessonVideo({ video, label }) {
   const playerRef = useRef(null);
   const barRef = useRef(null);
   const rafRef = useRef(null);
+  const rootRef = useRef(null);
+
+  const openFullscreen = () => {
+    const el = rootRef.current;
+    if (el && el.requestFullscreen) el.requestFullscreen();
+  };
 
   // Инициализация IFrame API-плеера
   useEffect(() => {
@@ -63,9 +69,9 @@ function LessonVideo({ video, label }) {
         videoId: video.id,
         playerVars: {
           autoplay: 1,
-          controls: 0,      // без нативных контроллов
+          controls: 0, // без нативных контроллов
           modestbranding: 1,
-          rel: 0,           // без «следующих видео» других каналов
+          rel: 0, // без «следующих видео» других каналов
           playsinline: 1,
         },
         events: {
@@ -116,12 +122,15 @@ function LessonVideo({ video, label }) {
       const p = playerRef.current;
       if (!bar || !p || !duration) return;
       const rect = bar.getBoundingClientRect();
-      const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      const ratio = Math.min(
+        1,
+        Math.max(0, (clientX - rect.left) / rect.width),
+      );
       const time = ratio * duration;
       setCurrent(time);
       p.seekTo(time, true);
     },
-    [duration]
+    [duration],
   );
 
   const onBarPointerDown = (e) => {
@@ -143,7 +152,7 @@ function LessonVideo({ video, label }) {
   return (
     <figure className="lesson-view__video">
       {playing ? (
-        <div className="lesson-view__player">
+        <div className="lesson-view__player" ref={rootRef}>
           <div className="lesson-view__player-box">
             <div ref={hostRef} className="lesson-view__player-host" />
             {/* Прозрачный слой: клик = play/pause, hover не доходит до YT-худа */}
@@ -153,6 +162,44 @@ function LessonVideo({ video, label }) {
               role="button"
               aria-label={isPlaying ? "Pause" : "Play"}
             />
+            {/* Брендовая верхняя полоса: закрывает YT-заголовок и авто-
+                всплывающую карточку «следующее видео» (её параметра нет);
+                справа — свой фуллскрин (весь плеер, включая контролы) */}
+            <div className="lesson-view__player-top">
+              <span className="lesson-view__player-top-chip">
+                LESSON {String(video.num).padStart(2, "0")}
+              </span>
+              <button
+                type="button"
+                className="lesson-view__player-fs"
+                onClick={openFullscreen}
+                aria-label="Full screen"
+                title="Full screen"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+                </svg>
+              </button>
+            </div>
+            {/* Бейдж внизу слева: закрывает авто-кнопку «поделиться» */}
+            <div
+              className="lesson-view__player-badge"
+              onClick={togglePlay}
+              aria-hidden="true"
+            >
+              <span>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5.5v13l11-6.5Z" />
+                </svg>
+              </span>
+            </div>
             {(!isPlaying || !isReady) && (
               <button
                 type="button"
@@ -193,8 +240,14 @@ function LessonVideo({ video, label }) {
               aria-valuemax={Math.round(duration)}
               aria-valuenow={Math.round(current)}
             >
-              <span className="lesson-view__player-fill" style={{ width: `${progress}%` }} />
-              <span className="lesson-view__player-thumb" style={{ left: `${progress}%` }} />
+              <span
+                className="lesson-view__player-fill"
+                style={{ width: `${progress}%` }}
+              />
+              <span
+                className="lesson-view__player-thumb"
+                style={{ left: `${progress}%` }}
+              />
             </div>
             <span className="lesson-view__player-time">
               {formatTime(current)} / {formatTime(duration)}
@@ -224,7 +277,13 @@ function LessonVideo({ video, label }) {
 // хлебные крошки (тех › Уроки) → заголовок → ТАБЫ «Материал | Задание».
 // Обе панели всегда смонтированы (неактивная прячется CSS'ом):
 // код Monaco, консоль и scroll-позиция переживают переключение табов.
-function LessonView({ job, theme, onNavigate, lessonCtx = null, onOpenLesson }) {
+function LessonView({
+  job,
+  theme,
+  onNavigate,
+  lessonCtx = null,
+  onOpenLesson,
+}) {
   const t = useT();
   const { langCode } = useLanguage();
   const [tab, setTab] = useState("material");
@@ -245,8 +304,14 @@ function LessonView({ job, theme, onNavigate, lessonCtx = null, onOpenLesson }) 
       : false);
   const neighborTitle = (lesson, n) =>
     lesson ? localizedLessonTitle(job.techId, n, lesson.title, langCode) : "";
-  const prevTitle = lessonCtx && lessonCtx.prev ? neighborTitle(lessonCtx.prev, lessonCtx.n - 1) : "";
-  const nextTitle = lessonCtx && lessonCtx.next ? neighborTitle(lessonCtx.next, lessonCtx.n + 1) : "";
+  const prevTitle =
+    lessonCtx && lessonCtx.prev
+      ? neighborTitle(lessonCtx.prev, lessonCtx.n - 1)
+      : "";
+  const nextTitle =
+    lessonCtx && lessonCtx.next
+      ? neighborTitle(lessonCtx.next, lessonCtx.n + 1)
+      : "";
 
   const goTask = () => {
     setTab("task");
@@ -295,7 +360,9 @@ function LessonView({ job, theme, onNavigate, lessonCtx = null, onOpenLesson }) 
         {/* (RU-чип убран, фидбек 2026-09: «лишний» — язык курса очевиден из текста) */}
         {/* UX-аудит H2: позиция в курсе + статус «пройден» */}
         {lessonCtx && (
-          <span className={`lesson-view__pos ${isDone ? "lesson-view__pos--done" : ""}`}>
+          <span
+            className={`lesson-view__pos ${isDone ? "lesson-view__pos--done" : ""}`}
+          >
             {isDone && <span aria-hidden="true">✓ </span>}
             {t("lessonView.lessonOf", { n: lessonCtx.n, m: lessonCtx.m })}
           </span>
@@ -361,7 +428,9 @@ function LessonView({ job, theme, onNavigate, lessonCtx = null, onOpenLesson }) 
         {isDone && (
           <div className="lesson-view__donebar" role="status">
             <div className="lesson-view__donebar-info">
-              <span className="lesson-view__donebar-ico" aria-hidden="true">✓</span>
+              <span className="lesson-view__donebar-ico" aria-hidden="true">
+                ✓
+              </span>
               <div className="lesson-view__donebar-text">
                 <strong>{t("lessonView.doneTitle", { xp: LESSON_XP })}</strong>
                 {nextTitle && (
@@ -379,13 +448,27 @@ function LessonView({ job, theme, onNavigate, lessonCtx = null, onOpenLesson }) 
                   onClick={() => onOpenLesson(lessonCtx.next, job.techId)}
                 >
                   {t("lessonView.nextLesson")}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
                 </button>
               )}
               {job.techId && (
-                <button type="button" className="btn btn--ghost" onClick={() => onNavigate("technology", { techId: job.techId })}>
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() =>
+                    onNavigate("technology", { techId: job.techId })
+                  }
+                >
                   {t("lessonView.courseList")}
                 </button>
               )}
@@ -405,15 +488,27 @@ function LessonView({ job, theme, onNavigate, lessonCtx = null, onOpenLesson }) 
       {lessonCtx && onOpenLesson && (
         <nav className="lesson-view__pager" aria-label="Course navigation">
           {lessonCtx.prev ? (
-            <button type="button" className="btn btn--ghost lesson-view__pager-btn" onClick={() => onOpenLesson(lessonCtx.prev, job.techId)}>
-              <span aria-hidden="true">←</span> {t("lessonView.prev")}: <span className="lesson-view__pager-title">{prevTitle}</span>
+            <button
+              type="button"
+              className="btn btn--ghost lesson-view__pager-btn"
+              onClick={() => onOpenLesson(lessonCtx.prev, job.techId)}
+            >
+              <span aria-hidden="true">←</span> {t("lessonView.prev")}:{" "}
+              <span className="lesson-view__pager-title">{prevTitle}</span>
             </button>
           ) : (
             <span className="lesson-view__pager-spacer" aria-hidden="true" />
           )}
           {lessonCtx.next ? (
-            <button type="button" className="btn btn--ghost lesson-view__pager-btn" onClick={() => onOpenLesson(lessonCtx.next, job.techId)}>
-              <span className="lesson-view__pager-title">{t("lessonView.next")}: {nextTitle}</span> <span aria-hidden="true">→</span>
+            <button
+              type="button"
+              className="btn btn--ghost lesson-view__pager-btn"
+              onClick={() => onOpenLesson(lessonCtx.next, job.techId)}
+            >
+              <span className="lesson-view__pager-title">
+                {t("lessonView.next")}: {nextTitle}
+              </span>{" "}
+              <span aria-hidden="true">→</span>
             </button>
           ) : (
             <span className="lesson-view__pager-spacer" aria-hidden="true" />
@@ -423,7 +518,11 @@ function LessonView({ job, theme, onNavigate, lessonCtx = null, onOpenLesson }) 
 
       {/* UX-аудит L22: мобилка (≤900) — плавающая кнопка «К заданию» на вкладке материла */}
       {tab === "material" && (
-        <button type="button" className="lesson-view__task-fab" onClick={goTask}>
+        <button
+          type="button"
+          className="lesson-view__task-fab"
+          onClick={goTask}
+        >
           {t("lessonView.taskFab")}
         </button>
       )}

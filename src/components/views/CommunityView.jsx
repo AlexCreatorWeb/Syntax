@@ -18,6 +18,39 @@ const POST_META = [
     tech: "node", time: "3h", activeMin: 170, createdMin: 180,
     votes: 45, views: "540", author: { name: "sys_admin", rep: "12,760", hue: 260 },
   },
+  // — новые сид-посты (UX-аудит: фид «пустой» — 3 поста на 9 треков) —
+  {
+    tech: "css", time: "4h", activeMin: 250, createdMin: 240,
+    votes: 9, views: "118", solved: true, author: { name: "maria_sofia", rep: "3,210", hue: 330 },
+  },
+  {
+    tech: "javascript", time: "5h", activeMin: 300, createdMin: 300,
+    votes: 17, views: "286", author: { name: "neo_oleg", rep: "2,940", hue: 30 },
+  },
+  {
+    tech: "html", time: "6h", activeMin: 360, createdMin: 360,
+    votes: 6, views: "94", author: { name: "data_vlad", rep: "3,120", hue: 260 },
+  },
+  {
+    tech: "node", time: "7h", activeMin: 420, createdMin: 420,
+    votes: 21, views: "402", solved: true, author: { name: "dev_priya", rep: "5,120", hue: 280 },
+  },
+  {
+    tech: "mongo", time: "9h", activeMin: 540, createdMin: 540,
+    votes: 11, views: "176", author: { name: "data_vlad", rep: "3,120", hue: 260 },
+  },
+  {
+    tech: "postgres", time: "11h", activeMin: 660, createdMin: 660,
+    votes: 15, views: "229", solved: true, author: { name: "sys_admin", rep: "12,760", hue: 200 },
+  },
+  {
+    tech: "python", time: "13h", activeMin: 780, createdMin: 780,
+    votes: 8, views: "141", author: { name: "ana_data", rep: "8,420", hue: 40 },
+  },
+  {
+    tech: "react", time: "16h", activeMin: 960, createdMin: 960,
+    votes: 5, views: "73", author: { name: "alex_mercer", rep: "14.2k", hue: 158 },
+  },
 ];
 
 const YOU = { name: "NeoCoder", rep: "1,240", hue: 160 };
