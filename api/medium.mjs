@@ -298,6 +298,8 @@ function extractAvatar(html) {
 const MNEW_JUNK = [
   /^\[?(Sitemap|Open in app|Sign up|Sign in|Medium Logo Homepage|Get app|Write|Search)\b/i,
   /^just now$/i,
+  /^(share|listen)$/, 
+  /^\d+\s*(hour|minute|day|week|month)s?\s+ago$/i,
   /^\d+\s*min read$/i,
   /^press enter or click to view image in full size$/i,
   /^-{2,}$/i,
@@ -323,6 +325,8 @@ function markdownNewToMd(src) {
     // TOC Medium: нумерованный список ссылок на якоря post_page (до первого заголовка)
     if (/^\d+\.\s+\[[^\]]*\]\([^)]*post_page[^)]*\)/.test(line)) continue;
     if (/^\??\[[^\]]*\]\([^)]*post_page[^)]*#[^)]*\)$/.test(line)) continue;
+    // Пустые картинки (Jina не резолвит lazy data-src) — скипаем, чтобы не было битых <img>
+    if (/^!\[[^\]]*\]\(\)$/.test(line)) continue;
     // Byline-мусор: аватар (пустая ссылка), автор (byline-линк), «·», Listen
     if (/^\[\]\(/.test(line)) continue;
     if (/^·$/.test(line)) continue;
@@ -334,10 +338,13 @@ function markdownNewToMd(src) {
     }
     out.push(line);
   }
-  return out
+  const md = out
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+  // 404-страница Medium («PAGE NOT FOUND») — не статья; пусть клиент покажет анонс
+  if (/^PAGE NOT FOUND\b/i.test(md) && md.length < 1200) return "";
+  return md;
 }
 
 // ------------------- handler -------------------
