@@ -171,58 +171,136 @@ function TechnologyView({
                     <div className="techmod-list">
                         {/* NEW-лейбл: только если урок про НОВУЮ технологию (фича ≤ 3 лет — словарь web-features.js),
                 а не про добавление урока в базу: popover в HTML — NEW, <table> с 2005 года — нет. */}
-                        {dbTechLessons.map((l, i) => (
-                            <article
-                                key={l.id}
-                                className="card techmod techmod--db"
-                                role="button"
-                                tabIndex={0}
-                                aria-current={i === 0 ? "step" : undefined}
-                                onClick={() => onOpenDbLesson(l, tech.id)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
-                                        onOpenDbLesson(l, tech.id);
+                        {dbTechLessons.map((l, i) => {
+                            // Последовательная разблокировка (механика Udemy):
+                            // урок открыт, если предыдущий завершён (видео ≥ 75% или Submit).
+                            const isDone = completed.includes(l.id);
+                            const openIdx = dbTechLessons.findIndex(
+                                (x) => !completed.includes(x.id),
+                            );
+                            const status = isDone
+                                ? "done"
+                                : i === openIdx
+                                  ? "current"
+                                  : "locked";
+                            const clickable = status !== "locked";
+                            return (
+                                <article
+                                    key={l.id}
+                                    className={`card techmod techmod--db ${
+                                        status === "locked"
+                                            ? "techmod--db--locked"
+                                            : status === "done"
+                                              ? "techmod--db--done"
+                                              : ""
+                                    }`}
+                                    role={clickable ? "button" : undefined}
+                                    tabIndex={clickable ? 0 : undefined}
+                                    aria-disabled={clickable ? undefined : true}
+                                    aria-current={
+                                        status === "current"
+                                            ? "step"
+                                            : undefined
                                     }
-                                }}
-                            >
-                                <span
-                                    className="techmod__icon techmod__icon--current"
-                                    aria-hidden="true"
+                                    onClick={
+                                        clickable
+                                            ? () => onOpenDbLesson(l, tech.id)
+                                            : undefined
+                                    }
+                                    onKeyDown={
+                                        clickable
+                                            ? (e) => {
+                                                  if (
+                                                      e.key === "Enter" ||
+                                                      e.key === " "
+                                                  ) {
+                                                      e.preventDefault();
+                                                      onOpenDbLesson(
+                                                          l,
+                                                          tech.id,
+                                                      );
+                                                  }
+                                              }
+                                            : undefined
+                                    }
                                 >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
+                                    <span
+                                        className={`techmod__icon techmod__icon--${status}`}
+                                        aria-hidden="true"
                                     >
-                                        <path d="m8 6 8 6-8 6V6Z" />
-                                    </svg>
-                                </span>
-                                <div className="techmod__body">
-                                    <h3 className="techmod__title">
-                                        {i + 1}.{" "}
-                                        {localizedLessonTitle(
-                                            tech.id,
-                                            i + 1,
-                                            l.title,
-                                            langCode,
+                                        {status === "done" ? (
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2.4"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <path d="m5 12 5 5 9-10" />
+                                            </svg>
+                                        ) : status === "locked" ? (
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <rect
+                                                    x="4"
+                                                    y="11"
+                                                    width="16"
+                                                    height="10"
+                                                    rx="2"
+                                                />
+                                                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                                            </svg>
+                                        ) : (
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <path d="m8 6 8 6-8 6V6Z" />
+                                            </svg>
                                         )}
-                                    </h3>
-                                    <p className="techmod__desc">
-                                        {t("techPage.dbLessonOpen")}
-                                    </p>
-                                </div>
-                                {/* NEW: урок про свежую технологию (см. web-features.js) */}
-                                {hasRecentFeature(
-                                    `${l.title} ${l.content || ""}`,
-                                ) && (
-                                    <span className="chip chip--new">NEW</span>
-                                )}
-                            </article>
-                        ))}
+                                    </span>
+                                    <div className="techmod__body">
+                                        <h3 className="techmod__title">
+                                            {i + 1}.{" "}
+                                            {localizedLessonTitle(
+                                                tech.id,
+                                                i + 1,
+                                                l.title,
+                                                langCode,
+                                            )}
+                                        </h3>
+                                        <p className="techmod__desc">
+                                            {status === "done"
+                                                ? t("techPage.completed")
+                                                : status === "locked"
+                                                  ? t("techPage.lessonLocked", {
+                                                        n: i,
+                                                    })
+                                                  : t("techPage.dbLessonOpen")}
+                                        </p>
+                                    </div>
+                                    {/* NEW: урок про свежую технологию (см. web-features.js) */}
+                                    {hasRecentFeature(
+                                        `${l.title} ${l.content || ""}`,
+                                    ) && (
+                                        <span className="chip chip--new">
+                                            NEW
+                                        </span>
+                                    )}
+                                </article>
+                            );
+                        })}
                     </div>
                 </section>
             )}

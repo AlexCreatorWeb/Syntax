@@ -2420,6 +2420,25 @@ code {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+/* Последовательная разблокировка (Udemy): locked-строки приглушены, без ховера */
+.techmod--db--locked {
+  opacity: 0.5;
+  cursor: default;
+  border-color: var(--line);
+}
+.techmod--db--locked .techmod__title {
+  color: var(--text-variant);
+}
+.techmod--db--locked:hover {
+  transform: none;
+  box-shadow: none;
+}
+.techmod--db--done .techmod__title {
+  color: var(--text-variant);
+}
+.techmod__icon--locked {
+  border-color: var(--line);
+}
 /* NEW-лейбл: акцентный красный фон, белый шрифт (три последних урока трека) */
 .chip--new {
   color: #fff;
@@ -8847,12 +8866,252 @@ code {
 .profile__open {
   margin-bottom: 10px;
 }
+/* 2026-09: logout — компактная кнопка справа, roadmap остаётся основной */
+.profile__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.profile__actions .profile__open {
+  flex: 1;
+  margin-bottom: 0;
+}
 .profile__logout {
-  width: 100%;
+  flex: none;
 }
 .profile__rows .profile__row-logo:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Аватар с фото (вместо монограммы): background-image + cover */
+.avatar-dot--img {
+  background-size: cover !important;
+  background-position: center !important;
+}
+.avatar-dot--img::before {
+  content: none;
+}
+
+/* Действия под аватаром в профиле */
+.profile__avatar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 30px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.profile__avatar-err {
+  font-size: 12px;
+  color: var(--accent-2, #f59e0b);
+  width: 100%;
+}
+/* Чип «задач: N» у имени трека в профиле */
+.profile__row-tasks {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+  vertical-align: middle;
+}
+
+/* ===== Settings (вкладка): рабочие настройки платформы ===== */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.settings__head h1 {
+  margin: 0 0 6px;
+}
+.settings__section {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings__h {
+  font-size: 16px;
+  margin: 0;
+}
+.settings__desc {
+  color: var(--text-variant);
+  font-size: 13px;
+  margin: 0 0 6px;
+}
+.settings__theme {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  align-self: flex-start;
+}
+.settings__theme-opt {
+  border: none;
+  background: transparent;
+  color: var(--text-variant);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.settings__theme-opt.is-active {
+  background: var(--surface-3, var(--primary));
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.settings__langs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.settings__lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-variant);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px 7px 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.settings__lang:hover {
+  border-color: var(--primary);
+}
+.settings__lang.is-active {
+  border-color: var(--primary);
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-2));
+}
+.settings__lang-flag {
+  width: 18px;
+  height: 13px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+.settings__avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.settings__avatar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.settings__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 420px;
+}
+.settings__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-variant);
+}
+.settings__name-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.settings__name-row .input {
+  flex: 1;
+  min-width: 0;
+}
+.settings__name-state {
+  font-size: 12px;
+  color: var(--primary);
+  min-height: 15px;
+  visibility: hidden;
+}
+.settings__name-state.is-on {
+  visibility: visible;
+}
+.settings__facts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+.settings__fact {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 14px;
+}
+.settings__fact dt {
+  color: var(--muted);
+  min-width: 130px;
+  flex: none;
+}
+.settings__fact dd {
+  margin: 0;
+  font-weight: 600;
+  word-break: break-all;
+}
+.settings__logout {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.settings__about {
+  color: var(--text-variant);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 640px;
+}
+@media (max-width: 640px) {
+  .settings__section {
+    padding: 18px 16px;
+  }
+  .settings__avatar-row {
+    align-items: flex-start;
+  }
+  .settings__name-row {
+    flex-wrap: wrap;
+  }
+  .settings__name-row .input {
+    flex: 1 1 100%;
+  }
+  .settings__fact dt {
+    min-width: 110px;
+  }
+  .profile__avatar-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .profile__actions {
+    flex-wrap: wrap;
+  }
+  .profile__actions .profile__open {
+    flex: 1 1 100%;
+  }
 }
 
 /* Forgot-password link in the login form */
@@ -9459,6 +9718,16 @@ code {
   justify-content: space-between;
   gap: 12px;
   margin-top: 16px;
+}
+/* Locked-состояние «Next»: урок не завершён (механика Udemy) */
+.lesson-view__pager-btn--locked {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.lesson-view__pager-lock {
+  width: 13px;
+  height: 13px;
 }
 .lesson-view__pager-btn {
   max-width: 48%;

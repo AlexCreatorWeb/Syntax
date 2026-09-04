@@ -530,16 +530,44 @@ function LessonView({
             <span className="lesson-view__pager-spacer" aria-hidden="true" />
           )}
           {lessonCtx.next ? (
-            <button
-              type="button"
-              className="btn btn--ghost lesson-view__pager-btn"
-              onClick={() => onOpenLesson(lessonCtx.next, job.techId)}
-            >
-              <span className="lesson-view__pager-title">
-                {t("lessonView.next")}: {nextTitle}
-              </span>{" "}
-              <span aria-hidden="true">→</span>
-            </button>
+            // Последовательная разблокировка (Udemy): «Next» активна, когда
+            // текущий урок завершён (видео ≥ 75% или Submit)
+            isDone ? (
+              <button
+                type="button"
+                className="btn btn--ghost lesson-view__pager-btn"
+                onClick={() => onOpenLesson(lessonCtx.next, job.techId)}
+              >
+                <span className="lesson-view__pager-title">
+                  {t("lessonView.next")}: {nextTitle}
+                </span>{" "}
+                <span aria-hidden="true">→</span>
+              </button>
+            ) : (
+              <span
+                className="btn btn--ghost lesson-view__pager-btn lesson-view__pager-btn--locked"
+                aria-disabled="true"
+                title={t("lessonView.nextLocked")}
+              >
+                <svg
+                  className="lesson-view__pager-lock"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="4" y="11" width="16" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>{" "}
+                <span className="lesson-view__pager-title">
+                  {t("lessonView.next")}: {nextTitle}
+                </span>{" "}
+                <span aria-hidden="true">→</span>
+              </span>
+            )
           ) : (
             <span className="lesson-view__pager-spacer" aria-hidden="true" />
           )}
