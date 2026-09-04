@@ -948,6 +948,7 @@ code {
 .daily-challenge__reset {
   font-size: 10.5px;
   color: var(--muted);
+  white-space: nowrap;
 }
 .code-card__actions {
   display: flex;
@@ -1676,21 +1677,18 @@ code {
 }
 
 @media (max-width: 900px) {
-  :root {
-    --sidebar-w: 76px;
-  }
+  /* Фидбек 2026-09: иконочный режим сайдбара (76px) убран — как и на <640,
+     навигация уходит в бургер-меню хедера */
   .shell {
+    grid-template-columns: 1fr;
     padding: 16px;
     gap: 16px;
   }
   .sidebar {
-    height: auto;
-    overflow: visible;
-  } /* без clip для Settings-дропдауна (меню вправо) */
-  /* sticky = stacking context: без z-index дропдаун (z-60 внутри) проигрывает hero
-     (DOM-порядок) — поднимаем сайдбар выше контента (topbar z-50 не затронут) */
-  .sidebar {
-    z-index: 10;
+    display: none;
+  }
+  .menu-toggle {
+    display: inline-flex;
   }
   /* Группы в горизонтальном bottom-nav прозрачны (display: contents), подписи скрыты */
   .nav__group {
@@ -1760,106 +1758,139 @@ code {
     flex-wrap: wrap;
   }
 
-  /* Мобильное burger-меню: backdrop + панель слева, пункты с иконками и подписями */
-  .mobile-menu {
-    position: fixed;
-    inset: 0;
-    z-index: 80;
-  }
-  .mobile-menu__backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(4, 8, 12, 0.6);
-    backdrop-filter: blur(2px);
-  }
-  .mobile-menu__panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: min(300px, 84vw);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px 14px 20px;
-    background: var(--surface-1, var(--surface));
-    border-right: 1px solid var(--border);
-    /* UX-аудит 2026-09: тень-намёк, что за drawer'ом есть контент (кроме крестика) */
-    box-shadow: 24px 0 60px rgba(0, 0, 0, 0.45);
-    overflow-y: auto;
-    animation: mobile-menu-in 0.22s ease;
-  }
-  @keyframes mobile-menu-in {
-    from {
-      transform: translateX(-100%);
-      opacity: 0.5;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  .mobile-menu__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 8px 14px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
-  }
-  .mobile-menu__head .brand__word {
-    font-size: 20px;
-  }
-  .mobile-menu__group {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding-top: 6px;
-  }
-  .mobile-menu__group-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 8px 10px 4px;
-  }
-  .mobile-menu__item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 11px 12px;
-    background: none;
-    border: none;
-    border-radius: var(--radius);
-    font: inherit;
-    font-size: 14.5px;
-    font-weight: 500;
-    color: var(--text-variant);
-    cursor: pointer;
-    text-align: left;
-    transition:
-      background 0.15s ease,
-      color 0.15s ease;
-  }
-  .mobile-menu__item:hover {
-    background: var(--surface-2);
-    color: var(--text);
-  }
-  .mobile-menu__item.is-active {
-    background: var(--primary-soft);
-    color: var(--primary);
-  }
-  .mobile-menu__icon {
-    display: inline-flex;
-    flex: none;
-  }
-  .mobile-menu__icon svg {
-    width: 20px;
-    height: 20px;
-  }
   /* (статистика 2×50% — в мобильном блоке home-секции, ниже) */
+}
+
+/* Узкий Android (≤400px): правый блок топбара (бургер + язык + тема +
+   колокольчик + Sign up) не влезал → горизонтальный скролл на всю страницу */
+@media (max-width: 400px) {
+  .topbar {
+    padding: 0 10px;
+  }
+  .topbar__right {
+    gap: 6px;
+  }
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .menu-toggle {
+    width: 32px;
+    height: 32px;
+  }
+  .auth__signup {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  .brand__word {
+    font-size: 16px;
+  }
+}
+
+/* Мобильное burger-меню (фидбек 2026-09: бургер активен ≤900px, поэтому
+   стили не в media-блоке 640 — меню рендерится условно и на десктопе не монтируется) */
+/* Мобильное burger-меню: backdrop + панель слева, пункты с иконками и подписями */
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+.mobile-menu__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 8, 12, 0.6);
+  backdrop-filter: blur(2px);
+}
+.mobile-menu__panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(300px, 84vw);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 14px 20px;
+  background: var(--surface-1, var(--surface));
+  border-right: 1px solid var(--border);
+  /* UX-аудит 2026-09: тень-намёк, что за drawer'ом есть контент (кроме крестика) */
+  box-shadow: 24px 0 60px rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+  animation: mobile-menu-in 0.22s ease;
+}
+@keyframes mobile-menu-in {
+  from {
+    transform: translateX(-100%);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.mobile-menu__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.mobile-menu__head .brand__word {
+  font-size: 20px;
+}
+.mobile-menu__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 6px;
+}
+.mobile-menu__group-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 10px 4px;
+}
+.mobile-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text-variant);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.mobile-menu__item:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.mobile-menu__item.is-active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.mobile-menu__icon {
+  display: inline-flex;
+  flex: none;
+}
+.mobile-menu__icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ============================================================
@@ -2307,9 +2338,6 @@ code {
 .tech-page__progress .bar {
   margin-bottom: 16px;
 }
-.tech-page__cta {
-  align-self: flex-start;
-}
 
 /* Curriculum */
 .tech-page__section-title {
@@ -2599,6 +2627,31 @@ code {
 .lesson-view__player-btn svg {
   width: 13px;
   height: 13px;
+}
+
+/* Кастомный fullscreen: оверлей поверх страницы (вместо браузерного —
+   он «портит вид»: уходит в системный режим браузера) */
+.lesson-view__player--fs {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+  overflow: hidden;
+}
+.lesson-view__player--fs .lesson-view__player-box {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  aspect-ratio: auto;
+}
+.lesson-view__player--fs .lesson-view__player-controls {
+  flex: none;
+  padding: 12px 20px;
 }
 .lesson-view__player-bar {
   position: relative;
@@ -3640,12 +3693,15 @@ code {
   gap: 10px;
   margin-bottom: 14px;
 }
-/* Таймер + подпись «resets at midnight» — одна группа под заголовком */
+/* Таймер + подпись «resets at midnight» — ОДНА строка под заголовком (без wrap:
+   widget не должен разъезжаться на пол-экрана) */
 .daily-challenge__timer {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
 }
 .daily-challenge__title {
   display: inline-flex;
@@ -3677,6 +3733,17 @@ code {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+/* Статус «задача дня решена» — зелёный чип + приглушённая кнопка */
+.daily-challenge__solved {
+  color: var(--primary-hover, var(--primary));
+  background: var(--primary-soft);
+  border-color: transparent;
+  font-weight: 600;
+}
+.daily-challenge__done-btn {
+  cursor: default;
+  opacity: 0.75;
 }
 .daily-challenge__general {
   font-size: 10px;
@@ -5894,14 +5961,11 @@ code {
     height: auto;
     padding: 14px 16px;
   }
-  /* Статистика: 2 колонки по 50% (экономия места); success-карта — во всю ширину, компактная.
-     UX-аудит 2026-09: маркетинговый шум (студенты/задачи/проекты) — только success + first project */
+  /* Статистика: 4 блока по 50% (2×2) — как раньше (фидбек 2026-09: один блок + пусто)
+     (было: UX-аудит скрыл 3-ю и 4-ю карты — «маркетинговый шум») */
   .home__stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-  }
-  .home__stats .stat-card:nth-child(n + 3) {
-    display: none;
   }
 
   /* Rail-виджеты (Daily Challenge + книга) на home — внутри контента ДО футера (.home__mobile-rail),
@@ -5943,7 +6007,7 @@ code {
     white-space: nowrap;
   }
   .stat-card--success {
-    grid-column: 1 / -1;
+    grid-column: auto;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
@@ -8273,10 +8337,24 @@ code {
 
 /* --- Новости Medium в списке уведомлений (RSS → RSS2JSON) --- */
 .tb-menu--notif {
-  min-width: 340px;
+  min-width: min(340px, calc(100vw - 24px));
   max-width: min(92vw, 400px);
   max-height: min(72vh, 600px);
   overflow-y: auto;
+}
+
+/* Мобилка: дропдаун новостей был «отправляется влево за экран» (right:0 от
+   колокольчика → left<0, обрезался) — фиксируем в пределах вьюпорта */
+@media (max-width: 640px) {
+  .tb-menu--notif {
+    position: fixed;
+    top: calc(var(--topbar-h) + 4px);
+    left: 8px;
+    right: 8px;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
 }
 .tb-menu__item--news {
   display: flex;
@@ -8672,12 +8750,8 @@ code {
   background: transparent;
 }
 
-@media (max-width: 480px) {
-  /* На узкой мобилке освобождаем место под Sign up: колокольчик уйдёт в меню аккаунта позже */
-  .topbar .tb-menu-wrap--notif {
-    display: none;
-  }
-}
+/* Фидбек 2026-09: колокольчик на мобилке НЕ скрываем (было display:none ≤480px —
+   «освободить место под Sign up»; он обязан быть, т.к. в бургере новостей нет) */
 
 /* --- Auth в хедере: на узких экранах остаётся только primary-пилюля --- */
 @media (max-width: 1100px) {
@@ -9874,8 +9948,14 @@ code {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: 16px;
+}
+.tech-page__cta {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  white-space: nowrap;
 }
 .tech-page__lang-note {
   font-size: 12px;

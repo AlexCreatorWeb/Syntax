@@ -67,6 +67,9 @@ function LessonVideo({ video, label, onWatched }) {
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  // Кастомный полноэкранный режим: оверлей поверх страницы (браузерный
+  // requestFullscreen «портит вид» — фидбек 2026-09)
+  const [isFs, setIsFs] = useState(false);
   const hostRef = useRef(null);
   const playerRef = useRef(null);
   const barRef = useRef(null);
@@ -76,8 +79,8 @@ function LessonVideo({ video, label, onWatched }) {
   const watchedRef = useRef(0);
   const watchedSentRef = useRef(false);
 
-  // Инициализация IFrame API-плеера (нативные контролы ВКЛ — их fullscreen-кнопка
-  // внизу-справа остаётся доступной: catcher не накрывает этот угол)
+  // Инициализация IFrame API-плеера. fs:0 — нативную YT-кнопку fullscreen
+  // прячем, свою рисуем в контролах (браузерный fullscreen не вписывается в дизайн)
   useEffect(() => {
     if (!playing) return undefined;
     let destroyed = false;
@@ -89,6 +92,7 @@ function LessonVideo({ video, label, onWatched }) {
           autoplay: 1,
           rel: 0, // без «следующих видео» других каналов
           playsinline: 1,
+          fs: 0, // без нативной кнопки fullscreen (наша — в контролах)
         },
         events: {
           onReady: (e) => {
@@ -177,10 +181,20 @@ function LessonVideo({ video, label, onWatched }) {
 
   const progress = duration ? (current / duration) * 100 : 0;
 
+  // Esc — выход из кастомного fullscreen
+  useEffect(() => {
+    if (!isFs) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setIsFs(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isFs]);
+
   return (
     <figure className="lesson-view__video">
       {playing ? (
-        <div className="lesson-view__player">
+        <div className={`lesson-view__player${isFs ? " lesson-view__player--fs" : ""}`}>
           <div className="lesson-view__player-box">
             <div ref={hostRef} className="lesson-view__player-host" />
             {/* Слой: клик = play/pause, hover не доходит до YT-худа; угол
@@ -244,6 +258,23 @@ function LessonVideo({ video, label, onWatched }) {
             <span className="lesson-view__player-time">
               {formatTime(current)} / {formatTime(duration)}
             </span>
+            <button
+              type="button"
+              className="lesson-view__player-btn"
+              onClick={() => setIsFs((v) => !v)}
+              aria-label={isFs ? "Exit fullscreen" : "Fullscreen"}
+              aria-pressed={isFs}
+            >
+              {isFs ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
       ) : (
