@@ -1684,6 +1684,13 @@ code {
     padding: 16px;
     gap: 16px;
   }
+  /* Ловушка (фидбек 2026-09, урок «поплыл» на ~845): правило ≤1200 держит
+     .rail { grid-column: 2 } — при 1-колоночном shell оно создаёт IMPLICIT-колонку,
+     и контент сжимается до крошки слева. Rail возвращается в колонку 1
+     (под контент), свой 2-колоночный грид карточек внутри — как был. */
+  .rail {
+    grid-column: 1;
+  }
   .sidebar {
     display: none;
   }
@@ -5996,8 +6003,9 @@ code {
     display: inline-flex;
     white-space: nowrap;
   }
+  /* Фидбек 2026-09: «Успешность» — на всю ширину (100%), остальные 4 блока — по 50% (2×2) */
   .stat-card--success {
-    grid-column: auto;
+    grid-column: 1 / -1;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
@@ -7183,6 +7191,38 @@ code {
   font-size: 12px; /* аудит 2026-09: 11 → 12px */
   color: var(--danger, #ff6b6b);
 }
+
+/* Удаление своего вопроса (двухшаговое: обычное → confirm-состояние 4с) */
+.post__delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.post__delete svg {
+  width: 13px;
+  height: 13px;
+}
+.post__delete:hover {
+  color: var(--danger, #ff6b6b);
+  border-color: rgba(255, 107, 107, 0.5);
+}
+.post__delete--confirm {
+  color: #fff;
+  background: var(--danger, #ff6b6b);
+  border-color: var(--danger, #ff6b6b);
+}
 .post__new-dot {
   width: 7px;
   height: 7px;
@@ -7297,6 +7337,10 @@ code {
 .md-p {
   margin: 0 0 8px;
   line-height: 1.55;
+  /* Код/текст в предпросмотре — без «спагетти»: переносы строк
+     сохраняются такими, какими их вставили (в т.ч. без ```-фенсов) */
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 .md-p:last-child {
   margin-bottom: 0;
@@ -7785,12 +7829,11 @@ code {
   text-decoration: underline;
 }
 .community-top__follow {
-  margin-left: auto;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 5px 10px;
+  padding: 4px 9px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: transparent;
@@ -7798,6 +7841,7 @@ code {
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  flex: none;
 }
 .community-top__follow:hover {
   border-color: var(--border-strong);
@@ -7947,16 +7991,16 @@ code {
 }
 
 .community-top {
-  padding: 20px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 .community-top__title {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .community-top__icon {
   width: 14px;
@@ -7970,14 +8014,14 @@ code {
 .community-top__row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
+  gap: 8px;
+  padding: 6px 0;
 }
 .community-top__row + .community-top__row {
   border-top: 1px solid var(--border);
 }
 .community-top__rank {
-  width: 14px;
+  width: 12px;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
@@ -7986,31 +8030,31 @@ code {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  gap: 0;
 }
 .community-top__name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .community-top__handle {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px; /* аудит: mono-метки мин. 12px */
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+/* Репа — одна компактная строка (без отдельного лейбла REP) */
 .community-top__rep {
   margin-left: auto;
-  text-align: right;
-}
-.community-top__rep strong {
-  display: block;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
-}
-.community-top__rep span {
-  font-family: var(--font-mono);
-  font-size: 11px; /* UX-аудит 2026-09: 9px → 11px */
-  letter-spacing: 0.05em;
-  color: var(--muted);
+  color: var(--text-variant);
+  flex: none;
 }
 
 /* --- Responsive: community --- */
@@ -9046,8 +9090,9 @@ code {
   align-items: center;
   gap: 12px;
 }
+/* Фидбек 2026-09: «Open roadmap» растянут на всю карточку и на десктопе —
+   флексовый (полная ширина) только на мобилке (≤640 ниже), на десктопе — по контенту */
 .profile__actions .profile__open {
-  flex: 1;
   margin-bottom: 0;
 }
 .profile__logout {
@@ -10057,6 +10102,17 @@ code {
   justify-content: center;
   white-space: nowrap;
 }
+/* Фидбек 2026-09: длинные подписи («Continue Learning») выпирали за пределы
+   кнопки — текст в span с эллипсисом, иконки не сжимаются */
+.tech-page__cta svg {
+  flex: none;
+}
+.tech-page__cta-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .tech-page__lang-note {
   font-size: 12px;
   color: var(--muted);
@@ -10087,7 +10143,9 @@ code {
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: thin;
-    padding-bottom: 4px;
+    /* Фидбек 2026-09: тонкий скроллбар «прилипал» к пилюлям — 4px было впритык
+       (у thin-баров thumb почти без внутренних отступов) → 8px = видимые ~4–5px */
+    padding-bottom: 8px;
     -webkit-mask-image: linear-gradient(
       to right,
       transparent,

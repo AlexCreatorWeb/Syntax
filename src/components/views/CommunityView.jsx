@@ -660,11 +660,21 @@ function CommunityView({ activeTech }) {
   const [localPosts, setLocalPosts] = useState(initial.posts);
   const [viewed, setViewed] = useState(initial.viewed);
   const [accepted, setAccepted] = useState(initial.accepted);
+  const [deleted, setDeleted] = useState(initial.deleted);
+  // двухшаговое удаление: key поста → подтверждение (авто-сброс 4с)
+  const [confirmDelete, setConfirmDelete] = useState(null);
   // «Load more»: фикс-лента 11–12 постов → порции по 8
   const [limit, setLimit] = useState(8);
   const rawPosts = t("community.posts");
   // т() возвращает объект словаря по языку — стабильная ссылка; useMemo гасит warning про deps
   const posts = useMemo(() => rawPosts || [], [rawPosts]);
+
+  // авто-сброс «Confirm delete?» (паттерн Reset из редактора)
+  useEffect(() => {
+    if (!confirmDelete) return undefined;
+    const id = setTimeout(() => setConfirmDelete(null), 4000);
+    return () => clearTimeout(id);
+  }, [confirmDelete]);
 
   // Сохранение стора при любом изменении персистируемого состояния
   useEffect(() => {
@@ -675,8 +685,9 @@ function CommunityView({ activeTech }) {
       votes,
       viewed,
       accepted,
+      deleted,
     });
-  }, [localPosts, extraReplies, voted, votes, viewed, accepted]);
+  }, [localPosts, extraReplies, voted, votes, viewed, accepted, deleted]);
 
   // Клик по трендовому тегу (рейл) или тегу поста — один и тот же фильтр (без дубля #);
   // карточка трека в рейле включает track-фильтр
@@ -705,20 +716,24 @@ function CommunityView({ activeTech }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [threadKey, composerOpen]);
 
-  // Итоговый список: i18n-посты + опубликованные локально
+  // Итоговый список: i18n-посты + опубликованные локально (без удалённых)
   const items = useMemo(() => {
-    const base = posts.map((post, i) => ({
-      key: `p${i}`,
-      post,
-      meta: POST_META[i],
-    }));
-    const local = localPosts.map((p) => ({
-      key: `l${p.id}`,
-      post: p.post,
-      meta: p.meta,
-    }));
+    const base = posts
+      .map((post, i) => ({
+        key: `p${i}`,
+        post,
+        meta: POST_META[i],
+      }))
+      .filter((it) => !deleted[it.key]);
+    const local = localPosts
+      .filter((p) => !deleted[`l${p.id}`])
+      .map((p) => ({
+        key: `l${p.id}`,
+        post: p.post,
+        meta: p.meta,
+      }));
     return [...base, ...local];
-  }, [posts, localPosts]);
+  }, [posts, localPosts, deleted]);
 
   const repliesCount = (it) =>
     (it.post.replies || []).length + (extraReplies[it.key] || []).length;
@@ -737,13 +752,27 @@ function CommunityView({ activeTech }) {
     const q = filter.trim().replace(/^#/, "").toLowerCase();
     let list = trackList;
     if (q) {
+      // Поиск по всему: заголовок, текст, теги + ответы (включая локальные)
       list = list.filter((it) =>
         (
           it.post.title +
           " " +
           it.post.excerpt +
           " " +
-          (it.post.tags || []).join(" ")
+          (it.post.tags || []).join(" ") +
+          " " +
+          (it.post.replies || [])
+            .map(
+              (r) =>
+                r.body +
+                " " +
+                r.author +
+                " " +
+                (r.replies || []).map((x) => x.body).join(" "),
+            )
+            .join(" ") +
+          " " +
+          (extraReplies[it.key] || []).map((r) => r.body).join(" ")
         )
           .toLowerCase()
           .includes(q),
@@ -775,6 +804,18 @@ function CommunityView({ activeTech }) {
   // Принятие ответа (мёртв. №8): только у автора треда, один ответ на тред
   const acceptReply = (key, idx) => {
     setAccepted((prev) => ({ ...prev, [key]: idx }));
+  };
+
+  // Удаление своего вопроса: две ступени (кнопка → «Confirm?» → удалить).
+  // Сид-пост — в deleted (персист), локальный — физически выкидывается
+  const deleteQuestion = (key) => {
+    if (key.startsWith("l")) {
+      const id = Number(key.slice(1));
+      setLocalPosts((prev) => prev.filter((p) => p.id !== id));
+    }
+    setDeleted((prev) => ({ ...prev, [key]: true }));
+    setConfirmDelete(null);
+    if (threadKey === key) setThreadKey(null);
   };
 
   const addReply = (key, text, parent) => {
@@ -1001,6 +1042,34 @@ function CommunityView({ activeTech }) {
                         <span className="post__new-dot" aria-hidden="true" />
                         {t("community.newReplies", { n: meta.newReplies })}
                       </span>
+                    )}
+                    {/* Удаление своего вопроса: две ступени (Confirm? 4с) */}
+                    {meta.isMine && (
+                      <button
+                        type="button"
+                        className={`post__delete ${confirmDelete === it.key ? "post__delete--confirm" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirmDelete === it.key) deleteQuestion(it.key);
+                          else setConfirmDelete(it.key);
+                        }}
+                        aria-label={t("community.deleteQuestion")}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" />
+                        </svg>
+                        {confirmDelete === it.key
+                          ? t("community.deleteConfirm")
+                          : t("community.deleteQuestion")}
+                      </button>
                     )}
                   </div>
                   <h3 className="post__title">{post.title}</h3>

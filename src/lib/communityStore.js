@@ -17,6 +17,7 @@ const EMPTY = {
   votes: {}, // { postKey: count }
   viewed: {}, // { postKey: true } — «N new replies» сброслен
   accepted: {}, // { postKey: replyIndex } — принятый ответ
+  deleted: {}, // { postKey: true } — удалённые вопросы (включая сид-посты)
 };
 
 export function loadCommunityStore() {

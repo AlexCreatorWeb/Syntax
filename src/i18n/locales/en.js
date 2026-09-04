@@ -937,6 +937,8 @@ export default {
     acceptAnswer: "Accept answer",
     followLogin: "Log in to follow",
     replyRequired: "Reply cannot be empty",
+    deleteQuestion: "Delete question",
+    deleteConfirm: "Confirm delete?",
     systemStatus: "System Status",
     onlineNow: "Online Now",
     totalMembers: "Total Members",
@@ -1001,7 +1003,7 @@ export default {
           "Dockerizing a monolithic Node app \u2014 best practices for multi-stage builds",
         excerpt:
           "Our image size is ballooning over 1.5GB. I'm trying to implement multi-stage builds to strip out dev dependencies, but I keep breaking the entrypoint script. What's your go-to Dockerfile structure for monoliths?",
-        tags: ["Docker", "DevOps", "NodeJS"],
+        tags: ["NodeJS", "Performance"],
         replies: [],
       },
       {

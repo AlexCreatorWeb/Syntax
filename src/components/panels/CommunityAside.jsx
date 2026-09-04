@@ -4,13 +4,15 @@ import Avatar from "../Avatar";
 import { getTech } from "../../lib/techs";
 import { loadFollows, saveFollows, fmtNum } from "../../lib/communityStore";
 
+// Трендовые теги — только те, что РЕАЛЬНО есть в постах (клик = фильтр);
+// Docker/DevOps/TypeScriptBasics/AsyncJS убраны — треков по ним нет
 const TRENDING_TAGS = [
   "Python",
   "React18",
-  "Docker",
   "NodeJS",
-  "AsyncJS",
-  "TypeScriptBasics",
+  "CSS",
+  "JavaScript",
+  "PostgreSQL",
 ];
 
 // DataBot_v2 + BOT-бейдж удалены (мёртв. №2 — dev-артефакт)
@@ -174,7 +176,7 @@ function CommunityAside({ techId, isAuthed, onAuth }) {
                 onClick={() => setProfile(user)}
                 aria-label={user.name}
               >
-                <Avatar name={user.name} hue={user.hue} size="sm" />
+                <Avatar name={user.name} hue={user.hue} size="xs" />
               </button>
               <button
                 type="button"
@@ -191,10 +193,9 @@ function CommunityAside({ techId, isAuthed, onAuth }) {
                 </span>
                 <span className="community-top__handle">{user.handle}</span>
               </button>
-              <div className="community-top__rep">
-                <strong>{fmtNum(user.rep)}</strong>
-                <span>{t("community.rep")}</span>
-              </div>
+              <span className="community-top__rep" title={t("community.rep")}>
+                {fmtNum(user.rep)}
+              </span>
               <button
                 type="button"
                 className={`community-top__follow ${following[user.handle] ? "community-top__follow--on" : ""}`}

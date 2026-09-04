@@ -953,6 +953,8 @@ export const LOCALES = {
       acceptAnswer: "Принять ответ",
       followLogin: "Войдите, чтобы подписаться",
       replyRequired: "Ответ не может быть пустым",
+      deleteQuestion: "Удалить вопрос",
+      deleteConfirm: "Точно удалить?",
       systemStatus: "Статус системы",
       onlineNow: "Сейчас в сети",
       totalMembers: "Всего участников",
@@ -1016,7 +1018,7 @@ export const LOCALES = {
           title: "Докеризация монолитного Node-приложения: multi-stage сборки",
           excerpt:
             "Размер образа раздулся за 1.5ГБ. Пробую multi-stage сборки, чтобы убрать dev-зависимости, но сломал entrypoint. Какая у вас базовая структура Dockerfile для монолитов?",
-          tags: ["Docker", "DevOps", "NodeJS"],
+          tags: ["NodeJS", "Performance"],
           replies: [],
         },
         {
