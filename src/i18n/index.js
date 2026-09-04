@@ -518,7 +518,7 @@ export const LOCALES = {
       allStatuses: "Все статусы",
       search: "Поиск задач...",
       timerAria: "Осталось времени",
-      resetsDaily: "Сбрасывается каждый день в полночь",
+      resetsDaily: "Сбрасывается в полночь",
       noResults: "Ничего не найдено",
       trackTitle: "Задачи · {tech}",
       generalTitle: "Общие задачи",
@@ -605,6 +605,7 @@ export const LOCALES = {
         xpReward: "+500 XP",
         hard: "Сложная",
         accept: "Принять вызов",
+        solved: "Решено",
         lessonNote:
           "Сегодняшний выбор из курса {tech} — реши его в редакторе до конца таймера.",
         taskNote:
@@ -948,6 +949,10 @@ export const LOCALES = {
       profilePosts: "{n} постов",
       profileStreak: "стрик {n} дн.",
       justNow: "только что",
+      ago: "{time} назад",
+      acceptAnswer: "Принять ответ",
+      followLogin: "Войдите, чтобы подписаться",
+      replyRequired: "Ответ не может быть пустым",
       systemStatus: "Статус системы",
       onlineNow: "Сейчас в сети",
       totalMembers: "Всего участников",

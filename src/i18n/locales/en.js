@@ -503,7 +503,7 @@ export default {
     allStatuses: "All Statuses",
     search: "Search tasks...",
     timerAria: "Time remaining",
-    resetsDaily: "Resets daily at midnight",
+    resetsDaily: "Resets at midnight",
     noResults: "Nothing found",
     trackTitle: "{tech} Tasks",
     generalTitle: "General Tasks",
@@ -590,6 +590,7 @@ export default {
       xpReward: "+500 XP",
       hard: "Hard",
       accept: "Accept Challenge",
+      solved: "Solved",
       lessonNote:
         "Today's pick from the {tech} course — solve it in the editor before the timer ends.",
       taskNote:
@@ -932,6 +933,10 @@ export default {
     profilePosts: "{n} posts",
     profileStreak: "{n}-day streak",
     justNow: "just now",
+    ago: "{time} ago",
+    acceptAnswer: "Accept answer",
+    followLogin: "Log in to follow",
+    replyRequired: "Reply cannot be empty",
     systemStatus: "System Status",
     onlineNow: "Online Now",
     totalMembers: "Total Members",

@@ -3734,20 +3734,10 @@ code {
   gap: 8px;
   flex-wrap: wrap;
 }
-/* Статус «задача дня решена» — зелёный чип + приглушённая кнопка */
-.daily-challenge__solved {
-  color: var(--primary-hover, var(--primary));
-  background: var(--primary-soft);
-  border-color: transparent;
-  font-weight: 600;
-}
+/* Статус «задача дня решена» — приглушённая disabled-кнопка (текст + галочка) */
 .daily-challenge__done-btn {
   cursor: default;
   opacity: 0.75;
-}
-.daily-challenge__general {
-  font-size: 10px;
-  padding: 1px 8px;
 }
 .daily-challenge__desc {
   font-size: 13px;
@@ -6951,6 +6941,7 @@ code {
   gap: 16px;
   padding: 20px;
   cursor: pointer;
+  align-items: start;
   transition: border-color 0.15s ease;
 }
 .post:hover {
@@ -7034,8 +7025,8 @@ code {
 }
 .post__tag {
   font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 4px 8px;
+  font-size: 12px; /* аудит 2026-09: 11 → 12px */
+  padding: 6px 10px;
   border-radius: 4px;
   background: var(--surface-3);
   border: 1px solid var(--border);
@@ -7079,7 +7070,7 @@ code {
 }
 .community__tab-count {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px; /* аудит 2026-09: mono-метки мин. 12px */
   font-weight: 700;
   padding: 1px 7px;
   margin-left: 6px;
@@ -7174,7 +7165,7 @@ code {
   margin-bottom: 8px;
 }
 .post__mine {
-  font-size: 10px;
+  font-size: 12px; /* аудит 2026-09: 10 → 12px */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -7189,7 +7180,7 @@ code {
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px; /* аудит 2026-09: 11 → 12px */
   color: var(--danger, #ff6b6b);
 }
 .post__new-dot {
@@ -7230,6 +7221,72 @@ code {
   margin-top: 8px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+/* Принятие ответа — у автора треда (мёртв. №8): ghost-кнопка с галкой */
+.reply__accept {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-variant);
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.reply__accept svg {
+  width: 13px;
+  height: 13px;
+}
+.reply__accept:hover {
+  color: var(--primary-hover);
+  border-color: rgba(48, 224, 161, 0.5);
+  border-style: solid;
+  background: var(--primary-soft);
+}
+
+/* Load more: порции ленты по 8 (база; disabled-состояние есть ниже) */
+.community__loadmore {
+  align-self: center;
+  min-height: 44px;
+  font-size: 13px;
+}
+
+/* Мобилка: ряд табов не упирается в кромку — горизонтальный скролл + fade */
+@media (max-width: 640px) {
+  .community__tabs {
+    gap: 14px;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 calc(100% - 24px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      #000 calc(100% - 24px),
+      transparent 100%
+    );
+  }
+  .community__tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .community__toolbar {
+    flex-wrap: nowrap;
+  }
+  .community__track {
+    flex: none;
+  }
 }
 
 /* --- Markdown-lite --- */
@@ -7454,12 +7511,12 @@ code {
 }
 .reply__rep {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px; /* аудит 2026-09: 10 → 12px */
   color: var(--muted);
 }
 .reply__time {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px; /* аудит 2026-09: 10 → 12px */
   color: var(--muted);
 }
 .reply__accepted {
@@ -7467,7 +7524,7 @@ code {
   align-items: center;
   gap: 5px;
   margin-left: auto;
-  font-size: 10px;
+  font-size: 12px; /* аудит 2026-09: 10 → 12px */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -7651,8 +7708,8 @@ code {
 }
 .composer__tag {
   font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 4px 10px;
+  font-size: 12px; /* аудит 2026-09: 11 → 12px */
+  padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: transparent;
@@ -7814,7 +7871,8 @@ code {
 }
 .community-status__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* один тайл (ONLINE NOW удалён) — на всю ширину карточки */
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
 }
 .community-status__tile {
@@ -7967,11 +8025,18 @@ code {
   .post {
     grid-template-columns: 1fr;
   }
-  .post__vote {
+  /* Мобилка: голос — горизонтальный блок «шеврон + число» вверху карточки
+     (специфичнее базового .post__vote — тот ниже в файле и перебивал бы media) */
+  .post .post__vote {
     flex-direction: row;
+    gap: 6px;
     width: fit-content;
-    order: 2;
-    margin-top: 4px;
+    height: auto;
+    min-height: 36px;
+    padding: 0 8px;
+    align-self: auto;
+    order: 0;
+    margin: 0 0 10px;
   }
 }
 
@@ -8723,12 +8788,17 @@ code {
   padding: 20px;
 }
 
-/* --- Community: голосование (кнопка) --- */
+/* --- Community: голосование (кнопка + число — единый блок вверху левой
+   колонки; баг №4: было «в столбик в левом нижнем углу»). Тап-зона ≥44px --- */
 .post__vote {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 2px;
+  width: 44px;
+  min-height: 44px;
+  align-self: start;
   padding: 0;
   border: none;
   background: none;
@@ -8739,6 +8809,36 @@ code {
 .post:hover .post__vote,
 .post__vote--voted {
   color: var(--primary-hover);
+}
+.post__vote--voted {
+  background: var(--primary-soft);
+  border-radius: var(--radius);
+}
+
+/* Тап-зоны ≥44px без изменения плотности (hit-area через ::after) */
+.post__tag,
+.post__stat,
+.community__tab,
+.community-trending__tag,
+.community-top__follow,
+.composer__tag,
+.reply__to {
+  position: relative;
+}
+.post__tag::after,
+.post__stat::after,
+.community-trending__tag::after,
+.community-top__follow::after,
+.composer__tag::after,
+.reply__to::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+}
+.community__tab::after {
+  content: "";
+  position: absolute;
+  inset: -8px -6px;
 }
 .community__loadmore:disabled {
   opacity: 0.55;

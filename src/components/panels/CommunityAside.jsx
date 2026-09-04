@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
 import { getTech } from "../../lib/techs";
+import { loadFollows, saveFollows, fmtNum } from "../../lib/communityStore";
 
 const TRENDING_TAGS = [
   "Python",
@@ -12,11 +13,12 @@ const TRENDING_TAGS = [
   "TypeScriptBasics",
 ];
 
+// DataBot_v2 + BOT-бейдж удалены (мёртв. №2 — dev-артефакт)
 const CONTRIBUTORS = [
   {
     name: "Alex Mercer",
     handle: "@amermer_dev",
-    rep: "14.2k",
+    rep: 14200,
     hue: 158,
     posts: 342,
     streak: 21,
@@ -24,19 +26,18 @@ const CONTRIBUTORS = [
   {
     name: "Sarah Chen",
     handle: "@schen_codes",
-    rep: "12.8k",
+    rep: 12800,
     hue: 330,
     posts: 287,
     streak: 34,
   },
   {
-    name: "DataBot_v2",
-    handle: "@auto_reply",
-    rep: "9.4k",
-    hue: 210,
-    posts: 1204,
-    streak: 12,
-    bot: true,
+    name: "Priya Dev",
+    handle: "@priya_builds",
+    rep: 5120,
+    hue: 280,
+    posts: 214,
+    streak: 9,
   },
 ];
 
@@ -44,11 +45,25 @@ const CONTRIBUTORS = [
 const TRACK_COUNTS = { python: [1, 1], react: [1, 1], node: [1, 0] };
 
 // Правый сайдбар вкладки Community: статус → трек пользователя → тренды → топ
-function CommunityAside({ techId }) {
+function CommunityAside({ techId, isAuthed, onAuth }) {
   const t = useT();
-  const [following, setFollowing] = useState({});
+  // Подписки персистятся по идентичности (гость/uid) — мёртв. №4;
+  // гость без логина — тултип «Log in to follow» + открывается auth-модалка
+  const [following, setFollowing] = useState(() => loadFollows());
   const [profile, setProfile] = useState(null);
   const track = TRACK_COUNTS[techId];
+
+  const toggleFollow = (handle) => {
+    if (!isAuthed) {
+      if (onAuth) onAuth("login", "community");
+      return;
+    }
+    setFollowing((prev) => {
+      const next = { ...prev, [handle]: !prev[handle] };
+      saveFollows(next);
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!profile) return;
@@ -65,14 +80,9 @@ function CommunityAside({ techId }) {
         <span className="label-caps community-status__title">
           {t("community.systemStatus")}
         </span>
+        {/* ONLINE NOW удалён (мёртв. №3 — статичное число без источника);
+            остаётся общий счётчик участников */}
         <div className="community-status__grid">
-          <div className="community-status__tile">
-            <span className="community-status__label">
-              <span className="community-status__dot" aria-hidden="true" />
-              {t("community.onlineNow")}
-            </span>
-            <strong className="community-status__value">1,432</strong>
-          </div>
           <div className="community-status__tile">
             <span className="community-status__label">
               {t("community.totalMembers")}
@@ -182,19 +192,15 @@ function CommunityAside({ techId }) {
                 <span className="community-top__handle">{user.handle}</span>
               </button>
               <div className="community-top__rep">
-                <strong>{user.rep}</strong>
+                <strong>{fmtNum(user.rep)}</strong>
                 <span>{t("community.rep")}</span>
               </div>
               <button
                 type="button"
                 className={`community-top__follow ${following[user.handle] ? "community-top__follow--on" : ""}`}
                 aria-pressed={!!following[user.handle]}
-                onClick={() =>
-                  setFollowing((prev) => ({
-                    ...prev,
-                    [user.handle]: !prev[user.handle],
-                  }))
-                }
+                title={!isAuthed ? t("community.followLogin") : undefined}
+                onClick={() => toggleFollow(user.handle)}
               >
                 {following[user.handle]
                   ? t("community.following")
@@ -223,7 +229,7 @@ function CommunityAside({ techId }) {
               <span className="profile__handle">{profile.handle}</span>
               <div className="profile__stats">
                 <div className="profile__stat">
-                  <strong>{profile.rep}</strong>
+                  <strong>{fmtNum(profile.rep)}</strong>
                   <span>{t("community.rep")}</span>
                 </div>
                 <div className="profile__stat">
@@ -242,12 +248,8 @@ function CommunityAside({ techId }) {
                   type="button"
                   className={`btn ${following[profile.handle] ? "btn--secondary" : "btn--primary"}`}
                   aria-pressed={!!following[profile.handle]}
-                  onClick={() =>
-                    setFollowing((prev) => ({
-                      ...prev,
-                      [profile.handle]: !prev[profile.handle],
-                    }))
-                  }
+                  title={!isAuthed ? t("community.followLogin") : undefined}
+                  onClick={() => toggleFollow(profile.handle)}
                 >
                   {following[profile.handle]
                     ? t("community.following")

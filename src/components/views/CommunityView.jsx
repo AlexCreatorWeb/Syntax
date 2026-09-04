@@ -2,119 +2,133 @@ import { useEffect, useMemo, useState } from "react";
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
 import { getTech } from "../../lib/techs";
+import {
+  loadCommunityStore,
+  saveCommunityStore,
+  fmtNum,
+} from "../../lib/communityStore";
 
-// Метаданные постов (статичные данные; контент постов и ответов — в i18n community.posts)
+// Метаданные постов (статичные данные; контент постов и ответов — в i18n community.posts).
+// rep/views — ЧИСЛА (формат ≥1000 → «14.2k» — единое правило, баг №6).
+// `ago` — время для «{ago} назад»; null = «только что» (локальные посты).
 const POST_META = [
   {
     tech: "python",
-    live: true,
-    time: "2m",
+    ago: "2m",
     activeMin: 2,
     createdMin: 300,
     votes: 142,
-    views: "1.2k",
-    author: { name: "ana_data", rep: "8,420", hue: 30 },
+    views: 1200,
+    author: { name: "ana_data", rep: 8420, hue: 30 },
   },
   {
     tech: "react",
-    time: "1h",
+    ago: "1h",
     activeMin: 58,
     createdMin: 60,
     votes: 89,
-    views: "986",
+    views: 986,
     solved: true,
     isMine: true,
     newReplies: 3,
-    author: { name: "NeoCoder", rep: "1,240", hue: 160 },
+    author: { name: "NeoCoder", rep: 1240, hue: 160 },
   },
   {
     tech: "node",
-    time: "3h",
+    ago: "3h",
     activeMin: 170,
     createdMin: 180,
     votes: 45,
-    views: "540",
-    author: { name: "sys_admin", rep: "12,760", hue: 260 },
+    views: 540,
+    author: { name: "sys_admin", rep: 12760, hue: 260 },
   },
   // — новые сид-посты (UX-аудит: фид «пустой» — 3 поста на 9 треков) —
   {
     tech: "css",
-    time: "4h",
+    ago: "4h",
     activeMin: 250,
     createdMin: 240,
     votes: 9,
-    views: "118",
+    views: 118,
     solved: true,
-    author: { name: "maria_sofia", rep: "3,210", hue: 330 },
+    author: { name: "maria_sofia", rep: 3210, hue: 330 },
   },
   {
     tech: "javascript",
-    time: "5h",
+    ago: "5h",
     activeMin: 300,
     createdMin: 300,
     votes: 17,
-    views: "286",
-    author: { name: "neo_oleg", rep: "2,940", hue: 30 },
+    views: 286,
+    author: { name: "neo_oleg", rep: 2940, hue: 30 },
   },
   {
     tech: "html",
-    time: "6h",
+    ago: "6h",
     activeMin: 360,
     createdMin: 360,
     votes: 6,
-    views: "94",
-    author: { name: "data_vlad", rep: "3,120", hue: 260 },
+    views: 94,
+    author: { name: "data_vlad", rep: 3120, hue: 260 },
   },
   {
     tech: "node",
-    time: "7h",
+    ago: "7h",
     activeMin: 420,
     createdMin: 420,
     votes: 21,
-    views: "402",
+    views: 402,
     solved: true,
-    author: { name: "dev_priya", rep: "5,120", hue: 280 },
+    author: { name: "dev_priya", rep: 5120, hue: 280 },
   },
   {
     tech: "mongo",
-    time: "9h",
+    ago: "9h",
     activeMin: 540,
     createdMin: 540,
     votes: 11,
-    views: "176",
-    author: { name: "data_vlad", rep: "3,120", hue: 260 },
+    views: 176,
+    author: { name: "data_vlad", rep: 3120, hue: 260 },
   },
   {
     tech: "postgres",
-    time: "11h",
+    ago: "11h",
     activeMin: 660,
     createdMin: 660,
     votes: 15,
-    views: "229",
+    views: 229,
     solved: true,
-    author: { name: "sys_admin", rep: "12,760", hue: 200 },
+    author: { name: "sys_admin", rep: 12760, hue: 200 },
   },
   {
     tech: "python",
-    time: "13h",
+    ago: "13h",
     activeMin: 780,
     createdMin: 780,
     votes: 8,
-    views: "141",
-    author: { name: "ana_data", rep: "8,420", hue: 40 },
+    views: 141,
+    author: { name: "ana_data", rep: 8420, hue: 40 },
   },
   {
     tech: "react",
-    time: "16h",
+    ago: "16h",
     activeMin: 960,
     createdMin: 960,
     votes: 5,
-    views: "73",
-    author: { name: "alex_mercer", rep: "14.2k", hue: 158 },
+    views: 73,
+    author: { name: "alex_mercer", rep: 14200, hue: 158 },
   },
 ];
 
-const YOU = { name: "NeoCoder", rep: "1,240", hue: 160 };
+const YOU = { name: "NeoCoder", rep: 1240, hue: 160 };
+
+// «{ago} назад» / «только что» — единый формат мета-строки (баг №5: автор —
+// один раз в строке, дубль «Posted by X» убран)
+function timeLabel(t, meta) {
+  return meta.ago
+    ? t("community.ago", { time: meta.ago })
+    : t("community.justNow");
+}
 
 function hueOf(name) {
   let h = 0;
@@ -189,8 +203,9 @@ function MdText({ src }) {
   return <div className="md">{nodes}</div>;
 }
 
-/* ————— Ответ (рекурсивный, уровень 2 — вложенные) ————— */
-function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
+/* ————— Ответ (рекурсивный, уровень 2 — вложенные). canAccept — у автора
+   треда (мёртв. №8: принять ответ → зелёная рамка + Solved в ленте) ————— */
+function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile, acceptInfo }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const author = {
@@ -198,9 +213,10 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
     rep: reply.rep,
     hue: reply.hue ?? hueOf(reply.author),
   };
+  const isAccepted = !!(acceptInfo && acceptInfo.accepted);
   return (
     <div
-      className={`reply ${depth > 1 ? "reply--nested" : ""} ${reply.accepted ? "reply--accepted" : ""} ${reply.mine ? "reply--mine" : ""}`}
+      className={`reply ${depth > 1 ? "reply--nested" : ""} ${isAccepted ? "reply--accepted" : ""} ${reply.mine ? "reply--mine" : ""}`}
     >
       <div className="reply__head">
         <Avatar name={author.name} hue={author.hue} size="xs" />
@@ -212,9 +228,9 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
         >
           {author.name}
         </button>
-        {reply.rep && <span className="reply__rep">{reply.rep}</span>}
+        {reply.rep && <span className="reply__rep">{fmtNum(reply.rep)}</span>}
         <span className="reply__time">{reply.time}</span>
-        {reply.accepted && (
+        {isAccepted && (
           <span className="reply__accepted">
             <svg
               viewBox="0 0 24 24"
@@ -234,6 +250,27 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
           <span className="reply__mine-badge">
             {t("community.yourQuestion")}
           </span>
+        )}
+        {depth === 1 && acceptInfo && acceptInfo.canAccept && !isAccepted && (
+          <button
+            type="button"
+            className="reply__accept"
+            title={t("community.acceptAnswer")}
+            onClick={acceptInfo.onAccept}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m5 13 4 4L19 7" />
+            </svg>
+            {t("community.acceptAnswer")}
+          </button>
         )}
       </div>
       <MdText src={reply.body} />
@@ -312,11 +349,21 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile }) {
 }
 
 /* ————— Модалка ветки обсуждения ————— */
-function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
+function ThreadModal({
+  item,
+  t,
+  onClose,
+  onReply,
+  onOpenProfile,
+  onAccept,
+  acceptedIdx,
+}) {
   const [text, setText] = useState("");
   const { post, meta } = item;
   const replies = [...(post.replies || []), ...item.extra];
   const author = meta.author;
+  const solved =
+    !!meta.solved || (acceptedIdx !== undefined && acceptedIdx !== null);
   return (
     <div
       className="community-modal"
@@ -335,10 +382,10 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
             <div>
               <strong>{author.name}</strong>
               <span>
-                {author.rep} REP · {meta.time}
+                {fmtNum(author.rep)} {t("community.rep")} · {timeLabel(t, meta)}
               </span>
             </div>
-            {meta.solved && (
+            {solved && (
               <span className="post__solved">
                 <svg
                   viewBox="0 0 24 24"
@@ -382,6 +429,15 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
               t={t}
               onReplyTo={(parent, txt) => onReply(item.key, txt, parent)}
               onOpenProfile={onOpenProfile}
+              acceptInfo={
+                meta.isMine
+                  ? {
+                      canAccept: true,
+                      accepted: acceptedIdx === i,
+                      onAccept: () => onAccept(item.key, i),
+                    }
+                  : null
+              }
             />
           ))}
           <div className="thread-composer">
@@ -395,7 +451,9 @@ function ThreadModal({ item, t, onClose, onReply, onOpenProfile }) {
             />
             <div className="thread-composer__foot">
               <span className="thread-composer__hint">
-                {t("community.composerSub")}
+                {text.trim()
+                  ? t("community.composerSub")
+                  : t("community.replyRequired")}
               </span>
               <button
                 type="button"
@@ -593,13 +651,32 @@ function CommunityView({ activeTech }) {
   const [myTrack, setMyTrack] = useState(false);
   const [threadKey, setThreadKey] = useState(null);
   const [composerOpen, setComposerOpen] = useState(false);
-  const [votes, setVotes] = useState({});
-  const [voted, setVoted] = useState({});
-  const [extraReplies, setExtraReplies] = useState({});
-  const [localPosts, setLocalPosts] = useState([]);
+  // Персист (баг №2): гостевые/юзерские посты, ответы, голоса, прочитанные
+  // и принятые ответы живут в localStorage по идентификатору (guest/uid)
+  const initial = useMemo(() => loadCommunityStore(), []);
+  const [votes, setVotes] = useState(initial.votes);
+  const [voted, setVoted] = useState(initial.voted);
+  const [extraReplies, setExtraReplies] = useState(initial.replies);
+  const [localPosts, setLocalPosts] = useState(initial.posts);
+  const [viewed, setViewed] = useState(initial.viewed);
+  const [accepted, setAccepted] = useState(initial.accepted);
+  // «Load more»: фикс-лента 11–12 постов → порции по 8
+  const [limit, setLimit] = useState(8);
   const rawPosts = t("community.posts");
   // т() возвращает объект словаря по языку — стабильная ссылка; useMemo гасит warning про deps
   const posts = useMemo(() => rawPosts || [], [rawPosts]);
+
+  // Сохранение стора при любом изменении персистируемого состояния
+  useEffect(() => {
+    saveCommunityStore({
+      posts: localPosts,
+      replies: extraReplies,
+      voted,
+      votes,
+      viewed,
+      accepted,
+    });
+  }, [localPosts, extraReplies, voted, votes, viewed, accepted]);
 
   // Клик по трендовому тегу (рейл) или тегу поста — один и тот же фильтр (без дубля #);
   // карточка трека в рейле включает track-фильтр
@@ -689,6 +766,17 @@ function CommunityView({ activeTech }) {
     }));
   };
 
+  // Открытие треда: помечаем прочитанным («N new replies» гаснет — мёртв. №7)
+  const openThread = (key) => {
+    setThreadKey(key);
+    setViewed((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+  };
+
+  // Принятие ответа (мёртв. №8): только у автора треда, один ответ на тред
+  const acceptReply = (key, idx) => {
+    setAccepted((prev) => ({ ...prev, [key]: idx }));
+  };
+
   const addReply = (key, text, parent) => {
     const reply = {
       author: YOU.name,
@@ -715,17 +803,19 @@ function CommunityView({ activeTech }) {
         post: { title, excerpt: body, tags, replies: [] },
         meta: {
           tech: tech || "javascript",
-          time: t("community.justNow"),
+          ago: null,
           activeMin: 0,
           createdMin: 0,
           votes: 0,
-          views: "0",
+          views: 0,
           isMine: true,
           author: YOU,
         },
       },
       ...prev,
     ]);
+    // Баг №1: фильтр НЕ трогаем — новый пост виден при любом текущем фильтре
+    // (теги поста — локальное состояние composer'а, глобальный фильтр не касается)
     setComposerOpen(false);
     setTab("active");
   };
@@ -840,28 +930,32 @@ function CommunityView({ activeTech }) {
           )}
         </div>
 
-        {/* Счётчик видимых постов — снимает «сайт сломался» при фильтрах */}
+        {/* Счётчик видимых постов = количество карточек на экране (load more) */}
         <div className="community__showing">
-          {t("community.showing", { a: visible.length, b: items.length })}
+          {t("community.showing", {
+            a: Math.min(limit, visible.length),
+            b: items.length,
+          })}
         </div>
 
         {/* Лента обсуждений */}
         <div className="community__feed">
-          {visible.map((it) => {
+          {visible.slice(0, limit).map((it) => {
             const { post, meta } = it;
             const vote = votes[it.key] ?? meta.votes;
             const isVoted = !!voted[it.key];
+            const isSolved = !!meta.solved || accepted[it.key] !== undefined;
             return (
               <article
                 key={it.key}
-                className={`post card ${meta.solved ? "post--solved" : ""}`}
+                className={`post card ${isSolved ? "post--solved" : ""}`}
                 role="button"
                 tabIndex={0}
-                onClick={() => setThreadKey(it.key)}
+                onClick={() => openThread(it.key)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    setThreadKey(it.key);
+                    openThread(it.key);
                   }
                 }}
               >
@@ -877,7 +971,7 @@ function CommunityView({ activeTech }) {
                   aria-label={String(vote)}
                 >
                   <UpArrowIcon />
-                  <span className="post__votes">{vote}</span>
+                  <span className="post__votes">{fmtNum(vote)}</span>
                 </button>
                 <div className="post__body">
                   <div className="post__meta">
@@ -888,26 +982,13 @@ function CommunityView({ activeTech }) {
                     />
                     <span className="post__author">
                       {meta.author.name}
-                      <span className="post__rep">{meta.author.rep}</span>
-                    </span>
-                    {meta.live ? (
-                      <>
-                        <span className="post__live">
-                          <span className="post__live-dot" aria-hidden="true" />
-                          {t("community.live")}
-                        </span>
-                        <span className="post__time">
-                          {t("community.activeAgo", { time: meta.time })}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="post__time">
-                        {t("community.postedBy", {
-                          author: meta.author.name,
-                          time: meta.time,
-                        })}
+                      <span className="post__rep">
+                        {fmtNum(meta.author.rep)}
                       </span>
-                    )}
+                    </span>
+                    {/* Автор уже указан — время справа, без дубля «Posted by X» (баг №5);
+                        LIVE-бейдж удалён (мёртв. №1 — статичный) */}
+                    <span className="post__time">{timeLabel(t, meta)}</span>
                   </div>
                   <div className="post__badges">
                     {meta.isMine && (
@@ -915,7 +996,7 @@ function CommunityView({ activeTech }) {
                         {t("community.yourQuestion")}
                       </span>
                     )}
-                    {meta.newReplies > 0 && (
+                    {meta.newReplies > 0 && !viewed[it.key] && (
                       <span className="post__new-replies">
                         <span className="post__new-dot" aria-hidden="true" />
                         {t("community.newReplies", { n: meta.newReplies })}
@@ -945,7 +1026,7 @@ function CommunityView({ activeTech }) {
                       ))}
                     </div>
                     <div className="post__stats">
-                      {meta.solved && (
+                      {isSolved && (
                         <span className="post__solved">
                           <svg
                             viewBox="0 0 24 24"
@@ -976,7 +1057,7 @@ function CommunityView({ activeTech }) {
                         </svg>
                         {repliesCount(it)}
                       </span>
-                      {meta.views && (
+                      {meta.views !== undefined && (
                         <span className="post__stat">
                           <svg
                             viewBox="0 0 24 24"
@@ -990,7 +1071,7 @@ function CommunityView({ activeTech }) {
                             <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
                             <circle cx="12" cy="12" r="3" />
                           </svg>
-                          {meta.views}
+                          {fmtNum(meta.views)}
                         </span>
                       )}
                     </div>
@@ -999,6 +1080,17 @@ function CommunityView({ activeTech }) {
               </article>
             );
           })}
+
+          {/* Load more: порции по 8 (иначе лента фикс 11–12 постов) */}
+          {visible.length > limit && (
+            <button
+              type="button"
+              className="btn btn--ghost community__loadmore"
+              onClick={() => setLimit((v) => v + 8)}
+            >
+              {t("community.loadMore")}
+            </button>
+          )}
 
           {visible.length === 0 && (
             <div className="tasks-empty community-empty">
@@ -1047,6 +1139,8 @@ function CommunityView({ activeTech }) {
           onClose={() => setThreadKey(null)}
           onReply={addReply}
           onOpenProfile={() => {}}
+          onAccept={acceptReply}
+          acceptedIdx={accepted[threadItem.key]}
         />
       )}
       {composerOpen && (
