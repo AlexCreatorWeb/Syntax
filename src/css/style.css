@@ -9103,12 +9103,17 @@ code {
   outline-offset: 2px;
 }
 
-/* Аватар с фото (вместо монограммы): background-image + cover */
-.avatar-dot--img {
+/* Аватар с фото (вместо монограммы): background-image + cover.
+   .profile__avatar--img — алиас: профиль раньше был без этого правила
+   (256px-картинка без cover в 64px-круге + без базового фона = «чёрный круг») */
+.avatar-dot--img,
+.profile__avatar--img {
   background-size: cover !important;
   background-position: center !important;
+  background-repeat: no-repeat !important;
 }
-.avatar-dot--img::before {
+.avatar-dot--img::before,
+.profile__avatar--img::before {
   content: none;
 }
 
