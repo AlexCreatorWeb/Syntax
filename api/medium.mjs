@@ -408,7 +408,7 @@ export default async function handler(req, res) {
   // --- article ---
   const article = String((req.query && req.query.article) || "");
   if (article) {
-    if (!/^https:\/\/([a-z0-9-]+\.)*medium\.com\//i.test(article)) {
+    if (!/^https?:\/\//.test(article) || !/medium\.com|medium\.ru|\bm\.medium\b|medium\.gz|webakademia/i.test(article)) {
       res.status(400).json({ ok: false, error: "medium url is required" });
       return;
     }
