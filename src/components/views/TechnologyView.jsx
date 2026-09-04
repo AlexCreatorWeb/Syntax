@@ -132,9 +132,11 @@ function TechnologyView({
                         >
                             <path d="m8 6 8 6-8 6V6Z" />
                         </svg>
-                        {isAuthed
-                            ? t("techPage.continue")
-                            : t("techPage.start")}
+                        <span className="tech-page__cta-label">
+                            {isAuthed
+                                ? t("techPage.continue")
+                                : t("techPage.start")}
+                        </span>
                     </button>
                     {/* UX-аудит: OPEN TRACK — явная кнопка перехода в карту курса (hero-статус не читается как CTA) */}
                     <button
@@ -142,7 +144,9 @@ function TechnologyView({
                         className="btn btn--ghost tech-page__cta"
                         onClick={() => onNavigate("roadmap")}
                     >
-                        {t("techPage.openTrack")}
+                        <span className="tech-page__cta-label">
+                            {t("techPage.openTrack")}
+                        </span>
                         <svg
                             viewBox="0 0 24 24"
                             fill="none"

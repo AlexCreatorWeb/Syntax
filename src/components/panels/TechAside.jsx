@@ -6,16 +6,31 @@ import AiChat from "../AiChat";
 // по каждой технологии платформы. Открываются в новой вкладке.
 const TECH_RESOURCES = {
   html: [
-    { label: "MDN · HTML Reference", href: "https://developer.mozilla.org/en-US/docs/Web/HTML" },
+    {
+      label: "MDN · HTML Reference",
+      href: "https://developer.mozilla.org/en-US/docs/Web/HTML",
+    },
     { label: "web.dev · Learn HTML", href: "https://web.dev/learn/html" },
+    { label: "Can I Use · Browser Support", href: "https://caniuse.com" },
   ],
   css: [
-    { label: "MDN · CSS Reference", href: "https://developer.mozilla.org/en-US/docs/Web/CSS" },
+    {
+      label: "MDN · CSS Reference",
+      href: "https://developer.mozilla.org/en-US/docs/Web/CSS",
+    },
     { label: "web.dev · Learn CSS", href: "https://web.dev/learn/css" },
+    { label: "Can I Use · Browser Support", href: "https://caniuse.com" },
   ],
   javascript: [
-    { label: "MDN · JavaScript Guide", href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" },
-    { label: "JavaScript Cheatsheet", href: "https://www.html5rocks.com/en/tutorials/everyday/cheatsheet_js/" },
+    {
+      label: "MDN · JavaScript Guide",
+      href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+    },
+    {
+      label: "JavaScript Cheatsheet",
+      href: "https://www.html5rocks.com/en/tutorials/everyday/cheatsheet_js/",
+    },
+    { label: "Can I Use · Browser Support", href: "https://caniuse.com" },
   ],
   python: [
     { label: "Python 3 · Official Docs", href: "https://docs.python.org/3/" },
@@ -26,7 +41,10 @@ const TECH_RESOURCES = {
     { label: "react.dev · Learn React", href: "https://react.dev/learn" },
   ],
   vue: [
-    { label: "Vue · Official Guide", href: "https://vuejs.org/guide/introduction.html" },
+    {
+      label: "Vue · Official Guide",
+      href: "https://vuejs.org/guide/introduction.html",
+    },
     { label: "Vue · API Reference", href: "https://vuejs.org/api/" },
   ],
   node: [
@@ -38,8 +56,14 @@ const TECH_RESOURCES = {
     { label: "MongoDB · Free Courses", href: "https://learn.mongodb.com/" },
   ],
   postgres: [
-    { label: "PostgreSQL · Official Docs", href: "https://www.postgresql.org/docs/current/" },
-    { label: "PostgreSQL · Tutorial", href: "https://www.postgresqltutorial.com/" },
+    {
+      label: "PostgreSQL · Official Docs",
+      href: "https://www.postgresql.org/docs/current/",
+    },
+    {
+      label: "PostgreSQL · Tutorial",
+      href: "https://www.postgresqltutorial.com/",
+    },
   ],
 };
 
@@ -54,7 +78,15 @@ function TechAside({ techId }) {
     <>
       <section className="card rail-card">
         <h2 className="rail-card__title rail-card__title--icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13Z" />
             <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" />
           </svg>
@@ -69,7 +101,15 @@ function TechAside({ techId }) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M7 17 17 7M9 7h8v8" />
                 </svg>
                 {r.label}

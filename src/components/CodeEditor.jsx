@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import { emmetCSS, emmetHTML, emmetJSX } from "emmet-monaco-es";
 import { useT } from "../i18n/useT";
 import { getTech } from "../lib/techs";
+import { getDailyDone } from "../lib/xp";
 import { NODE_SHIMS_SRC } from "../lib/node-shims";
 import { InlineMd } from "../lib/markdown-view";
 
@@ -1515,7 +1516,12 @@ function CodeEditor({
                         if (res) setJustCompleted(res);
                       }}
                     >
-                      {t("editor.complete", { xp: job.xp || 0 })}
+                      {t("editor.complete", {
+                        // Честная сумма: XP задачи + daily-бонус 500 (если задача дня и бонус ещё не получен)
+                        xp:
+                          (job.xp || 0) +
+                          (job.isDaily && !getDailyDone() ? 500 : 0),
+                      })}
                     </button>
                   )}
               </div>
