@@ -31,6 +31,13 @@ export function markComplete(tech, lessonId, uid = currentUid()) {
   localStorage.setItem(key(tech, uid), JSON.stringify(cur));
 }
 
+// Замещение списка (БД = источник правды, db-progress.js): обнуление строки в БД
+// = обнуление в кэше при следующем синке
+export function replaceCompleted(tech, lessonIds, uid = currentUid()) {
+  if (!tech || !Array.isArray(lessonIds)) return;
+  localStorage.setItem(key(tech, uid), JSON.stringify(lessonIds));
+}
+
 // Merge-добавление списка id (синк БД → кэш, db-progress.js): без записи, если ничего нового
 export function addCompleted(tech, lessonIds, uid = currentUid()) {
   if (!tech || !Array.isArray(lessonIds) || !lessonIds.length) return;

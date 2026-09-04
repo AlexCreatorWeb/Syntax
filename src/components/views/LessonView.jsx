@@ -294,6 +294,10 @@ function LessonView({
     (job.lessonId && job.techId
       ? getCompleted(job.techId).includes(job.lessonId)
       : false);
+  // Строгая последовательность (Udemy): дальше можно, только когда ВСЕ
+  // предыдущие уроки пройдены (а не только текущий — дыры в прогрессе не
+  // дают перескакивать вперёд). allPrevDone === false приходит из lessonCtx
+  const canGoNext = isDone && lessonCtx?.allPrevDone !== false;
   const neighborTitle = (lesson, n) =>
     lesson ? localizedLessonTitle(job.techId, n, lesson.title, langCode) : "";
 
@@ -471,7 +475,7 @@ function LessonView({
               </div>
             </div>
             <div className="lesson-view__donebar-actions">
-              {nextTitle && onOpenLesson && (
+              {nextTitle && canGoNext && onOpenLesson && (
                 <button
                   type="button"
                   className="btn btn--primary"
@@ -531,8 +535,9 @@ function LessonView({
           )}
           {lessonCtx.next ? (
             // Последовательная разблокировка (Udemy): «Next» активна, когда
-            // текущий урок завершён (видео ≥ 75% или Submit)
-            isDone ? (
+            // текущий урок завершён (видео ≥ 75% или Submit) И все
+            // предыдущие пройдены (без перескоков через неосвоенные)
+            canGoNext ? (
               <button
                 type="button"
                 className="btn btn--ghost lesson-view__pager-btn"

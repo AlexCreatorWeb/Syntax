@@ -10,7 +10,8 @@
 // Гость (uid=null) — только localStorage; при первом входе всё уходит в БД.
 import { supabase, supabaseConfigured } from "./supabase";
 import { currentUid } from "./auth";
-import { getCompleted, getDoneTasks, addCompleted, addDoneTasks } from "./progress";
+import { getCompleted, getDoneTasks, addCompleted, addDoneTasks, replaceCompleted } from "./progress";
+import { mergeXpFromDb } from "./xp";
 import { TASKS } from "./tasks";
 import TECHS from "./techs";
 
@@ -37,8 +38,8 @@ export function syncProgressFromDb(lessonsRows) {
   if (syncLoaded.has(uid)) return Promise.resolve(false);
   if (inflight) return inflight;
   inflight = Promise.all([
-    withTimeout(supabase.from("lesson_progress").select("lesson_id").eq("user_id", uid)),
-    withTimeout(supabase.from("task_progress").select("task_id").eq("user_id", uid)),
+    withTimeout(supabase.from("lesson_progress").select("lesson_id, completed_at").eq("user_id", uid)),
+    withTimeout(supabase.from("task_progress").select("task_id, xp, completed_at").eq("user_id", uid)),
   ])
     .then(([lessonRes, taskRes]) => {
       const tm = techMap(lessonsRows);
@@ -47,7 +48,15 @@ export function syncProgressFromDb(lessonsRows) {
         const tech = tm[r.lesson_id];
         if (tech) (byTech[tech] ||= []).push(r.lesson_id);
       });
-      Object.entries(byTech).forEach(([tech, ids]) => addCompleted(tech, ids, uid));
+      // БД = источник правды: для треков, у которых есть строки в `lessons`,
+      // кэш ЗАМЕНЯЕМ данными БД (обнуление строки в БД = обнуление в кэше).
+      // Ошибка/таймаут запроса → data не массив → замещение не происходит.
+      const okLessons = Array.isArray(lessonRes.data);
+      const knownTechs = new Set((lessonsRows || []).map((l) => l.tech).filter(Boolean));
+      knownTechs.forEach((tech) => {
+        if (okLessons) replaceCompleted(tech, byTech[tech] || [], uid);
+        else if (byTech[tech]) addCompleted(tech, byTech[tech], uid);
+      });
       const taskKeys = (taskRes.data || [])
         .map((r) => {
           const task = TASKS.find((x) => x.id === r.task_id);
@@ -55,6 +64,9 @@ export function syncProgressFromDb(lessonsRows) {
         })
         .filter(Boolean);
       if (taskKeys.length) addDoneTasks(taskKeys, uid);
+      // XP-восстановление (новый браузер/устройство): рейтинг/weekly-график не
+      // теряются — merge по granted-ключам, что уже начислено — не дублируется
+      mergeXpFromDb(uid, lessonRes.data, taskRes.data);
       syncLoaded.add(uid);
       return Boolean((lessonRes.data || []).length || (taskRes.data || []).length);
     })
