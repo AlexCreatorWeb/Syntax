@@ -79,6 +79,8 @@ export function pickDailyTask(date = new Date()) {
   const diff = dailyDifficulty(date);
   const sub = pool.filter((t) => t.difficulty === diff);
   const use = sub.length ? sub : pool;
-  const rand = mulberry32(hashStr(`syntax-daily-task-${dailyKey(date)}-${diff}`));
+  const rand = mulberry32(
+    hashStr(`syntax-daily-task-${dailyKey(date)}-${diff}`),
+  );
   return use[Math.floor(rand() * use.length) % use.length];
 }
