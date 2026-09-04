@@ -31,6 +31,19 @@ export function markComplete(tech, lessonId, uid = currentUid()) {
   localStorage.setItem(key(tech, uid), JSON.stringify(cur));
 }
 
+// Последовательный прогресс (механика Udemy): валидными считаются ТОЛЬКО
+// отметки префикса курса — урок после первого непройденного «не светится»
+// пройденным, даже если старая отметка осталась в данных (до фичи локов
+// можно было отметиться в L15, не пройдя L2–L14).
+export function prefixOfCompleted(lessons, completed) {
+  const out = [];
+  for (const l of lessons || []) {
+    if (completed.includes(l.id)) out.push(l.id);
+    else break;
+  }
+  return out;
+}
+
 // Замещение списка (БД = источник правды, db-progress.js): обнуление строки в БД
 // = обнуление в кэше при следующем синке
 export function replaceCompleted(tech, lessonIds, uid = currentUid()) {
@@ -87,5 +100,6 @@ export function addDoneTasks(taskKeys, uid = currentUid()) {
     list = [];
   }
   const next = [...list, ...taskKeys.filter((x) => x && !list.includes(x))];
-  if (next.length !== list.length) localStorage.setItem(k, JSON.stringify(next));
+  if (next.length !== list.length)
+    localStorage.setItem(k, JSON.stringify(next));
 }

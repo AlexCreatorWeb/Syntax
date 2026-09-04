@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
 import TECHS from "../../lib/techs";
-import { getCompleted, getDoneTasks } from "../../lib/progress";
+import {
+  getCompleted,
+  getDoneTasks,
+  prefixOfCompleted,
+} from "../../lib/progress";
 import { totalXp } from "../../lib/xp";
 import { useAvatar, setAvatar, fileToAvatarDataUrl } from "../../lib/avatar";
 import { saveAvatarUrl } from "../../lib/auth";
@@ -86,11 +90,12 @@ function ProfileView({
       const dbTech = (dbLessons || []).filter((l) => l.tech === tc.id);
       if (!dbTech.length) continue;
       const dbIds = new Set(dbTech.map((l) => l.id));
-      const lessonsDone = getCompleted(tc.id).filter((id) =>
-        dbIds.has(id)
+      // Валидный прогресс = последовательный префикс (Udemy)
+      const lessonsDone = prefixOfCompleted(dbTech, getCompleted(tc.id)).filter(
+        (id) => dbIds.has(id),
       ).length;
       const tasksDone = doneTasks.filter((k) =>
-        k.startsWith(`${tc.id}:`)
+        k.startsWith(`${tc.id}:`),
       ).length;
       if (!lessonsDone && !tasksDone) continue; // трек не изучается
       totalDone += lessonsDone;

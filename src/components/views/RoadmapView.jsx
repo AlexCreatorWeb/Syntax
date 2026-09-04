@@ -1,7 +1,7 @@
 import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
 import { getTech } from "../../lib/techs";
-import { getCompleted } from "../../lib/progress";
+import { getCompleted, prefixOfCompleted } from "../../lib/progress";
 import { localizedLessonTitle } from "../../lib/lessonTitles";
 import TechSwitch from "../TechSwitch";
 
@@ -15,20 +15,47 @@ function RoadmapNode({ status, big }) {
   if (status === "done") {
     return (
       <span className={cls} aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-10" /></svg>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m5 12 5 5 9-10" />
+        </svg>
       </span>
     );
   }
   if (status === "current") {
     return (
       <span className={cls} aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="m8 6 8 6-8 6V6Z" /></svg>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        >
+          <path d="m8 6 8 6-8 6V6Z" />
+        </svg>
       </span>
     );
   }
   return (
     <span className={cls} aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="4" y="11" width="16" height="10" rx="2" />
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+      </svg>
     </span>
   );
 }
@@ -47,7 +74,9 @@ function LessonRow({ lesson, i, status, onOpen, techId }) {
       : t("techPage.completed");
 
   return (
-    <div className={`roadmap__item ${isCurrent ? "roadmap__item--current" : ""}`}>
+    <div
+      className={`roadmap__item ${isCurrent ? "roadmap__item--current" : ""}`}
+    >
       <RoadmapNode status={status} big={isCurrent} />
       <div
         className={`card roadmap__card ${isCurrent ? "roadmap__card--current" : ""} ${isLocked ? "roadmap__card--locked" : ""} ${isDone ? "roadmap__card--review" : ""}`}
@@ -55,31 +84,57 @@ function LessonRow({ lesson, i, status, onOpen, techId }) {
         tabIndex={clickable ? 0 : undefined}
         aria-current={isCurrent ? "step" : undefined}
         onClick={clickable ? () => onOpen(lesson) : undefined}
-        onKeyDown={clickable ? (e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(lesson); }
-        } : undefined}
+        onKeyDown={
+          clickable
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onOpen(lesson);
+                }
+              }
+            : undefined
+        }
       >
         <div className="roadmap__card-head">
           <span className="roadmap__num">{String(i + 1).padStart(2, "0")}</span>
-          <strong className="roadmap__title">{localizedLessonTitle(techId, i + 1, lesson.title, langCode)}</strong>
-          <span className={`roadmap__chip roadmap__chip--${status === "done" ? "done" : status}`}>{statusLabel}</span>
+          <strong className="roadmap__title">
+            {localizedLessonTitle(techId, i + 1, lesson.title, langCode)}
+          </strong>
+          <span
+            className={`roadmap__chip roadmap__chip--${status === "done" ? "done" : status}`}
+          >
+            {statusLabel}
+          </span>
         </div>
-        {isCurrent && <p className="roadmap__desc">{t("roadmap.currentHint")}</p>}
+        {isCurrent && (
+          <p className="roadmap__desc">{t("roadmap.currentHint")}</p>
+        )}
       </div>
     </div>
   );
 }
 
-function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLesson, onNavigate }) {
+function RoadmapView({
+  activeTech,
+  onSelectTech,
+  onResume,
+  dbLessons,
+  onOpenDbLesson,
+  onNavigate,
+}) {
   const t = useT();
   const tech = getTech(activeTech) || getTech("html");
   const TechLogo = tech.Logo;
   const lessons = (dbLessons || []).filter((l) => l.tech === tech.id);
-  const completed = getCompleted(tech.id);
-  const doneCount = lessons.filter((l) => completed.includes(l.id)).length;
+  // Валидный прогресс = последовательный префикс (Udemy): отметка «в дыре»
+  // (L15 при непройденных L2–L14) не считается пройденной и не двигает счётчики
+  const completed = prefixOfCompleted(lessons, getCompleted(tech.id));
+  const doneCount = completed.length;
   const currentIdx = lessons.findIndex((l) => !completed.includes(l.id));
   const allDone = lessons.length > 0 && doneCount === lessons.length;
-  const pct = lessons.length ? Math.round((doneCount / lessons.length) * 100) : 0;
+  const pct = lessons.length
+    ? Math.round((doneCount / lessons.length) * 100)
+    : 0;
   const firstLockedIdx = currentIdx < 0 ? lessons.length : currentIdx + 1;
 
   // БД ещё грузится — скелетон (после загрузки null больше не приходит)
@@ -88,12 +143,19 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
       <div className="roadmap-view">
         {/* Хлебные крошки: понятный возврат (Главная → Дорожная карта) */}
         <nav className="page-crumbs" aria-label={t("roadmap.crumbsLabel")}>
-          <button type="button" onClick={() => onNavigate("home")}>{t("roadmap.backHome")}</button>
-          <span className="page-crumbs__sep" aria-hidden="true">/</span>
+          <button type="button" onClick={() => onNavigate("home")}>
+            {t("roadmap.backHome")}
+          </button>
+          <span className="page-crumbs__sep" aria-hidden="true">
+            /
+          </span>
           <span className="page-crumbs__current">{t("roadmap.heading")}</span>
-        </nav>        <header className="page-head">
+        </nav>{" "}
+        <header className="page-head">
           <h1 className="page-head__title">{t("roadmap.heading")}</h1>
-          <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
+          <p className="page-head__desc">
+            {t("roadmap.trackDesc", { tech: t(tech.label) })}
+          </p>
         </header>
         <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
         <div className="card roadmap__status spotlight" aria-busy="true">
@@ -109,7 +171,10 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
             <div key={i} className="roadmap__item">
               <RoadmapNode status="locked" />
               <div className="card roadmap__card">
-                <div className="roadmap__skel roadmap__skel--row" style={{ animationDelay: `${i * 90}ms` }}></div>
+                <div
+                  className="roadmap__skel roadmap__skel--row"
+                  style={{ animationDelay: `${i * 90}ms` }}
+                ></div>
               </div>
             </div>
           ))}
@@ -124,20 +189,35 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
       <div className="roadmap-view">
         {/* Хлебные крошки: понятный возврат (Главная → Дорожная карта) */}
         <nav className="page-crumbs" aria-label={t("roadmap.crumbsLabel")}>
-          <button type="button" onClick={() => onNavigate("home")}>{t("roadmap.backHome")}</button>
-          <span className="page-crumbs__sep" aria-hidden="true">/</span>
+          <button type="button" onClick={() => onNavigate("home")}>
+            {t("roadmap.backHome")}
+          </button>
+          <span className="page-crumbs__sep" aria-hidden="true">
+            /
+          </span>
           <span className="page-crumbs__current">{t("roadmap.heading")}</span>
-        </nav>        <header className="page-head">
+        </nav>{" "}
+        <header className="page-head">
           <h1 className="page-head__title">{t("roadmap.heading")}</h1>
-          <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
+          <p className="page-head__desc">
+            {t("roadmap.trackDesc", { tech: t(tech.label) })}
+          </p>
         </header>
         <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
         <div className="docs-empty">
-          <div className="docs-empty__logo"><TechLogo /></div>
-          <h2 className="docs-empty__title">{t("roadmap.emptyTitle", { tech: t(tech.label) })}</h2>
+          <div className="docs-empty__logo">
+            <TechLogo />
+          </div>
+          <h2 className="docs-empty__title">
+            {t("roadmap.emptyTitle", { tech: t(tech.label) })}
+          </h2>
           <p className="docs-empty__body">{t("roadmap.emptyBody")}</p>
           <div className="docs-empty__actions">
-            <button type="button" className="btn btn--primary" onClick={() => onSelectTech("html")}>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => onSelectTech("html")}
+            >
               {t("roadmap.emptyCta")}
             </button>
           </div>
@@ -152,46 +232,87 @@ function RoadmapView({ activeTech, onSelectTech, onResume, dbLessons, onOpenDbLe
     <div className="roadmap-view">
       {/* Хлебные крошки: понятный возврат (Главная → Дорожная карта) */}
       <nav className="page-crumbs" aria-label={t("roadmap.crumbsLabel")}>
-        <button type="button" onClick={() => onNavigate("home")}>{t("roadmap.backHome")}</button>
-        <span className="page-crumbs__sep" aria-hidden="true">/</span>
+        <button type="button" onClick={() => onNavigate("home")}>
+          {t("roadmap.backHome")}
+        </button>
+        <span className="page-crumbs__sep" aria-hidden="true">
+          /
+        </span>
         <span className="page-crumbs__current">{t("roadmap.heading")}</span>
-      </nav>      <header className="page-head">
+      </nav>{" "}
+      <header className="page-head">
         <h1 className="page-head__title">{t("roadmap.heading")}</h1>
-        <p className="page-head__desc">{t("roadmap.trackDesc", { tech: t(tech.label) })}</p>
+        <p className="page-head__desc">
+          {t("roadmap.trackDesc", { tech: t(tech.label) })}
+        </p>
       </header>
-
       {/* Переключатель треков: смена активного трека прямо на карте */}
       <TechSwitch activeId={tech.id} onSelect={onSelectTech} />
-
       {/* Статус прохождения (реальный: localStorage × уроки трека) */}
       <div className="card roadmap__status spotlight">
         <div className="roadmap__status-text">
-          <strong>{allDone ? t("roadmap.courseDone") : t("roadmap.lessonStatus", { m: (currentIdx < 0 ? lessons.length : currentIdx) + 1, n: lessons.length })}</strong>
-          <span>{t("roadmap.doneOf", { a: doneCount, b: lessons.length })} · {pct}%</span>
+          <strong>
+            {allDone
+              ? t("roadmap.courseDone")
+              : t("roadmap.lessonStatus", {
+                  m: (currentIdx < 0 ? lessons.length : currentIdx) + 1,
+                  n: lessons.length,
+                })}
+          </strong>
+          <span>
+            {t("roadmap.doneOf", { a: doneCount, b: lessons.length })} · {pct}%
+          </span>
         </div>
         <div className="roadmap__status-actions">
           {/* Переход к урокам трека (список на tech-странице) */}
-          <button type="button" className="btn btn--ghost" onClick={() => onNavigate("technology", { techId: tech.id })}>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => onNavigate("technology", { techId: tech.id })}
+          >
             {t("roadmap.toLessons")}
           </button>
-          <button type="button" className="btn btn--primary" onClick={() => onResume(tech.id)}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="m8 6 8 6-8 6V6Z" /></svg>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => onResume(tech.id)}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m8 6 8 6-8 6V6Z" />
+            </svg>
             {t("techPage.continue")}
           </button>
         </div>
       </div>
-
       {/* Таймлайн курса: завершённые (кликабельны — повторить) → текущий → locked */}
       <div className="roadmap">
         <div className="roadmap__line" aria-hidden="true"></div>
         {lessons.map((lesson, i) => {
-          const status =
-            completed.includes(lesson.id) ? "done" : i === currentIdx ? "current" : "locked";
+          const status = completed.includes(lesson.id)
+            ? "done"
+            : i === currentIdx
+              ? "current"
+              : "locked";
           const showUpNext = status === "locked" && i === firstLockedIdx;
           return (
             <div key={lesson.id}>
-              {showUpNext && <p className="roadmap__group-label">{t("roadmap.upNext")}</p>}
-              <LessonRow lesson={lesson} i={i} status={status} onOpen={openLessonRow} techId={tech.id} />
+              {showUpNext && (
+                <p className="roadmap__group-label">{t("roadmap.upNext")}</p>
+              )}
+              <LessonRow
+                lesson={lesson}
+                i={i}
+                status={status}
+                onOpen={openLessonRow}
+                techId={tech.id}
+              />
             </div>
           );
         })}

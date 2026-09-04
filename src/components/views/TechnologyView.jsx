@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
 import { getTech } from "../../lib/techs";
-import { getCompleted } from "../../lib/progress";
+import { getCompleted, prefixOfCompleted } from "../../lib/progress";
 import { localizedLessonTitle } from "../../lib/lessonTitles";
 import { hasRecentFeature } from "../../lib/web-features";
 import TechSwitch from "../TechSwitch";
@@ -29,9 +29,11 @@ function TechnologyView({
 
     // Прогресс курса: реальный, по отметкам выполнения (localStorage, успешный Submit).
     // Без уроков в БД (другие треки) — демо-значение из i18n.
-    const completed = getCompleted(tech.id);
+    // Валидный прогресс = ТОЛЬКО последовательный префикс (Udemy): отметка
+    // «в дыре» (L15 при непройденных L2–L14) не светится пройденной.
+    const completed = prefixOfCompleted(dbTechLessons, getCompleted(tech.id));
     const hasDb = dbTechLessons.length > 0;
-    const dbDone = dbTechLessons.filter((l) => completed.includes(l.id)).length;
+    const dbDone = completed.length;
     const pct = hasDb
         ? Math.round((dbDone / dbTechLessons.length) * 100)
         : content.pct;
