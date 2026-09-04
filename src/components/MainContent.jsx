@@ -376,7 +376,7 @@ function MainContent({
           />
         );
       case "community":
-        return <CommunityView activeTech={activeTech} />;
+        return <CommunityView activeTech={activeTech} userName={userName} />;
       case "settings":
         return (
           <SettingsView

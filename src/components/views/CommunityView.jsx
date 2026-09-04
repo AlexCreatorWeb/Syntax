@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
 import { getTech } from "../../lib/techs";
+import { useAvatar } from "../../lib/avatar";
 import {
   loadCommunityStore,
   saveCommunityStore,
@@ -642,8 +643,12 @@ function ComposerModal({ t, tagPool, defaultLang, onClose, onPublish }) {
   );
 }
 
-function CommunityView({ activeTech }) {
+function CommunityView({ activeTech, userName }) {
   const t = useT();
+  // Ник «меня» — как в профиле (одинаково во всём; гостю — демо-имя).
+  // Аватар тоже берём из профиля (useAvatar) — моё фото там, где мой ник.
+  const [avatarUrl] = useAvatar();
+  const meName = (userName || "").trim() || "NeoCoder";
   // «none» = трек не выбран — для community это «нет трека»
   const tech = activeTech && activeTech !== "none" ? activeTech : null;
   const [tab, setTab] = useState("active");
@@ -722,7 +727,10 @@ function CommunityView({ activeTech }) {
       .map((post, i) => ({
         key: `p${i}`,
         post,
-        meta: POST_META[i],
+        // «Мой» сид-пост: автор = реальное имя из профиля (не NeoCoder)
+        meta: POST_META[i].isMine
+          ? { ...POST_META[i], author: { ...POST_META[i].author, name: meName } }
+          : POST_META[i],
       }))
       .filter((it) => !deleted[it.key]);
     const local = localPosts
@@ -730,10 +738,12 @@ function CommunityView({ activeTech }) {
       .map((p) => ({
         key: `l${p.id}`,
         post: p.post,
-        meta: p.meta,
+        meta: p.meta.isMine
+          ? { ...p.meta, author: { ...p.meta.author, name: meName } }
+          : p.meta,
       }));
     return [...base, ...local];
-  }, [posts, localPosts, deleted]);
+  }, [posts, localPosts, deleted, meName]);
 
   const repliesCount = (it) =>
     (it.post.replies || []).length + (extraReplies[it.key] || []).length;
@@ -820,7 +830,7 @@ function CommunityView({ activeTech }) {
 
   const addReply = (key, text, parent) => {
     const reply = {
-      author: YOU.name,
+      author: meName, // мой ответ — ник из профиля (не NeoCoder)
       rep: YOU.rep,
       hue: YOU.hue,
       time: t("community.justNow"),
@@ -850,7 +860,7 @@ function CommunityView({ activeTech }) {
           votes: 0,
           views: 0,
           isMine: true,
-          author: YOU,
+          author: { ...YOU, name: meName },
         },
       },
       ...prev,
@@ -1016,13 +1026,21 @@ function CommunityView({ activeTech }) {
                 </button>
                 <div className="post__body">
                   <div className="post__meta">
+                  {meta.isMine && avatarUrl ? (
+                    <span
+                      className="avatar-dot avatar-dot--xs avatar-dot--img"
+                      style={{ backgroundImage: `url(${avatarUrl})` }}
+                      aria-hidden="true"
+                    />
+                  ) : (
                     <Avatar
                       name={meta.author.name}
                       hue={meta.author.hue}
                       size="xs"
                     />
-                    <span className="post__author">
-                      {meta.author.name}
+                  )}
+                  <span className="post__author">
+                    {meta.author.name}
                       <span className="post__rep">
                         {fmtNum(meta.author.rep)}
                       </span>
