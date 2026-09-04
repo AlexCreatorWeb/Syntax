@@ -4869,7 +4869,7 @@ code {
 .home__hero-title {
   font-family: var(--font-display);
   /* UX-аудит 2026-09: планшет 1024 — H1 в 4 строки; clamp держит 2–3 строки */
-  font-size: clamp(34px, 3.6vw + 20px, 56px);
+  font-size: clamp(34px, 1.5vw + 30px, 56px);
   line-height: 1.1;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -6055,13 +6055,15 @@ code {
     width: 58px;
   }
   .rankings__table .col-xp {
-    width: 80px;
+    width: 88px;
     white-space: nowrap;
     font-size: 12px;
   }
-  /* Заголовки таблицы ≥12px на мобильных (аудит: 11px нечитабельно) */
+  /* Заголовки таблицы ≥12px на мобильных (аудит: 11px нечитабельно);
+     без tracking — «TOTAL XP» влезает в колонку без ellipsis */
   .rankings__table thead th {
     font-size: 12px;
+    letter-spacing: 0;
   }
   .rankings__total {
     font-size: 12.5px;
@@ -9374,6 +9376,15 @@ code {
   color: var(--primary-hover);
   border-color: rgba(48, 224, 161, 0.4);
   background: var(--primary-soft);
+}
+/* UX-аудит 2026-09 (2.7): чип языка контента — в том же «языке», что pos-чип */
+.lesson-view__lang {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  cursor: help;
 }
 
 .lesson-view__donebar {
