@@ -91,19 +91,21 @@ function DailyChallenge({ isAuthed, onAuth, onNavigate, backTab = "tasks" }) {
           {TechLogo ? <TechLogo /> : <FlameIcon />}
           {t("tasks.daily.title")}
         </span>
-        {/* Таймер и подпись — отдельная группа под заголовком (не конкурирует с ним за ширину) */}
-        <div className="daily-challenge__timer">
-          <span
-            className="timer-chip"
-            role="timer"
-            aria-label={t("tasks.timerAria")}
-          >
-            {formatTime(seconds)}
-          </span>
-          <span className="daily-challenge__reset">
-            {t("tasks.resetsDaily")}
-          </span>
-        </div>
+        {/* Таймер и подпись «сбрасывается» — только пока испытание НЕ решено: после выполнения обратный отсчёт и «сброс в полночь» смысла не имеют */}
+        {!taskDone && (
+          <div className="daily-challenge__timer">
+            <span
+              className="timer-chip"
+              role="timer"
+              aria-label={t("tasks.timerAria")}
+            >
+              {formatTime(seconds)}
+            </span>
+            <span className="daily-challenge__reset">
+              {t("tasks.resetsDaily")}
+            </span>
+          </div>
+        )}
       </div>
 
       {task ? (
