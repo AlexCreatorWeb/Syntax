@@ -35,10 +35,7 @@ export function subscribeAvatar(fn) {
 // (профиль загрузил фото → хедер обновился без пропсов).
 export function useAvatar() {
   const [url, setUrl] = useState(() => getAvatar());
-  useEffect(
-    () => subscribeAvatar(() => setUrl(getAvatar())),
-    []
-  );
+  useEffect(() => subscribeAvatar(() => setUrl(getAvatar())), []);
   return [url, setAvatar];
 }
 

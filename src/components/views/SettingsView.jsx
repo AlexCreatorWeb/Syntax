@@ -71,7 +71,11 @@ function SettingsView({ theme, onToggleTheme, session, userName, onLogout }) {
       <section className="card settings__section">
         <h2 className="settings__h">{t("settings.appearance")}</h2>
         <p className="settings__desc">{t("settings.appearanceDesc")}</p>
-        <div className="settings__theme" role="group" aria-label={t("settings.appearance")}>
+        <div
+          className="settings__theme"
+          role="group"
+          aria-label={t("settings.appearance")}
+        >
           <button
             type="button"
             className={`settings__theme-opt${theme === "dark" ? " is-active" : ""}`}

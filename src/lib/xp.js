@@ -132,6 +132,35 @@ export function totalXp() {
   return getXpState().total;
 }
 
+// Восстановление XP из БД (новый браузер/устройство): merge строк
+// lesson_progress/task_progress в user-бакет. Идемпотентно по granted-ключам
+// (taskId / lesson:<id>): что уже начислено локально — не дублируется, что
+// потеряно из кэша — доначисляется (total + журнал earnings по completed_at).
+// Без uid (гость) — no-op: у гостя БД-строк нет.
+export function mergeXpFromDb(uid, lessonRows, taskRows) {
+  if (!uid) return;
+  const data = read(uid);
+  let changed = false;
+  const add = (key, xp, at) => {
+    if (data.granted[key]) return;
+    data.granted[key] = xp;
+    data.total += xp;
+    if (at) {
+      const k = dailyKey(new Date(at));
+      data.earnings[k] = (data.earnings[k] || 0) + xp;
+    }
+    changed = true;
+  };
+  (taskRows || []).forEach((r) => {
+    if (r && r.task_id) add(r.task_id, r.xp || 0, r.completed_at);
+  });
+  (lessonRows || []).forEach((r) => {
+    if (r && r.lesson_id)
+      add(`lesson:${r.lesson_id}`, LESSON_XP, r.completed_at);
+  });
+  if (changed) write(uid, data);
+}
+
 export function getDailyDone(date = new Date()) {
   const rec = getXpState().daily[dailyKey(date)];
   return rec ? { taskId: rec.taskId, xp: rec.xp } : null;

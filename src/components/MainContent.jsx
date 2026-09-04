@@ -100,9 +100,9 @@ function MainContent({
     // Строгая последовательность (Udemy): «Next» разблокируется, только когда
     // ВСЕ предыдущие уроки пройдены (а не только текущий — дыры в прогрессе
     // из старых данных не дают перескакивать вперёд)
-    const prevDone = rows.slice(0, n - 1).every((l) =>
-      getCompleted(job.techId).includes(l.id),
-    );
+    const prevDone = rows
+      .slice(0, n - 1)
+      .every((l) => getCompleted(job.techId).includes(l.id));
     return {
       n,
       m: rows.length,
