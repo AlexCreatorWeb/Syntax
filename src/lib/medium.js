@@ -74,11 +74,28 @@ function isPublishedToday(pubDate) {
   );
 }
 
+function safeChr(n) {
+  try {
+    return Number.isFinite(n) && n > 0 ? String.fromCodePoint(n) : "";
+  } catch {
+    return "";
+  }
+}
+
 function htmlToText(html) {
   if (!html) return "";
-  const el = document.createElement("div");
-  el.innerHTML = html;
-  return (el.textContent || "").replace(/\s+/g, " ").trim();
+  // summary-сниппет RSS-описания: regex-чистки достаточно (DOM/innerHTML не нужны)
+  return String(html)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#0?39;|&quot;|&apos;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => safeChr(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => safeChr(parseInt(d, 10)))
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // Ссылка без ?source=… хвоста Medium — устойчивый id статьи.
@@ -89,7 +106,9 @@ function cleanLink(link) {
 function normalizeItem(raw, feed) {
   const link = cleanLink(raw.link);
   if (!link || !raw.title) return null;
-  const summary = htmlToText(raw.description).slice(0, 240);
+  const summary = htmlToText(raw.description)
+    .replace(/\s*Continue reading on Medium\s*»?\s*$/i, "")
+    .slice(0, 240);
   return {
     link,
     title: raw.title.trim(),
@@ -450,26 +469,53 @@ function wrapCodeLines(lines) {
 
 const articleCache = new Map(); // link → { md, avatar } (на сессию)
 
-/** Полный текст статьи Medium как markdown (+ аватар автора). Сбой → null (модалка покажет анонс). */
-export async function fetchMediumArticle(link, timeoutMs = 25000) {
+// Цепочка загрузки статьи. БРАУЗЕРНЫЕ пути мертвы: Medium без CORS, а
+// r.jina.ai с 2026 закрыт Cloudflare-челленджем (403) — поэтому ПЕРВЫЙ путь
+// = Vercel-прокси api/medium?article= (серверно: Medium напрямую +
+// markdown.new-fallback, отдаёт готовый markdown-lite). Jina напрямую —
+// вторая нога (если CF-челлендж уйдёт).
+async function fetchArticleViaProxy(link, signal) {
+  const res = await fetch(
+    `${PROXY_BASE ? PROXY_BASE + "/api/medium?article=" : "/api/medium?article="}${encodeURIComponent(link)}`,
+    { signal },
+  );
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  const j = await res.json();
+  if (!j || !j.ok || typeof j.md !== "string" || !j.md.trim())
+    throw new Error("empty article");
+  return { md: j.md, avatar: j.avatar || null, author: j.author || null };
+}
+
+async function fetchArticleViaJina(link, signal) {
+  const res = await fetch(
+    `${JINA}${link}?target_selector=.postArticle-content`,
+    { signal },
+  );
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  const value = cleanArticleMarkdown(await res.text());
+  if (!value.md) throw new Error("empty article");
+  return value;
+}
+
+/** Полный текст статьи Medium как markdown-lite (+ аватар/автор). Сбой → null (модалка покажет анонс). */
+export async function fetchMediumArticle(link, timeoutMs = 45000) {
   if (articleCache.has(link)) return articleCache.get(link);
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetch(
-      `${JINA}${link}?target_selector=.postArticle-content`,
-      { signal: ctrl.signal },
-    );
-    if (!res.ok) throw new Error(`http ${res.status}`);
-    const value = cleanArticleMarkdown(await res.text());
-    if (!value.md) throw new Error("empty article");
-    articleCache.set(link, value);
-    return value;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
+  for (const fetcher of [fetchArticleViaProxy, fetchArticleViaJina]) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const value = await fetcher(link, ctrl.signal);
+      if (value && value.md) {
+        articleCache.set(link, value);
+        return value;
+      }
+    } catch {
+      /* дальше по цепочке */
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  return null;
 }
 
 export function getSeenLinks() {
