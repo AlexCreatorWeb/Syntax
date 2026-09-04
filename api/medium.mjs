@@ -298,7 +298,7 @@ function extractAvatar(html) {
 const MNEW_JUNK = [
   /^\[?(Sitemap|Open in app|Sign up|Sign in|Medium Logo Homepage|Get app|Write|Search)\b/i,
   /^just now$/i,
-  /^(share|listen)$/, 
+  /^(share|listen|read this post)$/i,
   /^\d+\s*(hour|minute|day|week|month)s?\s+ago$/i,
   /^\d+\s*min read$/i,
   /^press enter or click to view image in full size$/i,
