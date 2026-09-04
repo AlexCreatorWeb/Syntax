@@ -206,7 +206,15 @@ function MdText({ src }) {
 
 /* ————— Ответ (рекурсивный, уровень 2 — вложенные). canAccept — у автора
    треда (мёртв. №8: принять ответ → зелёная рамка + Solved в ленте) ————— */
-function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile, acceptInfo, avatarUrl }) {
+function ReplyItem({
+  reply,
+  depth,
+  t,
+  onReplyTo,
+  onOpenProfile,
+  acceptInfo,
+  avatarUrl,
+}) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const author = {
