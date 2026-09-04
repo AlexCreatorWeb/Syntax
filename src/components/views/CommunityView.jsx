@@ -206,7 +206,7 @@ function MdText({ src }) {
 
 /* ————— Ответ (рекурсивный, уровень 2 — вложенные). canAccept — у автора
    треда (мёртв. №8: принять ответ → зелёная рамка + Solved в ленте) ————— */
-function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile, acceptInfo }) {
+function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile, acceptInfo, avatarUrl }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const author = {
@@ -220,7 +220,15 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile, acceptInfo }) {
       className={`reply ${depth > 1 ? "reply--nested" : ""} ${isAccepted ? "reply--accepted" : ""} ${reply.mine ? "reply--mine" : ""}`}
     >
       <div className="reply__head">
-        <Avatar name={author.name} hue={author.hue} size="xs" />
+        {reply.mine && avatarUrl ? (
+          <span
+            className="avatar-dot avatar-dot--xs avatar-dot--img"
+            style={{ backgroundImage: `url(${avatarUrl})` }}
+            aria-hidden="true"
+          />
+        ) : (
+          <Avatar name={author.name} hue={author.hue} size="xs" />
+        )}
         <button
           type="button"
           className="reply__author"
@@ -343,6 +351,7 @@ function ReplyItem({ reply, depth, t, onReplyTo, onOpenProfile, acceptInfo }) {
           t={t}
           onReplyTo={onReplyTo}
           onOpenProfile={onOpenProfile}
+          avatarUrl={avatarUrl}
         />
       ))}
     </div>
@@ -358,6 +367,7 @@ function ThreadModal({
   onOpenProfile,
   onAccept,
   acceptedIdx,
+  avatarUrl,
 }) {
   const [text, setText] = useState("");
   const { post, meta } = item;
@@ -379,7 +389,15 @@ function ThreadModal({
       >
         <header className="community-modal__head">
           <div className="community-modal__meta">
-            <Avatar name={author.name} hue={author.hue} size="sm" />
+            {meta.isMine && avatarUrl ? (
+              <span
+                className="avatar-dot avatar-dot--sm avatar-dot--img"
+                style={{ backgroundImage: `url(${avatarUrl})` }}
+                aria-hidden="true"
+              />
+            ) : (
+              <Avatar name={author.name} hue={author.hue} size="sm" />
+            )}
             <div>
               <strong>{author.name}</strong>
               <span>
@@ -430,6 +448,7 @@ function ThreadModal({
               t={t}
               onReplyTo={(parent, txt) => onReply(item.key, txt, parent)}
               onOpenProfile={onOpenProfile}
+              avatarUrl={avatarUrl}
               acceptInfo={
                 meta.isMine
                   ? {
@@ -729,7 +748,10 @@ function CommunityView({ activeTech, userName }) {
         post,
         // «Мой» сид-пост: автор = реальное имя из профиля (не NeoCoder)
         meta: POST_META[i].isMine
-          ? { ...POST_META[i], author: { ...POST_META[i].author, name: meName } }
+          ? {
+              ...POST_META[i],
+              author: { ...POST_META[i].author, name: meName },
+            }
           : POST_META[i],
       }))
       .filter((it) => !deleted[it.key]);
@@ -1026,21 +1048,21 @@ function CommunityView({ activeTech, userName }) {
                 </button>
                 <div className="post__body">
                   <div className="post__meta">
-                  {meta.isMine && avatarUrl ? (
-                    <span
-                      className="avatar-dot avatar-dot--xs avatar-dot--img"
-                      style={{ backgroundImage: `url(${avatarUrl})` }}
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <Avatar
-                      name={meta.author.name}
-                      hue={meta.author.hue}
-                      size="xs"
-                    />
-                  )}
-                  <span className="post__author">
-                    {meta.author.name}
+                    {meta.isMine && avatarUrl ? (
+                      <span
+                        className="avatar-dot avatar-dot--xs avatar-dot--img"
+                        style={{ backgroundImage: `url(${avatarUrl})` }}
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <Avatar
+                        name={meta.author.name}
+                        hue={meta.author.hue}
+                        size="xs"
+                      />
+                    )}
+                    <span className="post__author">
+                      {meta.author.name}
                       <span className="post__rep">
                         {fmtNum(meta.author.rep)}
                       </span>
@@ -1228,6 +1250,7 @@ function CommunityView({ activeTech, userName }) {
           onOpenProfile={() => {}}
           onAccept={acceptReply}
           acceptedIdx={accepted[threadItem.key]}
+          avatarUrl={avatarUrl}
         />
       )}
       {composerOpen && (
