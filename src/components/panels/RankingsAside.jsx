@@ -1,7 +1,7 @@
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
 import { leaderboard } from "../../lib/rank";
-import { last7DaysEarnings } from "../../lib/xp";
+import { weeklyEarnings } from "../../lib/xp";
 
 // UX-аудит 2026-09: rail = та же картина, что таблица (lib/rank), weekly —
 // реальные XP по дням (журнал в lib/xp.js), лига/строка «2d 14h» убраны.
@@ -17,7 +17,7 @@ function RankingsAside({ isAuthed = false, onAuth = null, userName = "" }) {
   const lb = leaderboard();
   // Weekly-график — только для юзера: гостю демо-столбики = вводящий в
   // заблуждение контекст (аудит #12); гость видит CTA + заметку.
-  const week = isAuthed ? last7DaysEarnings() : null;
+  const week = isAuthed ? weeklyEarnings() : null;
   const weekTotal = week ? week.reduce((a, b) => a + b.xp, 0) : 0;
   const weekMax = week ? Math.max(500, ...week.map((d) => d.xp)) : 1;
 
@@ -89,16 +89,15 @@ function RankingsAside({ isAuthed = false, onAuth = null, userName = "" }) {
               .map((d) => d.xp)
               .join(", ")}`}
           >
-            {week.map((d, i) => {
-              const isToday = i === week.length - 1;
+            {week.map((d) => {
               return (
                 <div
                   key={d.key}
-                  className={`weekly__col ${isToday ? "weekly__col--today" : ""}`}
+                  className={`weekly__col ${d.isToday ? "weekly__col--today" : ""}`}
                   title={`+${d.xp} XP`}
                 >
                   <div
-                    className={`weekly__bar ${isToday ? "weekly__bar--today" : ""}`}
+                    className={`weekly__bar ${d.isToday ? "weekly__bar--today" : ""}`}
                     style={{ height: `${Math.round((d.xp / weekMax) * 100)}%` }}
                   />
                   <span className="weekly__day">

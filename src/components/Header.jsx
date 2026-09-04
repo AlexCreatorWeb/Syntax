@@ -19,6 +19,8 @@ function Header({
   onOpenNews,
   onMarkAllNewsRead,
   activeTab = null,
+  guest = false,
+  onExitGuest,
 }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
@@ -28,6 +30,7 @@ function Header({
   const langRef = useRef(null);
   const notifRef = useRef(null);
   const accountRef = useRef(null);
+  const guestRef = useRef(null);
 
   // Hue монограммы-аватара — детерминированно от имени (паттерн аватаров платформы)
   const nameHue = useMemo(() => {
@@ -55,6 +58,9 @@ function Header({
       }
       if (accountRef.current && !accountRef.current.contains(event.target)) {
         setOpenMenu((m) => (m === "account" ? null : m));
+      }
+      if (guestRef.current && !guestRef.current.contains(event.target)) {
+        setOpenMenu((m) => (m === "guest" ? null : m));
       }
     };
 
@@ -352,8 +358,45 @@ function Header({
               </div>
             </div>
           ) : (
-            // Гость: Log in (ghost) + Sign up free (primary) — модалка в соответствующем режиме
+            // Гость: (гостевая сессия — чип + меню) + Log in (ghost) + Sign up free
             <div className="auth">
+              {guest && (
+                <div className="tb-menu-wrap" ref={guestRef}>
+                  <button
+                    type="button"
+                    className="guest-chip"
+                    aria-haspopup="true"
+                    aria-expanded={openMenu === "guest"}
+                    aria-label={t("header.guest")}
+                    onClick={() =>
+                      setOpenMenu((m) => (m === "guest" ? null : "guest"))
+                    }
+                  >
+                    {t("header.guest")}
+                  </button>
+                  <div
+                    className="tb-menu tb-menu--guest"
+                    role="menu"
+                    hidden={openMenu !== "guest"}
+                  >
+                    <div className="tb-menu__user">
+                      <strong>{t("header.guest")}</strong>
+                      <span>{t("header.guestNote")}</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="tb-menu__item tb-menu__item--danger"
+                      onClick={() => {
+                        setOpenMenu(null);
+                        onExitGuest && onExitGuest();
+                      }}
+                    >
+                      {t("header.guestEnd")}
+                    </button>
+                  </div>
+                </div>
+              )}
               <button
                 type="button"
                 className="auth__login"
@@ -438,6 +481,40 @@ function Header({
                 </svg>
               </button>
             </div>
+            {/* UX-аудит 2026-09: колокольчик на мобилке не было нигде —
+                уведомления доступны из drawer (счётчик непрочитанных) */}
+            <button
+              type="button"
+              className="mobile-menu__item"
+              onClick={() => {
+                const unread = mediumNews.find(
+                  (n) => seenNewsLinks && !seenNewsLinks.has(n.link),
+                );
+                onOpenNews && onOpenNews(unread || mediumNews[0]);
+                setMenuOpen(false);
+              }}
+              disabled={mediumNews.length === 0}
+            >
+              <span className="mobile-menu__icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </span>
+              {t("notifications.title")}
+              <span className="mobile-menu__badge">
+                {mediumNews.filter(
+                  (n) => seenNewsLinks && !seenNewsLinks.has(n.link),
+                ).length}
+              </span>
+            </button>
             {NAV_GROUPS.map((group) => (
               <div className="mobile-menu__group" key={group.id}>
                 <span className="mobile-menu__group-label">

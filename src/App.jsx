@@ -15,6 +15,8 @@ import {
   signOut,
   syncProfile,
   displayName,
+  isGuestActive,
+  setGuestActive,
 } from "./lib/auth";
 import { syncProgressFromDb, pushProgressToDb } from "./lib/db-progress";
 import {
@@ -324,6 +326,14 @@ function App() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
+  // Гостевой режим: псевдо-сессия после «Continue as guest» — уроки/задачи
+  // открыты, прогресс копится в guest-бакетах (наследуется при регистрации).
+  const [guestMode, setGuestModeState] = useState(isGuestActive);
+  const setGuestMode = useCallback((on) => {
+    setGuestActive(on);
+    setGuestModeState(on);
+  }, []);
+
   // Auth (Supabase): сессия — localStorage (readStoredSession синхронно, чтобы не мигать
   // «гость» при загрузке; асинхронный getSession + onAuthStateChange подтверждают/следят).
   const [session, setSession] = useState(readStoredSession);
@@ -334,10 +344,15 @@ function App() {
     });
     unsub = onAuthChange((s) => {
       setSession(s);
-      if (s && s.user) syncProfile(s.user); // SIGNED_IN: строка в profiles (fire-and-forget)
+      // Реальная сессия = конец гостевого режима (прогресс guest-бакетов уже
+      // перенесён в uid-имёнспейс прогресс-механикой при первом маркере)
+      if (s && s.user) {
+        setGuestMode(false);
+        syncProfile(s.user); // SIGNED_IN: строка в profiles (fire-and-forget)
+      }
     });
     return () => unsub();
-  }, []);
+  }, [setGuestMode]);
   // Прогресс в Supabase (2026-09): при входе — БД → локальный кэш (merge),
   // затем кэш (включая гостевой) → БД. Гость — no-op (только localStorage);
   // каждое выполнение в редакторе сразу upsert-ит свою строку (db-progress.js).
@@ -353,7 +368,11 @@ function App() {
   }, [session, dbLessons]);
   const isAuthed = Boolean(session);
   const userName = displayName(session);
-  const handleLogout = useCallback(() => signOut(), []);
+  const canAccess = isAuthed || guestMode;
+  const handleLogout = useCallback(() => {
+    signOut();
+    setGuestMode(false);
+  }, [setGuestMode]);
 
   // Модалка auth: null | "signup" | "login" — одна на все гостевые действия и на «Log in» хедера.
   // ctx: "challenge" — заголовок под контекст тригера (M5-аудит: не терять цель регистрации)
@@ -364,6 +383,13 @@ function App() {
     setAuthCtx(ctx);
   }, []);
   const closeAuth = useCallback(() => setAuthMode(null), []);
+  // «Continue as guest»: флаг + закрытие модалки. Pending-action в MainContent
+  // сработает сам (эффект отслеживает canAccess: после флага гостя — действие
+  // выполняется, студент оказывается в том же уроке/задаче, что нажал).
+  const continueAsGuest = useCallback(() => {
+    setGuestMode(true);
+    setAuthMode(null);
+  }, [setGuestMode]);
 
   return (
     <div className="app">
@@ -380,6 +406,8 @@ function App() {
         onOpenNews={openNews}
         onMarkAllNewsRead={markAllNewsRead}
         activeTab={activeTab}
+        guest={guestMode && !userName}
+        onExitGuest={() => setGuestMode(false)}
       />
       <div className="shell" data-tab={activeTab}>
         <Sidebar
@@ -400,6 +428,7 @@ function App() {
             dbLessons={dbLessons}
             session={session}
             userName={userName}
+            guestMode={guestMode}
             onAuth={openAuth}
             onLogout={handleLogout}
             progressTick={progressTick}
@@ -413,7 +442,7 @@ function App() {
           onAuth={openAuth}
           job={job}
           activeTech={activeTech}
-          isAuthed={isAuthed}
+          isAuthed={canAccess}
           userName={userName}
           dbLessons={dbLessons}
           docsRoute={docsRoute}
@@ -426,6 +455,7 @@ function App() {
           ctx={authCtx}
           onClose={closeAuth}
           onSwitchMode={openAuth}
+          onContinueAsGuest={continueAsGuest}
         />
       )}
       {newsItem && <NewsModal item={newsItem} onClose={closeNews} />}

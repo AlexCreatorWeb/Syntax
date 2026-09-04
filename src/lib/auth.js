@@ -29,6 +29,26 @@ export function getSession() {
   return supabase ? supabase.auth.getSession() : Promise.resolve({ data: { session: null } });
 }
 
+// Гостевой режим («Continue as guest», UX-аудит 2026-09): обещанный путь работает —
+// гость проходит уроки/задачи, прогресс копится в guest-бакетах localStorage и
+// наследуется при регистрации (паттерн progress.js). Флаг — псевдо-сессия.
+const GUEST_KEY = "syntax-guest";
+export function isGuestActive() {
+  try {
+    return localStorage.getItem(GUEST_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+export function setGuestActive(on) {
+  try {
+    if (on) localStorage.setItem(GUEST_KEY, "1");
+    else localStorage.removeItem(GUEST_KEY);
+  } catch {
+    /* некритично */
+  }
+}
+
 export function onAuthChange(cb) {
   if (!supabase) return () => {};
   // supabase-js v2: возвращает { data: { subscription } } — unsub через subscription.unsubscribe()

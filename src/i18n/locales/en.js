@@ -376,6 +376,7 @@ export default {
     prev: "Previous",
     next: "Next",
     taskFab: "Go to task",
+    taskHint: "Task is not completed yet — open it to work on it",
   },
   ai: {
     thinking: "Thinking…",
@@ -433,6 +434,9 @@ export default {
     menu: "Menu",
     menuClose: "Close menu",
     account: "Account",
+    guest: "Guest",
+    guestNote: "Guest session — progress is saved on this device",
+    guestEnd: "End guest session",
   },
   notifications: {
     title: "Notifications",

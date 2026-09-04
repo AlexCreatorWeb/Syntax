@@ -54,6 +54,12 @@ function LessonVideoPlaceholder({ video, soonText }) {
   );
 }
 
+// Плеер: свои контролы снизу (Play/Pause + перемотка + время), clickCatcher
+// поверх видео (клик = play/pause, гасит YT-хад), большой Play по центру при
+// паузе. Верхняя плашка и левый нижний бейдж УБРАНЫ (фидбек 2026-09: «перекрывает
+// видео»); fullscreen — ДЕФОЛЬТНАЯ кнопка YouTube: угол внизу-справа catcher
+// не накрывает (right/bottom в CSS), нативные YT-контролы включены.
+// Плюс механика 75% просмотра → onWatched (Udemy).
 function LessonVideo({ video, label, onWatched }) {
   const [playing, setPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -61,51 +67,17 @@ function LessonVideo({ video, label, onWatched }) {
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const hostRef = useRef(null);
   const playerRef = useRef(null);
   const barRef = useRef(null);
   const rafRef = useRef(null);
-  const rootRef = useRef(null);
   // Прогресс по видео (механика Udemy): макс. позиция просмотра ≥ 75% длительности
   // → onWatched() один раз; дальше только UI, без повторных вызовов
   const watchedRef = useRef(0);
   const watchedSentRef = useRef(false);
 
-  // Fullscreen — TOGGLE той же кнопкой: клик во вс-экране = выход.
-  // iOS Safari не поддерживает Element Fullscreen API — fallback: CSS-оверлей
-  // (класс --fs), та же кнопка выводит, состояние держим в isFullscreen.
-  const cssFsRef = useRef(false);
-  const toggleFullscreen = () => {
-    const el = rootRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) {
-      if (document.exitFullscreen) document.exitFullscreen();
-      return;
-    }
-    if (cssFsRef.current) {
-      cssFsRef.current = false;
-      el.classList.remove("lesson-view__player--fs");
-      setIsFullscreen(false);
-      return;
-    }
-    if (el.requestFullscreen) {
-      el.requestFullscreen();
-    } else {
-      cssFsRef.current = true;
-      el.classList.add("lesson-view__player--fs");
-      setIsFullscreen(true);
-    }
-  };
-
-  // Esc/крестик браузера тоже меняют fullscreen — синхронизируем иконку кнопки
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
-
-  // Инициализация IFrame API-плеера
+  // Инициализация IFrame API-плеера (нативные контролы ВКЛ — их fullscreen-кнопка
+  // внизу-справа остаётся доступной: catcher не накрывает этот угол)
   useEffect(() => {
     if (!playing) return undefined;
     let destroyed = false;
@@ -115,8 +87,6 @@ function LessonVideo({ video, label, onWatched }) {
         videoId: video.id,
         playerVars: {
           autoplay: 1,
-          controls: 0, // без нативных контроллов
-          modestbranding: 1,
           rel: 0, // без «следующих видео» других каналов
           playsinline: 1,
         },
@@ -210,58 +180,18 @@ function LessonVideo({ video, label, onWatched }) {
   return (
     <figure className="lesson-view__video">
       {playing ? (
-        <div className="lesson-view__player" ref={rootRef}>
+        <div className="lesson-view__player">
           <div className="lesson-view__player-box">
             <div ref={hostRef} className="lesson-view__player-host" />
-            {/* Прозрачный слой: клик = play/pause, hover не доходит до YT-худа */}
+            {/* Слой: клик = play/pause, hover не доходит до YT-худа; угол
+                внизу-справа СВОБОДЕН — там дефолтная YT-кнопка fullscreen */}
             <div
               className="lesson-view__player-catcher"
               onClick={togglePlay}
               role="button"
               aria-label={isPlaying ? "Pause" : "Play"}
             />
-            {/* Брендовая верхняя полоса: закрывает YT-заголовок и авто-
-                всплывающую карточку «следующее видео» (её параметра нет);
-                справа — свой фуллскрин (весь плеер, включая контролы) */}
-            <div className="lesson-view__player-top">
-              <span className="lesson-view__player-top-chip">
-                LESSON {String(video.num).padStart(2, "0")}
-              </span>
-              <button
-                type="button"
-                className="lesson-view__player-fs"
-                onClick={toggleFullscreen}
-                aria-label={isFullscreen ? label + " (exit)" : label}
-                title={isFullscreen ? "Exit full screen" : "Full screen"}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  {isFullscreen ? (
-                    <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
-                  ) : (
-                    <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
-                  )}
-                </svg>
-              </button>
-            </div>
-            {/* Бейдж внизу слева: закрывает авто-кнопку «поделиться» */}
-            <div
-              className="lesson-view__player-badge"
-              onClick={togglePlay}
-              aria-hidden="true"
-            >
-              <span>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5.5v13l11-6.5Z" />
-                </svg>
-              </span>
-            </div>
+            {/* Большой Play по центру — при паузе/пока не готов (YT-свой тоже есть, но этот — в нашем стиле) */}
             {(!isPlaying || !isReady) && (
               <button
                 type="button"
@@ -465,6 +395,7 @@ function LessonView({
           role="tab"
           aria-selected={tab === "task"}
           className={`lesson-view__tab ${tab === "task" ? "lesson-view__tab--active" : ""}`}
+          title={!taskVisited ? t("lessonView.taskHint") : undefined}
           onClick={goTask}
         >
           {t("lessonView.tabTask")}

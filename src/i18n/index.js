@@ -390,6 +390,7 @@ export const LOCALES = {
       prev: "Назад",
       next: "Вперёд",
       taskFab: "К заданию",
+      taskHint: "Задание ещё не выполнено — откройте, чтобы поработать",
     },
     ai: {
       thinking: "Думаю…",
@@ -447,6 +448,9 @@ export const LOCALES = {
       menu: "Меню",
       menuClose: "Закрыть меню",
       account: "Аккаунт",
+      guest: "Гость",
+      guestNote: "Гостевая сессия — прогресс хранится на этом устройстве",
+      guestEnd: "Завершить гостевую сессию",
     },
     notifications: {
       title: "Уведомления",

@@ -50,6 +50,7 @@ export const LOCALES_EXTRA = {
       prev: "Назад",
       next: "Вперёд",
       taskFab: "До завдання",
+      taskHint: "Завдання ще не виконано — відкрийте, щоб попрацювати",
     },
     ai: {
       thinking: "Думаю…",
@@ -107,6 +108,9 @@ export const LOCALES_EXTRA = {
       menu: "Меню",
       menuClose: "Закрити меню",
       account: "Акаунт",
+      guest: "Гість",
+      guestNote: "Гостева сесія — прогрес зберігається на цьому пристрої",
+      guestEnd: "Завершити гостеву сесію",
     },
     notifications: {
       title: "Сповіщення",
@@ -672,6 +676,7 @@ export const LOCALES_EXTRA = {
       prev: "Anterior",
       next: "Siguiente",
       taskFab: "Ir a la tarea",
+      taskHint: "Tarea aún no completada — ábrela para trabajar en ella",
     },
     ai: {
       thinking: "Pensando…",
@@ -731,6 +736,9 @@ export const LOCALES_EXTRA = {
       menu: "Menú",
       menuClose: "Cerrar menú",
       account: "Cuenta",
+      guest: "Invitado",
+      guestNote: "Sesión de invitado — el progreso se guarda en este dispositivo",
+      guestEnd: "Terminar sesión de invitado",
     },
     notifications: {
       title: "Notificaciones",
@@ -1300,6 +1308,7 @@ export const LOCALES_EXTRA = {
       prev: "Zurück",
       next: "Weiter",
       taskFab: "Zur Aufgabe",
+      taskHint: "Aufgabe noch nicht abgeschlossen — öffne sie zum Arbeiten",
     },
     ai: {
       thinking: "Denke nach…",
@@ -1360,6 +1369,9 @@ export const LOCALES_EXTRA = {
       menu: "Menü",
       menuClose: "Menü schließen",
       account: "Konto",
+      guest: "Gast",
+      guestNote: "Gast-Sitzung — Fortschritt wird auf diesem Gerät gespeichert",
+      guestEnd: "Gast-Sitzung beenden",
     },
     notifications: {
       title: "Benachrichtigungen",

@@ -7,7 +7,7 @@ import { signIn, signUp, resetPassword } from "../lib/auth";
 // session === null после signUp → Supabase ждёт подтверждения email: показываем «проверьте почту».
 // Монтируется ТОЛЬКО когда открыта (App рендерит условно) + key=mode — state всегда свежий
 // (без sync-reset в effect — react-hooks/set-state-in-effect).
-function AuthModal({ mode, onClose, onSwitchMode, ctx }) {
+function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
   const t = useT();
   const boxRef = useRef(null);
   const [name, setName] = useState("");
@@ -232,7 +232,11 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx }) {
             <button type="button" className="signup__switch" onClick={() => onSwitchMode(isLogin ? "signup" : "login")}>
               {t(isLogin ? "auth.toSignup" : "auth.toLogin", { action: t(isLogin ? "auth.signupCta" : "auth.loginCta") })}
             </button>
-            <button type="button" className="signup__guest" onClick={onClose}>
+            <button
+              type="button"
+              className="signup__guest"
+              onClick={onContinueAsGuest || onClose}
+            >
               {t("signup.guest")}
             </button>
           </>

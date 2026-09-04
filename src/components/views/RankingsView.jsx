@@ -40,7 +40,7 @@ function LeaderProfile({ user, t, onClose }) {
       onClick={onClose}
     >
       <div
-        className="community-modal__panel community-modal__panel--profile"
+        className="community-modal__panel community-modal__panel--leader"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="profile">
@@ -213,8 +213,6 @@ function RankingsView({ isAuthed = false, onAuth = null, userName = "" }) {
       <section className="card rankings__table-card">
         <div className="rankings__table-head">
           <h2>{t("rankings.tableTitle")}</h2>
-          {/* Когорта-демо до бэкенда (паттерн SAMPLE-чипа Tasks) */}
-          <span className="chip chip--sample">SAMPLE</span>
         </div>
         <div className="rankings__table-scroll">
           <table className="rankings__table">
@@ -243,13 +241,20 @@ function RankingsView({ isAuthed = false, onAuth = null, userName = "" }) {
                         ring={row.you}
                       />
                       <div className="rankings__user-info">
-                        <button
-                          type="button"
-                          className="rankings__username"
-                          onClick={() => setProfile(row)}
-                        >
-                          {row.you ? youName : row.name}
-                        </button>
+                        <div className="rankings__name-row">
+                          <button
+                            type="button"
+                            className="rankings__username"
+                            onClick={() => setProfile(row)}
+                          >
+                            {row.you ? youName : row.name}
+                          </button>
+                          {row.you && (
+                            <span className="rankings__you-badge">
+                              {t("rankings.you")}
+                            </span>
+                          )}
+                        </div>
                         {/* Цель: прогресс до позиции выше — единственный
                             элемент, превращающий таблицу в действие */}
                         {row.you && lb.next && (

@@ -51,11 +51,11 @@ function StatValue({ stat, className }) {
 const CODE_LINES = [
   { ch: 22, node: <span className="tk-c">// Your first function</span> },
   {
-    ch: 37,
+    ch: 29,
     node: (
       <>
         <span className="tk-k">const</span> url <span className="tk-p">=</span>{" "}
-        <span className="tk-s">&quot;https://api.syntax.dev&quot;</span>;
+        <span className="tk-s">&quot;api.syntax.dev&quot;</span>;
       </>
     ),
   },
@@ -588,10 +588,7 @@ function MainView({
             </button>
           </div>
           <div className="home__footer-col">
-            <h5>
-              {t("footer.legal")}{" "}
-              <span className="soon-badge">{t("home.soon")}</span>
-            </h5>
+            <h5>{t("footer.legal")}</h5>
             <button type="button">{t("footer.privacy")}</button>
             <button type="button">{t("footer.terms")}</button>
           </div>

@@ -109,14 +109,20 @@ export function hasGrantedLesson(lessonId) {
 
 // Реальный XP по дням за последние 7 дней (окно заканчивается сегодня) —
 // weekly-график рейтинга (аудит: раньше demo-столбики противоречили таблице).
-export function last7DaysEarnings() {
+// Неделя Пн–Вс с XP по дням — для rail-графика (начало недели =
+// понедельник, будущие дни — нули, isToday — флагом).
+export function weeklyEarnings() {
   const earn = getXpState().earnings || {};
+  const today = new Date();
+  const todayKey = dailyKey(today);
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
   const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
     const key = dailyKey(d);
-    days.push({ key, xp: earn[key] || 0 });
+    days.push({ key, xp: earn[key] || 0, isToday: key === todayKey });
   }
   return days;
 }

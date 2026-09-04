@@ -36,6 +36,7 @@ function MainContent({
   dbLessons,
   session,
   userName,
+  guestMode,
   onAuth,
   onLogout,
   progressTick,
@@ -46,21 +47,24 @@ function MainContent({
   const { langCode } = useLanguage();
   const [currentLanguage] = useState("javascript"); // селектор языка редактора появится позже
   const isAuthed = Boolean(session);
+  // Гостевой режим (UX-аудит 2026-09): «Continue as guest» — реальный путь,
+  // уроки/задачи открыты, прогресс — в guest-бакетах (наследуется при регистрации)
+  const canAccess = isAuthed || guestMode;
   // Перерасчёт taskDone после Complete (job живёт в state App и не пересобирается)
   const [taskTick, setTaskTick] = useState(0);
   // progressTick (App): после синка БД→кэш — перерендер вьюх (профиль/roadmap
   // в момент входа видели пустой кэш; данные уже в localStorage — просто перерисовать)
   void progressTick;
 
-  // УЧЕБА ЗА РЕГИСТРАЦИЕЙ (условия платформы, 2026-09): гость листает
-  // roadmap/технологии/tasks, открыть задачу — только после входа.
-  // Исключение: ПЕРВЫЙ урок любого трека открыт гостю (фрис-триал, 2026-09).
-  // requireAuth(action): гость → auth-модалка + pending-action; после успешного
-  // входа (session пришёл) эффект выполняет сохранённое действие — студент
+  // УЧЕБА ЗА РЕГИСТРАЦИЕЙ/ГОСТЕВЫМ РЕЖИМОМ: аноним листает roadmap/технологии/tasks,
+  // открыть задачу/урок — после входа ИЛИ «Continue as guest».
+  // Исключение: ПЕРВЫЙ урок любого трека открыт анониму (фрис-триал, 2026-09).
+  // requireAuth(action): аноним → auth-модалка + pending-action; после успешного
+  // входа/флага гостя эффект выполняет сохранённое действие — студент
   // оказывается в том самом уроке/задаче, что нажал до регистрации.
   const pendingActionRef = useRef(null);
   const requireAuth = (action) => {
-    if (isAuthed) {
+    if (canAccess) {
       action();
       return;
     }
@@ -68,12 +72,12 @@ function MainContent({
     onAuth("signup", null);
   };
   useEffect(() => {
-    if (isAuthed && pendingActionRef.current) {
+    if (canAccess && pendingActionRef.current) {
       const action = pendingActionRef.current;
       pendingActionRef.current = null;
       action();
     }
-  }, [isAuthed]);
+  }, [canAccess]);
   // #/lesson без job-контекста (refresh/bookmark): урок живёт в состоянии App,
   // после перезагрузки job=null — вместо белого экрана мягкий редирект на roadmap
   useEffect(() => {
@@ -136,7 +140,7 @@ function MainContent({
     return rows.findIndex((l) => l.id === lesson.id) + 1;
   };
   const openDbLesson = (lesson, techId, backTab) => {
-    if (isAuthed || lessonNumber(lesson, techId) <= 1) {
+    if (canAccess || lessonNumber(lesson, techId) <= 1) {
       doOpenDbLesson(lesson, techId, backTab);
       return;
     }
@@ -179,7 +183,7 @@ function MainContent({
   // трек без уроков в БД — обычный гейт.
   const openLesson = (techId) => {
     const tid = techId && techId !== "none" ? techId : null;
-    if (!isAuthed) {
+    if (!canAccess) {
       const first = tid
         ? dbLessonsArr.find((l) => l.tech === tid)
         : dbLessonsArr[0];
@@ -270,7 +274,7 @@ function MainContent({
             activeTech={activeTech}
             onSelectTech={onSelectTech}
             dbLessons={dbLessons}
-            isAuthed={isAuthed}
+            isAuthed={canAccess}
             onAuth={onAuth}
           />
         );
@@ -295,7 +299,7 @@ function MainContent({
             dbLessons={dbLessonsArr}
             onNavigate={onNavigate}
             onSelectTech={onSelectTech}
-            isAuthed={isAuthed}
+            isAuthed={canAccess}
           />
         );
       case "editor": {
@@ -357,7 +361,7 @@ function MainContent({
       case "rankings":
         return (
           <RankingsView
-            isAuthed={isAuthed}
+            isAuthed={canAccess}
             onAuth={onAuth}
             userName={userName}
           />
