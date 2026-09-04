@@ -11,10 +11,10 @@ function read(uid) {
     const s = localStorage.getItem(KEY(uid));
     const d = s ? JSON.parse(s) : null;
     return d && typeof d === "object"
-      ? { total: 0, granted: {}, daily: {}, ...d }
-      : { total: 0, granted: {}, daily: {} };
+      ? { total: 0, granted: {}, daily: {}, earnings: {}, ...d }
+      : { total: 0, granted: {}, daily: {}, earnings: {} };
   } catch {
-    return { total: 0, granted: {}, daily: {} };
+    return { total: 0, granted: {}, daily: {}, earnings: {} };
   }
 }
 
@@ -37,6 +37,7 @@ function inheritGuest(uid) {
       total,
       granted: { ...guest.granted },
       daily: { ...guest.daily },
+      earnings: { ...guest.earnings },
     });
   }
 }
@@ -71,6 +72,9 @@ export function grantTaskXp(
     data.total += 500;
     dailyXpGained = 500;
   }
+  // Журнал XP по дням (weekly-график рейтинга; старые бакеты без него — 0)
+  const gained = taskXpGained + dailyXpGained;
+  if (gained) data.earnings[dayKey] = (data.earnings[dayKey] || 0) + gained;
   write(uid, data);
   return { taskXp: taskXpGained, dailyXp: dailyXpGained, total: data.total };
 }
@@ -92,6 +96,8 @@ export function grantLessonXp(lessonId) {
     data.granted[key] = LESSON_XP;
     data.total += LESSON_XP;
     gained = LESSON_XP;
+    const dayKey = dailyKey(new Date());
+    data.earnings[dayKey] = (data.earnings[dayKey] || 0) + LESSON_XP;
   }
   write(uid, data);
   return gained;
@@ -99,6 +105,20 @@ export function grantLessonXp(lessonId) {
 
 export function hasGrantedLesson(lessonId) {
   return Boolean(getXpState().granted[`lesson:${lessonId}`]);
+}
+
+// Реальный XP по дням за последние 7 дней (окно заканчивается сегодня) —
+// weekly-график рейтинга (аудит: раньше demo-столбики противоречили таблице).
+export function last7DaysEarnings() {
+  const earn = getXpState().earnings || {};
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = dailyKey(d);
+    days.push({ key, xp: earn[key] || 0 });
+  }
+  return days;
 }
 
 // Суммарный XP (для профиля/рейтинга)

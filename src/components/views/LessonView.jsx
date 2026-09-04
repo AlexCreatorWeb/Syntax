@@ -54,23 +54,56 @@ function LessonVideoPlaceholder({ video, soonText }) {
   );
 }
 
-function LessonVideo({ video, label }) {
+function LessonVideo({ video, label, onWatched }) {
   const [playing, setPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const hostRef = useRef(null);
   const playerRef = useRef(null);
   const barRef = useRef(null);
   const rafRef = useRef(null);
   const rootRef = useRef(null);
+  // Прогресс по видео (механика Udemy): макс. позиция просмотра ≥ 75% длительности
+  // → onWatched() один раз; дальше только UI, без повторных вызовов
+  const watchedRef = useRef(0);
+  const watchedSentRef = useRef(false);
 
-  const openFullscreen = () => {
+  // Fullscreen — TOGGLE той же кнопкой: клик во вс-экране = выход.
+  // iOS Safari не поддерживает Element Fullscreen API — fallback: CSS-оверлей
+  // (класс --fs), та же кнопка выводит, состояние держим в isFullscreen.
+  const cssFsRef = useRef(false);
+  const toggleFullscreen = () => {
     const el = rootRef.current;
-    if (el && el.requestFullscreen) el.requestFullscreen();
+    if (!el) return;
+    if (document.fullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      return;
+    }
+    if (cssFsRef.current) {
+      cssFsRef.current = false;
+      el.classList.remove("lesson-view__player--fs");
+      setIsFullscreen(false);
+      return;
+    }
+    if (el.requestFullscreen) {
+      el.requestFullscreen();
+    } else {
+      cssFsRef.current = true;
+      el.classList.add("lesson-view__player--fs");
+      setIsFullscreen(true);
+    }
   };
+
+  // Esc/крестик браузера тоже меняют fullscreen — синхронизируем иконку кнопки
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
 
   // Инициализация IFrame API-плеера
   useEffect(() => {
@@ -110,17 +143,29 @@ function LessonVideo({ video, label }) {
     };
   }, [playing, video.id]);
 
-  // Опрос позиции (rAF ~раз в кадр, пока не тащим ползунок)
+  // Опрос позиции (rAF ~раз в кадр, пока не тащим ползунок); тут же —
+  // детект «просмотрели ≥ 75%» (по макс. позиции, как на Udemy)
   useEffect(() => {
     if (!playing || isDragging) return undefined;
     const tick = () => {
       const p = playerRef.current;
-      if (p && p.getCurrentTime) setCurrent(p.getCurrentTime());
+      if (p && p.getCurrentTime) {
+        const time = p.getCurrentTime();
+        setCurrent(time);
+        if (onWatched && !watchedSentRef.current) {
+          watchedRef.current = Math.max(watchedRef.current, time);
+          const d = p.getDuration ? p.getDuration() : 0;
+          if (d > 0 && watchedRef.current >= d * 0.75) {
+            watchedSentRef.current = true;
+            onWatched();
+          }
+        }
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [playing, isDragging]);
+  }, [playing, isDragging, onWatched]);
 
   const togglePlay = useCallback(() => {
     const p = playerRef.current;
@@ -185,9 +230,9 @@ function LessonVideo({ video, label }) {
               <button
                 type="button"
                 className="lesson-view__player-fs"
-                onClick={openFullscreen}
-                aria-label="Full screen"
-                title="Full screen"
+                onClick={toggleFullscreen}
+                aria-label={isFullscreen ? label + " (exit)" : label}
+                title={isFullscreen ? "Exit full screen" : "Full screen"}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -197,7 +242,11 @@ function LessonVideo({ video, label }) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+                  {isFullscreen ? (
+                    <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
+                  ) : (
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+                  )}
                 </svg>
               </button>
             </div>
@@ -324,6 +373,18 @@ function LessonView({
     setJustDone(true);
     setTab("task");
   };
+
+  // Видео ≥ 75% просмотрено (механика Udemy) — урок засчитан тем же путём,
+  // что и успешный Submit (progress + lesson_progress в БД + XP), но БЕЗ
+  // переключения вкладки: студент читает материал, чип «✓ Урок N из M»
+  // и панель «пройден» на Task обновятся сами.
+  const videoDoneRef = useRef(false);
+  const handleVideoWatched = useCallback(() => {
+    if (videoDoneRef.current) return;
+    videoDoneRef.current = true;
+    if (job && job.onComplete) job.onComplete();
+    setJustDone(true);
+  }, [job]);
   const prevTitle =
     lessonCtx && lessonCtx.prev
       ? neighborTitle(lessonCtx.prev, lessonCtx.n - 1)
@@ -425,7 +486,11 @@ function LessonView({
                 soonText={t("lessonView.videoSoon")}
               />
             ) : (
-              <LessonVideo video={video} label={t("lessonView.video")} />
+              <LessonVideo
+                video={video}
+                label={t("lessonView.video")}
+                onWatched={handleVideoWatched}
+              />
             ))}
           <MdContent src={job.content} t={t} />
           <button

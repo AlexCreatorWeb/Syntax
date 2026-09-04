@@ -9,7 +9,7 @@
 // (+ логотип в COVER_LOGOS).
 export const LESSON_VIDEO_IDS = {
   1: "NP2NJVfgWm8", // WebAkademia — структура страницы, html/head/meta/body
-  2: "xaiPM8LtY0o", // Topchiy Dev — Unicode/эмодзи, кодировка UTF-8 и числовые сущности
+  2: "8yaY3utfRCE", // Какие-то уроки [Frontend] — HTML для начинающих (favicon, charset), UTF-8 и кракозябры (8:06; звук проверен: mean -28dB)
   3: "ny-ouhU-cCc", // Friendly Frontend — h1-h6, p, ol, ul, li
   4: "scB2C0uNV1s", // Friendly Frontend — a/button, якоря, mailto/tel, target
   5: "wKHiuEeV1gU", // WebAkademia — ссылки в шапке (портфолио, контакты)
@@ -22,7 +22,7 @@ export const LESSON_VIDEO_IDS = {
   12: "6PL2TqBdz0I", // Friendly Frontend — video/audio/iframe/source
   13: "3wsvVLOrI3g", // Friendly Frontend — Frontend Accessibility 2024 (11:39)
   14: "BwRqadwnBA4", // Вебмастер спит — мета-теги title и description для SEO
-  15: "pznMUqqotpk", // Friendly Frontend — модальное окно, тег dialog
+  15: "UfyrjnCFJBY", // Pro Web — современные HTML-теги DIALOG и DETAILS, семантика для новичков (5:19; звук проверен: mean -24dB)
   // Финальный проект: лимит 10 мин снят по решению (2026-09) — лайт-проект
   // чистый HTML + CSS (без JS/SCSS), ~1,5 ч; при необходимости заменим на
   // PoJaRi7Ug7Q (WebAkademia, 2:00:35, 139,8 тыс. просм.)

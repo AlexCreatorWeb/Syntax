@@ -2997,6 +2997,72 @@ code {
     min-height: 0;
   }
 }
+/* Плеер на телефоне: 24%-полоса на маленьком видео съедает четверть кадра —
+   компактнее; контролы — под палец (большие touch-зоны, крупный thumb) */
+@media (max-width: 640px) {
+  .lesson-view__player-top {
+    height: 20%;
+    min-height: 30px;
+    max-height: 38px;
+    padding: 0 8px;
+  }
+  .lesson-view__player-top-chip {
+    padding: 3px 8px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+  .lesson-view__player-fs {
+    width: 28px;
+    height: 28px;
+  }
+  .lesson-view__player-fs svg {
+    width: 13px;
+    height: 13px;
+  }
+  .lesson-view__player-controls {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .lesson-view__player-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .lesson-view__player-thumb {
+    width: 14px;
+    height: 14px;
+  }
+  .lesson-view__player-bigplay {
+    width: 54px;
+    height: 54px;
+  }
+  .lesson-view__player-badge {
+    left: 6px;
+    bottom: 6px;
+    width: 40px;
+    height: 40px;
+  }
+  .lesson-view__player-badge span {
+    width: 26px;
+    height: 26px;
+  }
+}
+/* Fullscreen-fallback для браузеров без Element Fullscreen API (iOS Safari):
+   тот же DOM, но fixed-оверлей на весь экран; выход — та же кнопка */
+.lesson-view__player--fs {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100vw;
+  height: 100vh;
+  border: none;
+  border-radius: 0;
+  background: #000;
+}
+.lesson-view__player--fs .lesson-view__player-box {
+  aspect-ratio: auto;
+  flex: 1;
+  min-height: 0;
+}
 .techmod--locked {
   border-style: dashed;
   opacity: 0.6;
@@ -6035,16 +6101,7 @@ code {
     flex-direction: column;
     align-items: flex-start;
   }
-  /* Rankings на мобилке: без горизонтального скролла — скрыты Level/Tasks,
-     уровень показан под именем (аудит Rankings #13) */
-  .rankings__table .col-level,
-  .rankings__table .col-tasks,
-  .rankings__table .col-streak {
-    display: none;
-  }
-  .rankings__user-sub {
-    display: block;
-  }
+  /* Rankings на мобилке: без горизонтального скролла */
   .rankings__table {
     font-size: 12px;
     table-layout: fixed;
@@ -6066,10 +6123,6 @@ code {
     width: 86px;
     white-space: nowrap;
     font-size: 12px;
-  }
-  /* Дельта ▲/▼ — вторичная метрика: на узком экране уступает место рангу и XP */
-  .rankings__table .rk-delta {
-    display: none;
   }
   .rankings__total {
     font-size: 12.5px;
@@ -6136,34 +6189,6 @@ code {
   line-height: 48px;
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-.seg {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-}
-.seg__item {
-  padding: 6px 16px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-.seg__item:hover {
-  color: var(--text);
-}
-.seg__item--active {
-  background: var(--surface-3);
-  color: var(--text);
 }
 
 /* ============================================================
@@ -6267,10 +6292,21 @@ code {
   }
 }
 .podium__name {
+  display: block;
+  width: 100%;
   margin-top: 22px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
+  transition: color 0.15s ease;
+}
+.podium__name:hover {
+  color: var(--primary-hover);
 }
 .podium__name--first {
   font-size: 19px;
@@ -6287,14 +6323,6 @@ code {
   line-height: 19px;
   color: var(--primary-hover);
   opacity: 0.85;
-}
-/* Стрик + дельта: «живой соперник», а не «статуя» */
-.podium__meta {
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
 }
 .podium__pedestal {
   width: 100%;
@@ -6374,20 +6402,6 @@ code {
   font-size: 16px;
   font-weight: 600;
 }
-.rankings__viewall {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-  transition: color 0.15s ease;
-}
-.rankings__viewall:hover {
-  color: var(--text);
-}
 .rankings__table-scroll {
   overflow-x: auto;
 }
@@ -6445,17 +6459,31 @@ code {
   align-items: center;
   gap: 12px;
 }
+/* Имя — кнопка (клик = профиль); гостевая строка-CTA выделена жирным */
 .rankings__username {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   font-family: var(--font-sans);
   font-size: 14px;
   color: var(--text);
+  transition: color 0.15s ease;
+}
+.rankings__username:hover {
+  color: var(--primary-hover);
 }
 .rankings__row--you .rankings__username {
   font-weight: 600;
 }
-.rankings__level,
-.rankings__tasks {
-  color: var(--muted);
+.rankings__username--cta {
+  font-weight: 500;
 }
 .rankings__total {
   color: var(--primary-hover);
@@ -6470,33 +6498,12 @@ code {
   font-weight: 600;
 }
 
-/* Дельта позиции: ▲ зелёным, ▼ красным */
-.rk-delta {
-  display: inline-block;
-  margin-left: 5px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--muted);
-}
-.rk-delta--up {
-  color: var(--primary-hover);
-}
-.rk-delta--down {
-  color: var(--danger);
-}
-
-/* Имя + подстрока (мобилка: уровень под именем) */
+/* Имя пользователя */
 .rankings__user-info {
   display: flex;
   flex-direction: column;
   gap: 1px;
   min-width: 0;
-}
-.rankings__user-sub {
-  font-size: 11.5px;
-  color: var(--muted);
-  display: none;
 }
 
 /* Прогресс «до следующего ранга» в строке пользователя */
@@ -6569,28 +6576,6 @@ code {
   color: var(--muted);
 }
 
-/* Два сегмент-контрола: скоуп + период */
-.rankings__segs {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* Честный «View all — soon» (не мёртвая кнопка) */
-.rankings__viewall {
-  cursor: default;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Период/трек-пилюли */
-.rank-pills {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 /* Weekly: столбики + подписи дней + tooltip значений */
 .weekly {
   height: 92px;
@@ -6613,44 +6598,6 @@ code {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--muted);
-}
-
-/* Лига: маркер «You» + заметки порогов зон */
-.league-card__marker {
-  position: relative;
-}
-.league-card__marker-label {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--primary-hover);
-  white-space: nowrap;
-}
-.league-card__notes {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.streak {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--muted);
-}
-.streak--hot {
-  color: var(--danger);
-}
-.streak-icon {
-  width: 14px;
-  height: 14px;
 }
 
 /* --- Side cards (монтируются во внешнюю rail) --- */
@@ -6680,25 +6627,12 @@ code {
   font-weight: 700;
   letter-spacing: -0.02em;
 }
-.rank-card__up {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  color: var(--primary-hover);
-  font-size: 13px;
-}
-.rank-card__up svg {
-  width: 14px;
-  height: 14px;
-}
-.rank-card__next-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+.rank-card__next-xp {
+  display: block;
   margin-bottom: 8px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text);
 }
 .rank-card__next-xp {
   color: var(--text);
@@ -6751,116 +6685,6 @@ code {
 }
 .weekly__bar--today {
   background: var(--primary);
-}
-
-/* --- League card --- */
-.league-card {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  position: relative;
-  overflow: hidden;
-}
-.league-card::after {
-  content: "";
-  position: absolute;
-  right: -20px;
-  top: -20px;
-  width: 100px;
-  height: 100px;
-  background: var(--primary);
-  filter: blur(48px);
-  opacity: 0.1;
-  pointer-events: none;
-}
-.league-card__head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.league-card__icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: var(--surface-3);
-  border: 1px solid var(--border);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary-hover);
-  flex: none;
-}
-.league-card__icon svg {
-  width: 22px;
-  height: 22px;
-}
-.league-card__name {
-  font-size: 16px;
-  font-weight: 600;
-}
-.league-card__desc {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-}
-.league-card__zones {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.league-card__zones-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 13px;
-}
-.league-card__promo {
-  color: var(--primary-hover);
-}
-.league-card__left {
-  font-size: 11px;
-  color: var(--muted);
-}
-.league-card__bar {
-  height: 8px;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  display: flex;
-}
-.league-card__zone {
-  height: 100%;
-  position: relative;
-}
-.league-card__zone--safe {
-  background: var(--surface-3);
-}
-.league-card__zone--promo {
-  background: rgba(41, 163, 125, 0.45);
-}
-.league-card__zone--demote {
-  background: var(--danger-strong);
-}
-.league-card__marker {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 4px;
-  height: 14px;
-  border-radius: 2px;
-  background: #fff;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
-}
-.league-card__labels {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--muted);
-}
-.league-card__label--demote {
-  color: var(--danger);
 }
 
 /* --- Responsive: home & rankings --- */

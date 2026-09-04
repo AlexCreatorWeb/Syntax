@@ -1481,6 +1481,17 @@ function CodeEditor({
                     +{justCompleted.taskXp + justCompleted.dailyXp} XP
                   </span>
                 )}
+                {/* Аудит P2: CTA в рейтинг из контекста Completed — момент
+                    мотивации, а не пассивная навигация */}
+                {justCompleted && (
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--sm editor-tests__rank"
+                    onClick={() => onNavigate("rankings")}
+                  >
+                    {t("editor.viewRank")}
+                  </button>
+                )}
                 {testResults &&
                   testResults.length === jobTests.length &&
                   testResults.every((r) => r.pass) &&

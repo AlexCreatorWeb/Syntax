@@ -414,6 +414,7 @@ function App() {
           job={job}
           activeTech={activeTech}
           isAuthed={isAuthed}
+          userName={userName}
           dbLessons={dbLessons}
           docsRoute={docsRoute}
         />

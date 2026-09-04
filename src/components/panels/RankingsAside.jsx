@@ -1,79 +1,82 @@
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
+import { leaderboard } from "../../lib/rank";
+import { last7DaysEarnings } from "../../lib/xp";
 
-// Значения — в «XP/10» для наглядности (демо); tooltip — реальные значения
-const WEEK_BARS = [30, 50, 40, 80, 60, 90]; // последнее — сегодня
+// UX-аудит 2026-09: rail = та же картина, что таблица (lib/rank), weekly —
+// реальные XP по дням (журнал в lib/xp.js), лига/строка «2d 14h» убраны.
+// День недели для подписи столбца (weeklyDays: пн=0 … вс=6).
+const dayIndex = (key) => {
+  const [y, m, d] = key.split("-").map(Number);
+  return (new Date(y, m - 1, d).getDay() + 6) % 7;
+};
 
-function RankingsAside({ isAuthed = false, onAuth = null }) {
+function RankingsAside({ isAuthed = false, onAuth = null, userName = "" }) {
   const t = useT();
   const days = t("rankings.weeklyDays");
-  const weekTotal = WEEK_BARS.reduce((a, b) => a + b, 0) * 10;
+  const lb = leaderboard();
+  // Weekly-график — только для юзера: гостю демо-столбики = вводящий в
+  // заблуждение контекст (аудит #12); гость видит CTA + заметку.
+  const week = isAuthed ? last7DaysEarnings() : null;
+  const weekTotal = week ? week.reduce((a, b) => a + b.xp, 0) : 0;
+  const weekMax = week ? Math.max(500, ...week.map((d) => d.xp)) : 1;
 
   return (
-    <>
-      <aside className="card rank-card">
-        <div className="rank-card__top">
-          <div>
-            <span className="label-caps rank-card__label">
-              {t("rankings.yourRank")}
-              {!isAuthed && (
-                <span className="chip chip--sample rank-card__sample">
-                  SAMPLE
-                </span>
-              )}
+    <aside className="card rank-card">
+      <div className="rank-card__top">
+        <div>
+          <span className="label-caps rank-card__label">
+            {t("rankings.yourRank")}
+            {!isAuthed && (
+              <span className="chip chip--sample rank-card__sample">
+                SAMPLE
+              </span>
+            )}
+          </span>
+          <div className="rank-card__number-row">
+            <span className="rank-card__number">
+              {isAuthed ? `#${lb.youRank}` : "—"}
             </span>
-            <div className="rank-card__number-row">
-              <span className="rank-card__number">{isAuthed ? "#6" : "—"}</span>
-              {isAuthed && (
-                <span className="rank-card__up">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 19V5" />
-                    <path d="m5 12 7-7 7 7" />
-                  </svg>
-                  2
-                </span>
-              )}
-            </div>
           </div>
-          {isAuthed ? (
-            <Avatar name="NeoCoder" hue={158} size="avatar" />
-          ) : (
-            <button
-              type="button"
-              className="btn btn--primary rank-card__cta"
-              onClick={() => onAuth && onAuth("signup")}
-            >
-              {t("rankings.railCta")}
-            </button>
-          )}
         </div>
-
         {isAuthed ? (
+          <Avatar name={userName || "You"} hue={158} size="avatar" />
+        ) : (
+          <button
+            type="button"
+            className="btn btn--primary rank-card__cta"
+            onClick={() => onAuth && onAuth("signup")}
+          >
+            {t("rankings.railCta")}
+          </button>
+        )}
+      </div>
+
+      {isAuthed ? (
+        lb.next ? (
           <div className="rank-card__next">
-            <div className="rank-card__next-row">
-              <span>{t("rankings.nextRank")}</span>
-              <span className="rank-card__next-xp">{t("rankings.needXp")}</span>
-            </div>
-            {/* 9840 / 10120 = 97% — совпадает с прогрессом в строке таблицы */}
+            {/* Цифры из той же функции, что строка «вы» в таблице */}
+            <span className="rank-card__next-xp">
+              {t("rankings.rowNext", {
+                n: lb.gap.toLocaleString("en-US"),
+                rank: lb.next.rank,
+              })}
+            </span>
             <div className="bar rank-card__bar">
               <div
                 className="bar__fill bar__fill--shimmer"
-                style={{ width: "97%" }}
+                style={{ width: `${lb.progress}%` }}
               ></div>
             </div>
           </div>
         ) : (
-          <p className="rank-card__guest-note">{t("rankings.railGuestNote")}</p>
-        )}
+          <span className="rank-card__next-xp">#{lb.youRank}</span>
+        )
+      ) : (
+        <p className="rank-card__guest-note">{t("rankings.railGuestNote")}</p>
+      )}
 
+      {week && (
         <div className="rank-card__weekly">
           <h4>
             {t("rankings.weekly")} · +{weekTotal.toLocaleString("en-US")} XP{" "}
@@ -82,100 +85,32 @@ function RankingsAside({ isAuthed = false, onAuth = null }) {
           <div
             className="weekly"
             role="img"
-            aria-label={`${t("rankings.weekly")}: ${WEEK_BARS.join(", ")}`}
+            aria-label={`${t("rankings.weekly")}: ${week
+              .map((d) => d.xp)
+              .join(", ")}`}
           >
-            {WEEK_BARS.map((v, i) => {
-              const isToday = i === WEEK_BARS.length - 1;
+            {week.map((d, i) => {
+              const isToday = i === week.length - 1;
               return (
                 <div
-                  key={i}
+                  key={d.key}
                   className={`weekly__col ${isToday ? "weekly__col--today" : ""}`}
-                  title={`+${v * 10} XP`}
+                  title={`+${d.xp} XP`}
                 >
                   <div
                     className={`weekly__bar ${isToday ? "weekly__bar--today" : ""}`}
-                    style={{ height: `${v}%` }}
+                    style={{ height: `${Math.round((d.xp / weekMax) * 100)}%` }}
                   />
-                  <span className="weekly__day">{days[i] || ""}</span>
+                  <span className="weekly__day">
+                    {days[dayIndex(d.key)] || ""}
+                  </span>
                 </div>
               );
             })}
           </div>
         </div>
-      </aside>
-
-      <aside className="card league-card">
-        <div className="league-card__head">
-          <span className="league-card__icon" aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 3h12l4 6-10 12L2 9l4-6Z" />
-              <path d="M2 9h20M9 3l3 6 3-6M12 21l-3-12M12 21l3-12" />
-            </svg>
-          </span>
-          <div>
-            <h3 className="league-card__name">{t("rankings.leagueName")}</h3>
-            <p className="league-card__desc">{t("rankings.leagueDesc")}</p>
-          </div>
-        </div>
-
-        <div className="league-card__zones">
-          <div className="league-card__zones-row">
-            <span className="league-card__promo">
-              {t("rankings.promotion")}
-            </span>
-            <span className="league-card__left">{t("rankings.timeLeft")}</span>
-          </div>
-          <div
-            className="league-card__bar"
-            role="img"
-            aria-label={t("rankings.promotion")}
-          >
-            <div
-              className="league-card__zone league-card__zone--safe"
-              style={{ width: "60%" }}
-              title={t("rankings.promoteNote")}
-            />
-            <div
-              className="league-card__zone league-card__zone--promo"
-              style={{ width: "20%" }}
-              title={t("rankings.promoteNote")}
-            >
-              <span className="league-card__marker" style={{ left: "70%" }}>
-                <span className="league-card__marker-label">
-                  {t("rankings.leagueYou")}
-                </span>
-              </span>
-            </div>
-            <div
-              className="league-card__zone league-card__zone--demote"
-              style={{ width: "20%" }}
-              title={t("rankings.demoteNote")}
-            />
-          </div>
-          <div className="league-card__labels">
-            <span>{t("rankings.safe")}</span>
-            <span>{t("rankings.promote")}</span>
-            <span className="league-card__label--demote">
-              {t("rankings.demote")}
-            </span>
-          </div>
-          {/* Пороги зон: «какой ранг = Demote» — ответ на недоверие */}
-          <div className="league-card__notes">
-            <span>{t("rankings.promoteNote")}</span>
-            <span className="league-card__label--demote">
-              {t("rankings.demoteNote")}
-            </span>
-          </div>
-        </div>
-      </aside>
-    </>
+      )}
+    </aside>
   );
 }
 
