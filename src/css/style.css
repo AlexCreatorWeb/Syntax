@@ -10097,10 +10097,17 @@ code {
   margin-top: 16px;
 }
 .tech-page__cta {
-  flex: 1;
+  flex: none; /* родной размер кнопки на десктопе (фидбек: 50/50 — только мобилка) */
   min-width: 0;
   justify-content: center;
   white-space: nowrap;
+}
+/* Мобилка: кнопки в один ряд на всю ширину (по 50%, сжимаются) */
+@media (max-width: 640px) {
+  .tech-page__cta {
+    flex: 1;
+    min-width: 0;
+  }
 }
 /* Фидбек 2026-09: длинные подписи («Continue Learning») выпирали за пределы
    кнопки — текст в span с эллипсисом, иконки не сжимаются */
