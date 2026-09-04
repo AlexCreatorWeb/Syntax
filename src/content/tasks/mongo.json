@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: const client = new MongoClient(\"mongodb://localhost:27017/syntax\");\n// TODO: await client.connect();\n// TODO: insert 2 документа в app.todos + globalThis.result = countDocuments()\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -62,7 +62,7 @@
     "xp": 50,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('users'); await coll.insertMany([{ name: 'Anna', age: 34, city: 'Berlin' }, { name: 'Ben', age: 28, city: 'Berlin' }, { name: 'Cara', age: 41, city: 'Paris' }, { name: 'Dan', age: 25, city: 'Berlin' }, { name: 'Eva', age: 30, city: 'Rome' }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: подключись к app, найди users c city 'Berlin', sort по age (1),\n// TODO: globalThis.result = массив документов\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -104,7 +104,7 @@
     "xp": 50,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('products'); await coll.insertMany([{ name: 'Keyboard', price: 80, stock: 12 }, { name: 'Mouse', price: 30, stock: 40 }, { name: 'Monitor', price: 250, stock: 3 }, { name: 'Webcam', price: 60, stock: 5 }, { name: 'Hub', price: 25, stock: 8 }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: find({ price: { $gt: 50 }, stock: { $gte: 5 } }).sort({ name: 1 })\n// TODO: globalThis.result = …\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -146,7 +146,7 @@
     "xp": 100,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('tasks'); await coll.insertMany([{ title: 'Design', status: 'open' }, { title: 'Ship it', status: 'open' }, { title: 'Review', status: 'open' }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: updateOne({ title: 'Ship it' }, { $set: { status: 'done' } })\n// TODO: globalThis.result = (await findOne({ title: 'Ship it' })).status\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -188,7 +188,7 @@
     "xp": 100,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('logs'); await coll.insertMany([{ level: 'info', msg: 'a' }, { level: 'error', msg: 'b' }, { level: 'info', msg: 'c' }, { level: 'error', msg: 'd' }, { level: 'info', msg: 'e' }, { level: 'info', msg: 'f' }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: deleteMany({ level: 'error' }) + globalThis.result = countDocuments()\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -230,7 +230,7 @@
     "xp": 100,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('orders'); await coll.insertMany([{ amount: 100, status: 'paid' }, { amount: 50, status: 'paid' }, { amount: 30, status: 'open' }, { amount: 20, status: 'open' }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: aggregation: [ { $group: { _id: '$status', total: { $sum: '$amount' } } } ]\n// TODO: globalThis.result = total группы 'paid'\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -272,7 +272,7 @@
     "xp": 100,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('events'); await coll.insertMany([{ type: 'click' }, { type: 'click' }, { type: 'click' }, { type: 'view' }, { type: 'view' }, { type: 'like' }, { type: 'share' }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: aggregate: $group (счётчик) → $sort { n: -1 } → $limit 3\n// TODO: globalThis.result = массив типов по убыванию частоты\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -314,7 +314,7 @@
     "xp": 200,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('posts'); await coll.insertMany([{ title: 'Web perf', author: { name: 'Ada' }, tags: ['web', 'perf'] }, { title: 'Databases', author: { name: 'Ada' }, tags: ['db'] }, { title: 'CSS grid', author: { name: 'Linus' }, tags: ['css', 'web'] }, { title: 'Kernels', author: { name: 'Linus' }, tags: ['os'] }, { title: 'Intro', author: { name: 'Grace' }, tags: ['web'] }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: find({ 'author.name': { $in: ['Ada', 'Linus'] }, tags: 'web' }).sort({ title: 1 })\n// TODO: globalThis.result = массив заголовков\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -355,7 +355,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: подключись к app, 3 × updateOne upsert с $inc: { count: 1 }\n// TODO: globalThis.result = count счётчика 'visits'\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {
@@ -397,7 +397,7 @@
     "xp": 200,
     "setup": "const client = new (globalThis.__shims.mongodb.MongoClient)('mongodb://localhost:27017/syntax'); await client.connect(); const coll = client.db('app').collection('scores'); await coll.insertMany([{ student: 'Ada', score: 90 }, { student: 'Ada', score: 80 }, { student: 'Ben', score: 75 }, { student: 'Ben', score: 60 }, { student: 'Cara', score: 40 }]);",
     "files": {
-      "script.js": "import { MongoClient } from \"mongodb\";\n\n// TODO: aggregate: $match { score: { $gte: 70 } } → $group (avg) → $sort { avg: -1 }\n// TODO: globalThis.result = student из первого документа\n"
+      "script.js": "import { MongoClient } from \"mongodb\";\n"
     },
     "tests": [
       {

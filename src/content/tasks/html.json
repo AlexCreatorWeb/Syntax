@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!-- TODO: <!DOCTYPE html> на первой строке -->\n<html>\n<head>\n  <!-- TODO: meta charset + title \"My Page\" -->\n</head>\n<body>\n  <!-- TODO: h1 \"Hello\" -->\n</body>\n</html>"
+      "index.html": "<html>\n<head>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -74,7 +74,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <!-- TODO: title \"Headings\" -->\n</head>\n<body>\n  <!-- TODO: h1 \"Article\" + p -->\n  <!-- TODO: h2 \"Part one\" + p -->\n  <!-- TODO: h3 \"Details\" + p -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -128,7 +128,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Links</title>\n</head>\n<body>\n  <!-- TODO: nav с тремя ссылками -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Links</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -177,7 +177,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Image</title>\n</head>\n<body>\n  <!-- TODO: figure > img (src, alt, width, height) + figcaption -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Image</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -219,7 +219,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Semantics</title>\n</head>\n<body>\n  <!-- TODO: header (h1 \"Site\") / nav (2 ссылки) / main (p) / aside (h2 \"Extra\") / footer (© 2026) -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Semantics</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -273,7 +273,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Contact</title>\n</head>\n<body>\n  <!-- TODO: form#contact: label+input (name), label+input (email), submit-кнопка \"Send\" -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Contact</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -323,7 +323,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Signup</title>\n</head>\n<body>\n  <!-- TODO: form#signup: email (required), password (minlength 8), checkbox terms, submit -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Signup</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -373,7 +373,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Table</title>\n</head>\n<body>\n  <!-- TODO: table#prices: thead (3 th) + tbody (3 строки по 3 td) -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Table</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -423,7 +423,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Blog</title>\n</head>\n<body>\n  <!-- TODO: article: header (h1 + time datetime=\"2026-09-01\"), 2 section (Intro/Body), автор \"Ada\" -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Blog</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -473,7 +473,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Video</title>\n</head>\n<body>\n  <!-- TODO: figure > video#player (src, controls, width, source) + figcaption \"Flower\" -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Video</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -519,7 +519,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>A11y</title>\n</head>\n<body>\n  <!-- TODO: 1) skip-link первым элементом  2) #main tabindex=-1  3) nav aria-label + ссылки с текстом -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>A11y</title>\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {
@@ -569,7 +569,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <!-- TODO: title, description, og:title, og:description, viewport, canonical -->\n</head>\n<body>\n  <!-- TODO: ровно один h1 + контент -->\n</body>\n</html>"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n</head>\n<body>\n</body>\n</html>\n"
     },
     "tests": [
       {

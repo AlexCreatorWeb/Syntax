@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Reverse a String\n// Верни строку в обратном порядке\n\nfunction reverseString(s) {\n  // TODO: implement\n  return s;\n}"
+      "index.js": "function reverseString(s) {\n  return s;\n}\n"
     },
     "tests": [
       {
@@ -69,7 +69,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Count Vowels\n// Подсчитай гласные в строке\n\nfunction countVowels(s) {\n  // TODO: implement\n  return 0;\n}"
+      "index.js": "function countVowels(s) {\n  return 0;\n}\n"
     },
     "tests": [
       {
@@ -118,7 +118,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Sum of Evens\n// Сумма чётных чисел массива\n\nfunction sumEvens(arr) {\n  // TODO: implement\n  return 0;\n}"
+      "index.js": "function sumEvens(arr) {\n  return 0;\n}\n"
     },
     "tests": [
       {
@@ -167,7 +167,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Capitalize Words\n// Первая буква каждого слова — заглавная\n\nfunction capitalize(s) {\n  // TODO: implement\n  return s;\n}"
+      "index.js": "function capitalize(s) {\n  return s;\n}\n"
     },
     "tests": [
       {
@@ -216,7 +216,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// FizzBuzz\n// 1..n: кратные 3 → Fizz, 5 → Buzz, обоим → FizzBuzz\n\nfunction fizzBuzz(n) {\n  // TODO: implement\n  return [];\n}"
+      "index.js": "function fizzBuzz(n) {\n  return [];\n}\n"
     },
     "tests": [
       {
@@ -261,7 +261,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// Group Anagrams\n// Сгруппируй слова-анаграммы\n\nfunction groupAnagrams(words) {\n  // TODO: implement\n  return [];\n}"
+      "index.js": "function groupAnagrams(words) {\n  return [];\n}\n"
     },
     "tests": [
       {
@@ -310,7 +310,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// Flatten a Nested Array\n// Рекурсивно разверни вложенный массив\n\nfunction flatten(arr) {\n  // TODO: implement\n  return arr;\n}"
+      "index.js": "function flatten(arr) {\n  return arr;\n}\n"
     },
     "tests": [
       {
@@ -359,7 +359,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// Robust Palindrome\n// Палиндром без учёта регистра и пунктуации\n\nfunction isPalindrome(s) {\n  // TODO: implement\n  return false;\n}"
+      "index.js": "function isPalindrome(s) {\n  return false;\n}\n"
     },
     "tests": [
       {
@@ -408,7 +408,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.js": "// Binary Search\n// Двоичный поиск: индекс target или -1\n\nfunction binarySearch(arr, target) {\n  // TODO: implement (logarithmic complexity)\n  return -1;\n}"
+      "index.js": "function binarySearch(arr, target) {\n  return -1;\n}\n"
     },
     "tests": [
       {
@@ -461,7 +461,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.js": "// Quicksort\n// Быстрая сортировка: верни новый отсортированный массив\n\nfunction quicksort(arr) {\n  // TODO: implement\n  return arr.slice().sort((a, b) => a - b);\n}"
+      "index.js": "function quicksort(arr) {\n  return arr.slice().sort((a, b) => a - b);\n}\n"
     },
     "tests": [
       {

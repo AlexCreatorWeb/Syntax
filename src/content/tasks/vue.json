@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "App.vue": "<script setup>\n// TODO: ничего в скрипте не нужно — только template\n</script>\n\n<template>\n  <!-- TODO: h1 \"Hello, Vue\" + p -->\n</template>"
+      "App.vue": "<script setup>\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {
@@ -61,7 +61,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: const count = ref(0)\n</script>\n\n<template>\n  <!-- TODO: span#count {{ count }} + button#inc @click=... \"+1\" -->\n</template>"
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {
@@ -102,7 +102,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "App.vue": "<script setup>\n// TODO: const items = ['Alpha', 'Beta', 'Gamma']\n</script>\n\n<template>\n  <!-- TODO: ul#items + li v-for -->\n</template>"
+      "App.vue": "<script setup>\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {
@@ -143,7 +143,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: const name = ref('')\n</script>\n\n<template>\n  <!-- TODO: input#name v-model + p#preview \"Hi, {{ name }}\" -->\n</template>"
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {
@@ -184,7 +184,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.vue": "<script setup>\n// TODO: const Greet = { props: { name: String }, template: '...' }\n</script>\n\n<template>\n  <div id=\"box\">\n    <!-- TODO: <Greet name=\"Syntax\" /> -->\n  </div>\n</template>"
+      "App.vue": "<script setup>\n</script>\n\n<template>\n  <div id=\"box\">\n  </div>\n</template>\n"
     },
     "tests": [
       {
@@ -225,7 +225,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.vue": "<script setup>\nimport { ref, computed } from \"vue\";\n\n// TODO: price, qty, total (computed)\n</script>\n\n<template>\n  <!-- TODO: span#total + button#more \"+1 qty\" -->\n</template>"
+      "App.vue": "<script setup>\nimport { ref, computed } from \"vue\";\n\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {
@@ -266,7 +266,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: function useCounter(initial) { … }\n// const { value, increment, decrement } = useCounter(5);\n</script>\n\n<template>\n  <!-- TODO: span#val + кнопки #inc/#dec -->\n</template>"
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {
@@ -307,7 +307,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "App.vue": "<script setup>\nimport { reactive } from \"vue\";\n\n// TODO: const user = reactive({ profile: { name: 'Guest', level: 1 } })\n// функция levelUp: level++, при level === 2 → name = 'Member'\n</script>\n\n<template>\n  <!-- TODO: span#name + button#up \"Level up\" -->\n</template>"
+      "App.vue": "<script setup>\nimport { reactive } from \"vue\";\n\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {
@@ -348,7 +348,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n// TODO: const Box = { props: ['msg'], emits: ['ping'], template: '<div class=\"box\" @click=\"emit(\\'ping\\')\">{{ msg }}</div>' }\n// const state = ref(''); const onPing = () => { state.value += '!'; }\n</script>\n\n<template>\n  <p id=\"out\">{{ state }}</p>\n  <!-- TODO: <Box msg=\"Hi\" @ping=\"onPing\" /> -->\n</template>"
+      "App.vue": "<script setup>\nimport { ref } from \"vue\";\n\n</script>\n\n<template>\n  <p id=\"out\">{{ state }}</p>\n</template>\n"
     },
     "tests": [
       {
@@ -393,7 +393,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "App.vue": "<script setup>\nimport { ref, onMounted } from \"vue\";\n\n// Фейковый API: 60 мс\nexport function fakeApi(url) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve({ ok: true, json: async () => ({ hello: 'world' }) }), 60)\n  );\n}\n\n// TODO: function useFetch(url) { const data = ref(null); const loading = ref(true);\n//   onMounted(async () => { const res = await fakeApi(url); data.value = await res.json(); loading.value = false; });\n//   return { data, loading }; }\n// const { data, loading } = useFetch('/hello');\n</script>\n\n<template>\n  <!-- TODO: loading ? <p id=\"s\">loading</p> : <p id=\"s\">{{ data.hello }}</p> -->\n</template>"
+      "App.vue": "<script setup>\nimport { ref, onMounted } from \"vue\";\n\nexport function fakeApi(url) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve({ ok: true, json: async () => ({ hello: 'world' }) }), 60)\n  );\n}\n\n</script>\n\n<template>\n</template>\n"
     },
     "tests": [
       {

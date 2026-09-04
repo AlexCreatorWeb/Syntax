@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "server.js": "// ESM: default + named exports\n\n// TODO: function double(n) { … }  +  export default double;\n// TODO: export function triple(n) { … }\n"
+      "server.js": "'use strict';\n"
     },
     "tests": [
       {
@@ -61,7 +61,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "server.js": "// Top-level await в ES-модуле\n\nasync function dbFetch() {\n  await new Promise((r) => setTimeout(r, 40));\n  return [\"ada\", \"linus\"];\n}\n\n// TODO: export let users = [];\n// TODO: export async function loadUsers() { users = await dbFetch(); return users; }\n// TODO: в конце файла — top-level await: users = await loadUsers();\n"
+      "server.js": "async function dbFetch() {\n  await new Promise((r) => setTimeout(r, 40));\n  return [\"ada\", \"linus\"];\n}\n"
     },
     "tests": [
       {
@@ -102,7 +102,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "server.js": "// CLI argument parser\n\n// TODO: export function parseArgs(argv) { … }\n"
+      "server.js": "'use strict';\n"
     },
     "tests": [
       {
@@ -147,7 +147,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "server.js": "import express from \"express\";\n\n// TODO: const app = express();\n// TODO: app.get('/hello', (req, res) => { res.json({ msg: 'hi' }); });\n// TODO: app.listen(3000);\n// TODO: export default app;\n"
+      "server.js": "import express from \"express\";\n"
     },
     "tests": [
       {
@@ -188,7 +188,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "server.js": "// Barrel: сгруппированные экспорты\n\n// TODO: function add(a, b) { … }\n// TODO: function sub(a, b) { … }\n// TODO: export const sum = 10;\n// TODO: export { add, sub };\n"
+      "server.js": "'use strict';\n"
     },
     "tests": [
       {
@@ -229,7 +229,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "server.js": "export function slowDouble(x) {\n  return new Promise((r) => setTimeout(() => r(x * 2), 20));\n}\n\n// TODO: export async function poolMap(items, limit, fn) { … }\n"
+      "server.js": "export function slowDouble(x) {\n  return new Promise((r) => setTimeout(() => r(x * 2), 20));\n}\n"
     },
     "tests": [
       {
@@ -274,7 +274,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "server.js": "// Mini CLI dispatcher\n\n// TODO: export function runCommand(input) { … }\n"
+      "server.js": "'use strict';\n"
     },
     "tests": [
       {
@@ -327,7 +327,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "server.js": "import express from \"express\";\n\nconst notes = [{ id: 1, text: 'first' }];\n\n// TODO: const app = express(); app.use(express.json());\n// TODO: GET /notes, POST /notes (201), GET /notes/:id (404)\n// TODO: app.listen(3000); export default app;\n"
+      "server.js": "import express from \"express\";\n\nconst notes = [{ id: 1, text: 'first' }];\n"
     },
     "tests": [
       {
@@ -376,7 +376,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "server.js": "// Retry + timeout\n\n// TODO: export async function withRetry(fn, { tries = 3, delay = 10, timeout = 500 } = {}) { … }\n"
+      "server.js": "'use strict';\n"
     },
     "tests": [
       {
@@ -421,7 +421,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "server.js": "// Plugin registry\n\n// TODO: export function createRegistry() { … }\n// TODO: const registry = createRegistry(); export { registry };\n"
+      "server.js": "'use strict';\n"
     },
     "tests": [
       {

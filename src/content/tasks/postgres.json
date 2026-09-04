@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: CREATE TABLE items (title TEXT);\n// TODO: 3 × INSERT INTO items (title) VALUES ('…');\n// TODO: const res = await pool.query('SELECT * FROM items');\n// TODO: globalThis.result = res.rows;\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -66,7 +66,7 @@
     "xp": 50,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE users (name TEXT, age INT)'); await pool.query('INSERT INTO users (name, age) VALUES ($1, $2)', ['Ada', 36]);",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: INSERT INTO users (name, age) VALUES ('Grace', 45) RETURNING * → globalThis.result\n// TODO: SELECT COUNT(*) AS n FROM users → globalThis.count\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -108,7 +108,7 @@
     "xp": 50,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE products (name TEXT, price INT)'); const prod = [['Keyboard', 80], ['Mouse', 30], ['Monitor', 250], ['Webcam', 60], ['Hub', 25]]; for (const [n, pr] of prod) { await pool.query('INSERT INTO products (name, price) VALUES ($1, $2)', [n, pr]); }",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: SELECT * FROM products WHERE price > $1 ORDER BY name  (params: [50]) → globalThis.result\n// TODO: UPDATE products SET price = 99 WHERE id = $1  (params: [1])\n// TODO: SELECT * FROM products WHERE id = $1 → globalThis.updated = строка.price\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -150,7 +150,7 @@
     "xp": 50,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE messages (body TEXT, read BOOL)'); const msgs = [['m1', true], ['m2', false], ['m3', true], ['m4', false], ['m5', true], ['m6', false]]; for (const [b, r] of msgs) { await pool.query('INSERT INTO messages (body, read) VALUES ($1, $2)', [b, r]); }",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: DELETE FROM messages WHERE read = false → globalThis.deleted = rowCount\n// TODO: SELECT * FROM messages ORDER BY id LIMIT 2 → globalThis.result\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -196,7 +196,7 @@
     "xp": 100,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE authors (name TEXT)'); await pool.query('CREATE TABLE books (title TEXT, author_id INT)'); await pool.query('INSERT INTO authors (name) VALUES ($1)', ['Ada']); await pool.query('INSERT INTO authors (name) VALUES ($1)', ['Linus']); const books = [['SICP', 1], ['The Art of Unix', 2], ['Lisp for You', 1]]; for (const [b, a] of books) { await pool.query('INSERT INTO books (title, author_id) VALUES ($1, $2)', [b, a]); }",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: '…INNER JOIN…', rows: […] }\n// rows: прочитай обе таблицы (SELECT *), сопоставь книги с авторами, отсортируй по title\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -238,7 +238,7 @@
     "xp": 100,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE users (name TEXT)'); await pool.query('CREATE TABLE orders (user_id INT, amount INT)'); for (const n of ['Ada', 'Ben', 'Cara']) { await pool.query('INSERT INTO users (name) VALUES ($1)', [n]); } for (const [u, a] of [[1, 100], [1, 50], [2, 20]]) { await pool.query('INSERT INTO orders (user_id, amount) VALUES ($1, $2)', [u, a]); }",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: LEFT JOIN в JS: каждый user, заказы или amount: null\n// TODO: globalThis.result = { sql: '…LEFT JOIN…', rows… } — перестрой объект: { sql, rows }\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -280,7 +280,7 @@
     "xp": 200,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE users (name TEXT)'); await pool.query('CREATE TABLE orders (user_id INT, amount INT)'); await pool.query(\"INSERT INTO users (name) VALUES ('Ada')\"); await pool.query(\"INSERT INTO users (name) VALUES ('Ben')\"); await pool.query(\"INSERT INTO users (name) VALUES ('Cara')\"); await pool.query(\"INSERT INTO orders (user_id, amount) VALUES (1, 100)\"); await pool.query(\"INSERT INTO orders (user_id, amount) VALUES (1, 50)\"); await pool.query(\"INSERT INTO orders (user_id, amount) VALUES (3, 300)\");",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: totals по каждому user (null → 0), сортировка по total DESC\n// TODO: globalThis.result = { sql: '…GROUP BY…', rows }\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -322,7 +322,7 @@
     "xp": 100,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE events (user_id INT, kind TEXT)'); const kinds = ['click', 'view', 'buy']; for (let i = 1; i <= 1000; i++) { await pool.query('INSERT INTO events (user_id, kind) VALUES (' + (i % 20 + 1) + ', ' + JSON.stringify(kinds[i % 3]) + ')'); }",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: 'CREATE INDEX idx_events_user ON events (user_id)' }\n// TODO: построить Map user_id → [event ids]; export function indexFor(userId) { … }\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -368,7 +368,7 @@
     "xp": 100,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE sessions (token TEXT, user_id INT, created TEXT)'); const toks = ['alpha', 'beta', 'gamma', 'delta', 'epsilon']; for (let i = 0; i < toks.length; i++) { await pool.query('INSERT INTO sessions (token, user_id, created) VALUES ($1, $2, $3)', [toks[i], i + 1, '2026-09-01']); }",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: 'CREATE INDEX idx_sessions_token ON sessions (token) INCLUDE (user_id)' }\n// TODO: map token → user_id; export function lookupByToken(token) { … }\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {
@@ -410,7 +410,7 @@
     "xp": 200,
     "setup": "const pool = new (globalThis.__shims.pg.Pool)(); await pool.query('CREATE TABLE logs (level TEXT, created_day TEXT)'); const lv = ['info', 'info', 'info', 'error']; for (let i = 0; i < 2000; i++) { await pool.query('INSERT INTO logs (level, created_day) VALUES ($1, $2)', [lv[i % 4], '2026-09-0' + (i % 9 + 1)]); }",
     "files": {
-      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\n// TODO: globalThis.result = { sql: 'CREATE INDEX …', rows: [...], fraction: … }\n// rows: SELECT * FROM logs WHERE level = $1 (['error']) — порядок id = порядок вставки\n// fraction: errors / total, Math.round(x * 1000) / 1000\nawait pool.end();\n"
+      "query.js": "import pg from \"pg\";\n\nconst pool = new pg.Pool();\n\nawait pool.end();\n"
     },
     "tests": [
       {

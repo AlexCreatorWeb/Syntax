@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "App.jsx": "export function App() {\n  // TODO: h1 \"Hello, Syntax\" + p\n  return null;\n}"
+      "App.jsx": "export function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -61,7 +61,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: useState(0), span#count, button#inc \"+1\"\n  return null;\n}"
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -106,7 +106,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "App.jsx": "const TECHS = [\"HTML\", \"CSS\", \"JavaScript\", \"React\"];\n\nexport function App() {\n  // TODO: ul#techs + li через map\n  return null;\n}"
+      "App.jsx": "const TECHS = [\"HTML\", \"CSS\", \"JavaScript\", \"React\"];\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -147,7 +147,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: text-состояние, input#name (value/onChange), p#preview \"Hi, ...\"\n  return null;\n}"
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -192,7 +192,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.jsx": "import { useState, useEffect } from \"react\";\n\nexport function App() {\n  // TODO: greeted-состояние, useEffect, p#status (loading → mounted)\n  return null;\n}"
+      "App.jsx": "import { useState, useEffect } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -233,7 +233,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: todos-состояние [\"Write code\"], ul#todos, button#add добавляет \"New task\"\n  return null;\n}"
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -278,7 +278,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.jsx": "import { useReducer } from \"react\";\n\n// TODO: reducer (inc/dec/reset) + кнопки #up #down #reset + span#val\nexport function App() {\n  return null;\n}"
+      "App.jsx": "import { useReducer } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -319,7 +319,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "App.jsx": "import { useState, useEffect } from \"react\";\n\n// Фейковый API: список имён через 100 мс\nexport async function fetchUsers() {\n  await new Promise((r) => setTimeout(r, 100));\n  return [\"Ada\", \"Linus\", \"Grace\"];\n}\n\nexport function App() {\n  // TODO: useEffect при монтировании, loading → список #users\n  return null;\n}"
+      "App.jsx": "import { useState, useEffect } from \"react\";\n\nexport async function fetchUsers() {\n  await new Promise((r) => setTimeout(r, 100));\n  return [\"Ada\", \"Linus\", \"Grace\"];\n}\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -360,7 +360,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "App.jsx": "import { useState } from \"react\";\n\n// TODO: Child (input + button \"Save\" → onRename(value)); App: name-состояние, #show\nexport function App() {\n  return null;\n}"
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -401,7 +401,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "App.jsx": "import { useState } from \"react\";\n\n// TODO: useCounter(initial) → { value, increment, decrement, reset }\n// App: useCounter(10), #val, кнопки #inc #dec #rst\nexport function App() {\n  return null;\n}"
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -442,7 +442,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "App.jsx": "import { useState, useEffect } from \"react\";\n\nconst FRUITS = [\"Apple\", \"Apricot\", \"Banana\", \"Peach\", \"Pear\"];\n\n// Фейковый API поиска: 80 мс, подстрока без учёта регистра\nexport function searchApi(query) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve(FRUITS.filter((f) => f.toLowerCase().includes(query.toLowerCase()))), 80)\n  );\n}\n\nexport function App() {\n  // TODO: input#q, query-состояние, useEffect с debounce 150ms, ul#res\n  return null;\n}"
+      "App.jsx": "import { useState, useEffect } from \"react\";\n\nconst FRUITS = [\"Apple\", \"Apricot\", \"Banana\", \"Peach\", \"Pear\"];\n\nexport function searchApi(query) {\n  return new Promise((resolve) =>\n    setTimeout(() => resolve(FRUITS.filter((f) => f.toLowerCase().includes(query.toLowerCase()))), 80)\n  );\n}\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {
@@ -483,7 +483,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  // TODO: email-состояние, submit-валидация, #ok / #err\n  return null;\n}"
+      "App.jsx": "import { useState } from \"react\";\n\nexport function App() {\n  return null;\n}\n"
     },
     "tests": [
       {

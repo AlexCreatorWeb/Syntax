@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Precise Type Checker\n// Точное имя типа значения\n\nfunction typeOf(value) {\n  // TODO: implement\n  return typeof value;\n}"
+      "index.js": "function typeOf(value) {\n  return typeof value;\n}\n"
     },
     "tests": [
       {
@@ -65,7 +65,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Once\n// Обёртка: функция вызывается только один раз\n\nfunction once(fn) {\n  // TODO: implement\n  return fn;\n}"
+      "index.js": "function once(fn) {\n  return fn;\n}\n"
     },
     "tests": [
       {
@@ -110,7 +110,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Curry for Three\n// curry3(fn): вызов целиком или по одному аргументу\n\nfunction curry3(fn) {\n  // TODO: implement\n  return fn;\n}"
+      "index.js": "function curry3(fn) {\n  return fn;\n}\n"
     },
     "tests": [
       {
@@ -159,7 +159,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Unique Values\n// Убери дубликаты, сохранив порядок\n\nfunction unique(arr) {\n  // TODO: implement\n  return arr;\n}"
+      "index.js": "function unique(arr) {\n  return arr;\n}\n"
     },
     "tests": [
       {
@@ -208,7 +208,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Map Values\n// Новое значение для каждого ключа: fn(value, key)\n\nfunction mapValues(obj, fn) {\n  // TODO: implement\n  return obj;\n}"
+      "index.js": "function mapValues(obj, fn) {\n  return obj;\n}\n"
     },
     "tests": [
       {
@@ -257,7 +257,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.js": "// Greeting Card\n// Шаблонная строка + деструктуризация + дефолты\n\nconst greet = (user) => {\n  // TODO: implement\n  return '';\n};"
+      "index.js": "const greet = (user) => {\n  return '';\n};\n"
     },
     "tests": [
       {
@@ -302,7 +302,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// Deep Clone\n// Глубокая копия структуры (объекты, массивы, примитивы, null)\n\nfunction deepClone(value) {\n  // TODO: implement\n  return value;\n}"
+      "index.js": "function deepClone(value) {\n  return value;\n}\n"
     },
     "tests": [
       {
@@ -351,7 +351,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// Chunk\n// Разбей массив на куски по size\n\nfunction chunk(arr, size) {\n  // TODO: implement\n  return [arr];\n}"
+      "index.js": "function chunk(arr, size) {\n  return [arr];\n}\n"
     },
     "tests": [
       {
@@ -400,7 +400,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// Deep Merge\n// Рекурсивное слияние: объекты — глубоко, остальное — из b\n\nfunction mergeDeep(a, b) {\n  // TODO: implement\n  return Object.assign({}, a, b);\n}"
+      "index.js": "function mergeDeep(a, b) {\n  return Object.assign({}, a, b);\n}\n"
     },
     "tests": [
       {
@@ -449,7 +449,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// Debounce\n// fn срабатывает только после ms миллисекунд тишины\n\nfunction debounce(fn, ms) {\n  // TODO: implement\n  return fn;\n}"
+      "index.js": "function debounce(fn, ms) {\n  return fn;\n}\n"
     },
     "tests": [
       {
@@ -494,7 +494,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.js": "// With Timeout\n// promise или Error('timeout') через ms\n\nasync function withTimeout(promise, ms) {\n  // TODO: implement\n  return promise;\n}"
+      "index.js": "async function withTimeout(promise, ms) {\n  return promise;\n}\n"
     },
     "tests": [
       {
@@ -539,8 +539,8 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Link counter</title>\n</head>\n<body>\n  <div id=\"content\">\n    <a href=\"/about\">About</a>\n    <a href=\"https://developer.mozilla.org\">MDN</a>\n    <a href=\"#top\">Top</a>\n    <a href=\"https://github.com\">GitHub</a>\n    <a href=\"/docs\">Docs</a>\n    <a href=\"https://syntax.dev\">Syntax</a>\n  </div>\n</body>\n</html>",
-      "index.js": "// Count External Links\n// Сколько ссылок внутри #content ведут на другой домен\n\nfunction countExternal() {\n  // TODO: implement\n  return 0;\n}\n\nconsole.log('external links:', countExternal());"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Link counter</title>\n</head>\n<body>\n  <div id=\"content\">\n    <a href=\"/about\">About</a>\n    <a href=\"https://developer.mozilla.org\">MDN</a>\n    <a href=\"#top\">Top</a>\n    <a href=\"https://github.com\">GitHub</a>\n    <a href=\"/docs\">Docs</a>\n    <a href=\"https://syntax.dev\">Syntax</a>\n  </div>\n</body>\n</html>\n",
+      "index.js": "function countExternal() {\n  return 0;\n}\n\nconsole.log('external links:', countExternal());\n"
     },
     "tests": [
       {
@@ -581,7 +581,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.js": "// allSettled-lite\n// Все промисы → массив статусов (fulfilled / rejected)\n\nasync function allSettledLite(promises) {\n  // TODO: implement\n  return [];\n}"
+      "index.js": "async function allSettledLite(promises) {\n  return [];\n}\n"
     },
     "tests": [
       {
@@ -630,8 +630,8 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Highlight</title>\n  <style>mark { background: #ffe9a8; }</style>\n</head>\n<body>\n  <p id=\"text\">Good code is written by humans for humans. Clean code reads like well-written text.</p>\n</body>\n</html>",
-      "index.js": "// Highlight Words\n// Оберни вхождения слова в <mark> (без учёта регистра, целые слова)\n\nfunction highlight(selector, word) {\n  // TODO: implement\n}\n\n// Запусти для слов из задания:\nhighlight('#text', 'code');"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Highlight</title>\n  <style>mark { background: #ffe9a8; }</style>\n</head>\n<body>\n  <p id=\"text\">Good code is written by humans for humans. Clean code reads like well-written text.</p>\n</body>\n</html>\n",
+      "index.js": "function highlight(selector, word) {\n}\n\nhighlight('#text', 'code');\n"
     },
     "tests": [
       {
@@ -676,7 +676,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.js": "// Retry with Backoff\n// Повторяй fn до times попыток, пауза delayMs между ними\n\nasync function retry(fn, times, delayMs) {\n  // TODO: implement\n  return fn();\n}"
+      "index.js": "async function retry(fn, times, delayMs) {\n  return fn();\n}\n"
     },
     "tests": [
       {

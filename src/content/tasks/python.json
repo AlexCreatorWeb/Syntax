@@ -20,7 +20,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "main.py": "# Reverse a String\n\ndef reverse_word(s):\n    # TODO: верни строку в обратном порядке\n    return s\n"
+      "main.py": "def reverse_word(s):\n    return s\n"
     },
     "tests": [
       {
@@ -65,7 +65,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "main.py": "# Sum of Even Numbers\n\ndef sum_evens(numbers):\n    # TODO: сумма чётных\n    return 0\n"
+      "main.py": "def sum_evens(numbers):\n    return 0\n"
     },
     "tests": [
       {
@@ -110,7 +110,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "main.py": "# Default and keyword arguments\n\ndef greet(name):\n    # TODO: greeting='Hello', punctuation='!' по умолчанию\n    return name\n"
+      "main.py": "def greet(name):\n    return name\n"
     },
     "tests": [
       {
@@ -155,7 +155,7 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "main.py": "# Word frequency counter\n\nfrom collections import Counter\n\ndef word_counts(text):\n    # TODO: dict слово → количество (lowercase, split по пробелам)\n    return {}\n"
+      "main.py": "from collections import Counter\n\ndef word_counts(text):\n    return {}\n"
     },
     "tests": [
       {
@@ -200,7 +200,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "main.py": "# Higher-order functions\n\ndef apply_all(fn, items):\n    # TODO: применение fn ко всем элементам\n    return []\n\ndef keep(fn, items):\n    # TODO: только элементы, где fn(x) — True\n    return []\n"
+      "main.py": "def apply_all(fn, items):\n    return []\n\ndef keep(fn, items):\n    return []\n"
     },
     "tests": [
       {
@@ -241,7 +241,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "main.py": "# Deep dict merge\n\ndef merge(a, b):\n    # TODO: новый dict; вложенные dict — рекурсивно, конфликты → из b\n    return {}\n"
+      "main.py": "def merge(a, b):\n    return {}\n"
     },
     "tests": [
       {
@@ -286,7 +286,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "main.py": "# FizzBuzz\n\ndef fizzbuzz(n):\n    # TODO: 1..n → строки Fizz/Buzz/FizzBuzz\n    return []\n"
+      "main.py": "def fizzbuzz(n):\n    return []\n"
     },
     "tests": [
       {
@@ -331,7 +331,7 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "main.py": "# Business days with datetime\n\nfrom datetime import date, timedelta\n\ndef business_days(start, days):\n    # TODO: start 'YYYY-MM-DD' + days рабочих дней (Mon-Fri) → 'YYYY-MM-DD'\n    return start\n"
+      "main.py": "from datetime import date, timedelta\n\ndef business_days(start, days):\n    return start\n"
     },
     "tests": [
       {
@@ -376,7 +376,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "main.py": "# Group by key\n\ndef group_by(items, key_fn):\n    # TODO: dict группа → список элементов (порядок сохраняется)\n    return {}\n"
+      "main.py": "def group_by(items, key_fn):\n    return {}\n"
     },
     "tests": [
       {
@@ -421,7 +421,7 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "main.py": "# JSON round trip\n\nimport json\n\ndef encode(obj):\n    # TODO: JSON-строка, ключи отсортированы\n    return ''\n\ndef decode(s):\n    # TODO: Python-объекты из JSON\n    return None\n\ndef round_trip(obj):\n    return decode(encode(obj))\n"
+      "main.py": "import json\n\ndef encode(obj):\n    return ''\n\ndef decode(s):\n    return None\n\ndef round_trip(obj):\n    return decode(encode(obj))\n"
     },
     "tests": [
       {

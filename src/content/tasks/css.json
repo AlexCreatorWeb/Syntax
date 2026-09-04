@@ -20,8 +20,8 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>CSS Box</title>\n</head>\n<body>\n  <div class=\"box\">box</div>\n</body>\n</html>",
-      "styles.css": "/* TODO: .box — background rgb(255, 0, 0), width 200px, height 100px */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>CSS Box</title>\n</head>\n<body>\n  <div class=\"box\">box</div>\n</body>\n</html>\n",
+      "styles.css": ".box {\n}\n"
     },
     "tests": [
       {
@@ -62,8 +62,8 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Spacing</title>\n</head>\n<body>\n  <div class=\"box\">box</div>\n</body>\n</html>",
-      "styles.css": "/* TODO: .box — padding 20px, margin 40px */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Spacing</title>\n</head>\n<body>\n  <div class=\"box\">box</div>\n</body>\n</html>\n",
+      "styles.css": ".box {\n}\n"
     },
     "tests": [
       {
@@ -104,8 +104,8 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Typography</title>\n</head>\n<body>\n  <h1>Hello, typography</h1>\n  <p>Paragraph with some text to measure line height and size.</p>\n</body>\n</html>",
-      "styles.css": "/* TODO: h1 — 32px/700/rgb(17,24,39)/center; p — 16px, line-height 1.6 */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Typography</title>\n</head>\n<body>\n  <h1>Hello, typography</h1>\n  <p>Paragraph with some text to measure line height and size.</p>\n</body>\n</html>\n",
+      "styles.css": "h1 {\n}\n"
     },
     "tests": [
       {
@@ -146,8 +146,8 @@
     "minutes": 15,
     "xp": 50,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Card</title>\n</head>\n<body>\n  <div class=\"card\">Card</div>\n</body>\n</html>",
-      "styles.css": "/* TODO: .card — radius 12px, border 1px solid rgb(229,231,235), shadow 0 4px 12px rgba(0,0,0,0.08), padding 24px */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Card</title>\n</head>\n<body>\n  <div class=\"card\">Card</div>\n</body>\n</html>\n",
+      "styles.css": ".card {\n}\n"
     },
     "tests": [
       {
@@ -192,8 +192,8 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Flex row</title>\n</head>\n<body>\n  <div class=\"row\">\n    <div class=\"item\">1</div>\n    <div class=\"item\">2</div>\n    <div class=\"item\">3</div>\n  </div>\n</body>\n</html>",
-      "styles.css": ".item {\n  width: 60px;\n  height: 40px;\n  background: rgb(59, 130, 246);\n  color: white;\n}\n\n/* TODO: .row — flex, center/center, gap 12px, height 120px */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Flex row</title>\n</head>\n<body>\n  <div class=\"row\">\n    <div class=\"item\">1</div>\n    <div class=\"item\">2</div>\n    <div class=\"item\">3</div>\n  </div>\n</body>\n</html>\n",
+      "styles.css": ".item {\n  width: 60px;\n  height: 40px;\n  background: rgb(59, 130, 246);\n  color: white;\n}\n"
     },
     "tests": [
       {
@@ -243,8 +243,8 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Toolbar</title>\n</head>\n<body>\n  <div class=\"toolbar\">\n    <span class=\"logo\">Logo</span>\n    <span class=\"mid\">Middle</span>\n    <span class=\"actions\">Actions</span>\n  </div>\n</body>\n</html>",
-      "styles.css": "/* TODO: .toolbar — flex, space-between, align center, padding 8px 16px */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Toolbar</title>\n</head>\n<body>\n  <div class=\"toolbar\">\n    <span class=\"logo\">Logo</span>\n    <span class=\"mid\">Middle</span>\n    <span class=\"actions\">Actions</span>\n  </div>\n</body>\n</html>\n",
+      "styles.css": ".toolbar {\n}\n"
     },
     "tests": [
       {
@@ -294,8 +294,8 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Grid</title>\n</head>\n<body>\n  <div class=\"grid\">\n    <div class=\"cell\">1</div>\n    <div class=\"cell\">2</div>\n    <div class=\"cell\">3</div>\n    <div class=\"cell\">4</div>\n    <div class=\"cell\">5</div>\n    <div class=\"cell\">6</div>\n  </div>\n</body>\n</html>",
-      "styles.css": ".cell {\n  background: rgb(34, 197, 94);\n  color: white;\n  padding: 16px;\n}\n\n/* TODO: .grid — grid, 3 equal columns, gap 16px */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Grid</title>\n</head>\n<body>\n  <div class=\"grid\">\n    <div class=\"cell\">1</div>\n    <div class=\"cell\">2</div>\n    <div class=\"cell\">3</div>\n    <div class=\"cell\">4</div>\n    <div class=\"cell\">5</div>\n    <div class=\"cell\">6</div>\n  </div>\n</body>\n</html>\n",
+      "styles.css": ".cell {\n  background: rgb(34, 197, 94);\n  color: white;\n  padding: 16px;\n}\n"
     },
     "tests": [
       {
@@ -341,8 +341,8 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Reading</title>\n</head>\n<body>\n  <h2>Long-form article</h2>\n  <p>This paragraph is intentionally long so that the max-width constraint becomes visible in the preview: text that flows into a narrow centered column is much easier to read than a wall of text spanning the whole window. Keep your eyes on the line length.</p>\n</body>\n</html>",
-      "styles.css": "/* TODO: p — 18px, line-height 1.7, max-width 640px, centered (margin auto); h2 — letter-spacing -0.02em, font-weight 800 */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Reading</title>\n</head>\n<body>\n  <h2>Long-form article</h2>\n  <p>This paragraph is intentionally long so that the max-width constraint becomes visible in the preview: text that flows into a narrow centered column is much easier to read than a wall of text spanning the whole window. Keep your eyes on the line length.</p>\n</body>\n</html>\n",
+      "styles.css": "p {\n}\n"
     },
     "tests": [
       {
@@ -387,8 +387,8 @@
     "minutes": 30,
     "xp": 100,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Animation</title>\n</head>\n<body>\n  <div class=\"dot\"></div>\n</body>\n</html>",
-      "styles.css": ".dot {\n  width: 48px;\n  height: 48px;\n  margin: 80px auto;\n  background: rgb(16, 185, 129);\n  border-radius: 50%;\n}\n\n/* TODO: @keyframes pulse (50% → scale(1.1)) + .dot { animation: pulse 1s infinite } */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Animation</title>\n</head>\n<body>\n  <div class=\"dot\"></div>\n</body>\n</html>\n",
+      "styles.css": ".dot {\n  width: 48px;\n  height: 48px;\n  margin: 80px auto;\n  background: rgb(16, 185, 129);\n  border-radius: 50%;\n}\n"
     },
     "tests": [
       {
@@ -430,8 +430,8 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Lift</title>\n</head>\n<body>\n  <div class=\"lift\">Hover me</div>\n</body>\n</html>",
-      "styles.css": ".lift {\n  width: 220px;\n  margin: 80px auto;\n  padding: 24px;\n  background: white;\n  border-radius: 12px;\n  text-align: center;\n}\n\n/* TODO: базовый transform/box-shadow/transition + :hover (translateY(-8px), большая тень) */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Lift</title>\n</head>\n<body>\n  <div class=\"lift\">Hover me</div>\n</body>\n</html>\n",
+      "styles.css": ".lift {\n  width: 220px;\n  margin: 80px auto;\n  padding: 24px;\n  background: white;\n  border-radius: 12px;\n  text-align: center;\n}\n"
     },
     "tests": [
       {
@@ -477,8 +477,8 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Layout</title>\n</head>\n<body>\n  <div class=\"layout\">\n    <div class=\"layout-header\">Header</div>\n    <div class=\"layout-sidebar\">Sidebar</div>\n    <div class=\"layout-main\">Main</div>\n    <div class=\"layout-footer\">Footer</div>\n  </div>\n</body>\n</html>",
-      "styles.css": ".layout > div {\n  background: rgb(148, 163, 184);\n  color: white;\n  padding: 12px;\n}\n\n/* TODO: .layout — grid + named areas; каждому .layout-* — grid-area */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Layout</title>\n</head>\n<body>\n  <div class=\"layout\">\n    <div class=\"layout-header\">Header</div>\n    <div class=\"layout-sidebar\">Sidebar</div>\n    <div class=\"layout-main\">Main</div>\n    <div class=\"layout-footer\">Footer</div>\n  </div>\n</body>\n</html>\n",
+      "styles.css": ".layout > div {\n  background: rgb(148, 163, 184);\n  color: white;\n  padding: 12px;\n}\n"
     },
     "tests": [
       {
@@ -528,8 +528,8 @@
     "minutes": 60,
     "xp": 200,
     "files": {
-      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Stack</title>\n</head>\n<body>\n  <div class=\"stack\">\n    <div class=\"card-in-stack\">A</div>\n    <div class=\"card-in-stack\">B</div>\n    <div class=\"card-in-stack\">C</div>\n    <div class=\"card-in-stack\">D</div>\n    <div class=\"card-in-stack\">E</div>\n  </div>\n</body>\n</html>",
-      "styles.css": ".card-in-stack {\n  background: rgb(168, 85, 247);\n  color: white;\n  padding: 20px;\n  text-align: center;\n}\n\n/* TODO: .stack — flex, wrap, gap 16px; .card-in-stack — flex 1 1 160px, max-width 220px */"
+      "index.html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <title>Stack</title>\n</head>\n<body>\n  <div class=\"stack\">\n    <div class=\"card-in-stack\">A</div>\n    <div class=\"card-in-stack\">B</div>\n    <div class=\"card-in-stack\">C</div>\n    <div class=\"card-in-stack\">D</div>\n    <div class=\"card-in-stack\">E</div>\n  </div>\n</body>\n</html>\n",
+      "styles.css": ".card-in-stack {\n  background: rgb(168, 85, 247);\n  color: white;\n  padding: 20px;\n  text-align: center;\n}\n"
     },
     "tests": [
       {
