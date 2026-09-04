@@ -1,5 +1,17 @@
 {
   "rewrites": [
     { "source": "/((?!assets/|api/).*)", "destination": "/index.html" }
-  ]
+  ],
+  "firewall": {
+    "enable": true,
+    "rules": [
+      { "kind": "path", "pathname": "/og-cover.png", "action": "allow" },
+      {
+        "kind": "header",
+        "name": "User-Agent",
+        "pattern": "Twitterbot|facebookexternalhit|TelegramBot|WhatsApp/2\\.0|Slackbot|LinkedInBot|Discord|VKShare|Pinterest|W3C_Validator|FaceD|reddit",
+        "action": "allow"
+      }
+    ]
+  }
 }
