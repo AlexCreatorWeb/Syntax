@@ -95,8 +95,20 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
       }}
     >
       <div className="signup__box" ref={boxRef}>
-        <button type="button" className="signup__close" onClick={onClose} aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <button
+          type="button"
+          className="signup__close"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -105,14 +117,25 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
           // Signup ушёл, но сессии нет (Supabase требует подтвердить email)
           <div className="auth__sent">
             <div className="auth__sent-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <path d="m3 7 9 6 9-6" />
               </svg>
             </div>
             <h2 className="signup__title">{t("auth.emailSentTitle")}</h2>
             <p className="signup__subtitle">{t("auth.emailSent", { email })}</p>
-            <button type="button" className="btn btn--primary signup__submit" onClick={onClose}>
+            <button
+              type="button"
+              className="btn btn--primary signup__submit"
+              onClick={onClose}
+            >
               {t("auth.emailSentOk")}
             </button>
           </div>
@@ -121,14 +144,28 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
           // поэтому успех всегда показываем, без «нет такого email»)
           <div className="auth__sent">
             <div className="auth__sent-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <path d="m3 7 9 6 9-6" />
               </svg>
             </div>
             <h2 className="signup__title">{t("auth.emailSentTitle")}</h2>
             <p className="signup__subtitle">{t("auth.resetSent", { email })}</p>
-            <button type="button" className="btn btn--primary signup__submit" onClick={() => { setForgot(false); setResetSent(false); }}>
+            <button
+              type="button"
+              className="btn btn--primary signup__submit"
+              onClick={() => {
+                setForgot(false);
+                setResetSent(false);
+              }}
+            >
               {t("auth.backToLogin")}
             </button>
           </div>
@@ -137,7 +174,11 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
           <>
             <h2 className="signup__title">{t("auth.forgotTitle")}</h2>
             <p className="signup__subtitle">{t("auth.forgotSubtitle")}</p>
-            <form className="signup__form" onSubmit={submitReset} aria-busy={busy}>
+            <form
+              className="signup__form"
+              onSubmit={submitReset}
+              aria-busy={busy}
+            >
               <input
                 className="field"
                 type="email"
@@ -150,33 +191,66 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
               />
               {error && (
                 <p className="auth__error" role="alert">
-                  {t(`auth.err${error.charAt(0).toUpperCase()}${error.slice(1)}`)}
+                  {t(
+                    `auth.err${error.charAt(0).toUpperCase()}${error.slice(1)}`,
+                  )}
                 </p>
               )}
-              <button type="submit" className="btn btn--primary signup__submit" disabled={busy}>
+              <button
+                type="submit"
+                className="btn btn--primary signup__submit"
+                disabled={busy}
+              >
                 {busy ? (
                   <span className="auth__spinner" aria-hidden="true" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
                 )}
                 {t("auth.forgotSubmit")}
               </button>
             </form>
-            <button type="button" className="signup__switch" onClick={() => { setForgot(false); setError(null); }}>
+            <button
+              type="button"
+              className="signup__switch"
+              onClick={() => {
+                setForgot(false);
+                setError(null);
+              }}
+            >
               {t("auth.backToLogin")}
             </button>
           </>
         ) : (
           <>
-            <h2 className="signup__title">{t(isLogin ? "auth.loginTitle" : ctx === "challenge" ? "signup.titleChallenge" : "signup.title")}</h2>
-            <p className="signup__subtitle">{t(isLogin ? "auth.loginSubtitle" : ctx === "challenge" ? "signup.subtitleChallenge" : "signup.subtitle")}</p>
-            <form
-              className="signup__form"
-              onSubmit={submit}
-              aria-busy={busy}
-            >
+            <h2 className="signup__title">
+              {t(
+                isLogin
+                  ? "auth.loginTitle"
+                  : ctx === "challenge"
+                    ? "signup.titleChallenge"
+                    : "signup.title",
+              )}
+            </h2>
+            <p className="signup__subtitle">
+              {t(
+                isLogin
+                  ? "auth.loginSubtitle"
+                  : ctx === "challenge"
+                    ? "signup.subtitleChallenge"
+                    : "signup.subtitle",
+              )}
+            </p>
+            <form className="signup__form" onSubmit={submit} aria-busy={busy}>
               {!isLogin && (
                 <input
                   className="field"
@@ -210,14 +284,28 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
               />
               {error && (
                 <p className="auth__error" role="alert">
-                  {t(`auth.err${error.charAt(0).toUpperCase()}${error.slice(1)}`)}
+                  {t(
+                    `auth.err${error.charAt(0).toUpperCase()}${error.slice(1)}`,
+                  )}
                 </p>
               )}
-              <button type="submit" className="btn btn--primary signup__submit" disabled={busy}>
+              <button
+                type="submit"
+                className="btn btn--primary signup__submit"
+                disabled={busy}
+              >
                 {busy ? (
                   <span className="auth__spinner" aria-hidden="true" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
                 )}
@@ -225,12 +313,25 @@ function AuthModal({ mode, onClose, onSwitchMode, ctx, onContinueAsGuest }) {
               </button>
             </form>
             {isLogin && (
-              <button type="button" className="signup__forgot" onClick={() => { setForgot(true); setError(null); }}>
+              <button
+                type="button"
+                className="signup__forgot"
+                onClick={() => {
+                  setForgot(true);
+                  setError(null);
+                }}
+              >
                 {t("auth.forgot")}
               </button>
             )}
-            <button type="button" className="signup__switch" onClick={() => onSwitchMode(isLogin ? "signup" : "login")}>
-              {t(isLogin ? "auth.toSignup" : "auth.toLogin", { action: t(isLogin ? "auth.signupCta" : "auth.loginCta") })}
+            <button
+              type="button"
+              className="signup__switch"
+              onClick={() => onSwitchMode(isLogin ? "signup" : "login")}
+            >
+              {t(isLogin ? "auth.toSignup" : "auth.toLogin", {
+                action: t(isLogin ? "auth.signupCta" : "auth.loginCta"),
+              })}
             </button>
             <button
               type="button"

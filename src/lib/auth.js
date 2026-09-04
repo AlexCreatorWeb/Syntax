@@ -11,7 +11,9 @@ export const authConfigured = supabaseConfigured;
 // access_token) — такой формат тоже признаём (view-session, для uid/email).
 export function readStoredSession() {
   try {
-    const key = Object.keys(localStorage).find((k) => /^sb-.*-auth-token$/.test(k));
+    const key = Object.keys(localStorage).find((k) =>
+      /^sb-.*-auth-token$/.test(k),
+    );
     if (!key) return null;
     const parsed = JSON.parse(localStorage.getItem(key) || "null");
     if (!parsed) return null;
@@ -26,7 +28,9 @@ export function readStoredSession() {
 }
 
 export function getSession() {
-  return supabase ? supabase.auth.getSession() : Promise.resolve({ data: { session: null } });
+  return supabase
+    ? supabase.auth.getSession()
+    : Promise.resolve({ data: { session: null } });
 }
 
 // Гостевой режим («Continue as guest», UX-аудит 2026-09): обещанный путь работает —
@@ -52,7 +56,9 @@ export function setGuestActive(on) {
 export function onAuthChange(cb) {
   if (!supabase) return () => {};
   // supabase-js v2: возвращает { data: { subscription } } — unsub через subscription.unsubscribe()
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => cb(session));
+  const { data } = supabase.auth.onAuthStateChange((_event, session) =>
+    cb(session),
+  );
   return () => data.subscription.unsubscribe();
 }
 
@@ -67,7 +73,10 @@ export async function signUp({ name, email, password }) {
 }
 
 export async function signIn({ email, password }) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) throw mapAuthError(error);
   return { session: data.session, user: data.user };
 }
@@ -96,10 +105,43 @@ export function currentUid() {
 // Сбой некритичен — имя отображается из user_metadata сессии.
 export function syncProfile(user) {
   if (!supabase || !user) return;
-  const fullName = (user.user_metadata && user.user_metadata.full_name) || user.email.split("@")[0];
+  const fullName =
+    (user.user_metadata && user.user_metadata.full_name) ||
+    user.email.split("@")[0];
   supabase
     .from("profiles")
     .upsert({ id: user.id, email: user.email, full_name: fullName })
+    .then(() => {})
+    .catch(() => {});
+}
+
+// Смена отображаемого имени: user_metadata (Supabase Auth) + строка в profiles.
+// updateUser шлёт USER_UPDATED → onAuthChange обновит сессию в App → имя в UI.
+// Возвращает true, если Auth-обновление применилось (profiles — fire-and-forget).
+export async function updateUserName(user, name) {
+  if (!supabase || !user) return false;
+  const fullName = String(name || "").trim();
+  const { error } = await supabase.auth.updateUser({
+    data: { full_name: fullName },
+  });
+  if (error) return false;
+  supabase
+    .from("profiles")
+    .update({ full_name: fullName })
+    .eq("id", user.id)
+    .then(() => {})
+    .catch(() => {});
+  return true;
+}
+
+// data-URL аватара в profiles.avatarurl (fire-and-forget; сбой некритичен —
+// локальная копия в localStorage уже жива).
+export function saveAvatarUrl(user, url) {
+  if (!supabase || !user) return;
+  supabase
+    .from("profiles")
+    .update({ avatarurl: url })
+    .eq("id", user.id)
     .then(() => {})
     .catch(() => {});
 }
@@ -112,9 +154,11 @@ function mapAuthError(e) {
   if (/invalid (login )?credentials/i.test(message)) err.code = "invalid";
   else if (/not confirmed/i.test(message)) err.code = "unconfirmed";
   else if (/already (been )?registered/i.test(message)) err.code = "exists";
-  else if (/password.*(at least|short|weak)|weak password/i.test(message)) err.code = "weak";
+  else if (/password.*(at least|short|weak)|weak password/i.test(message))
+    err.code = "weak";
   else if (/rate limit|over_email_send/i.test(message)) err.code = "rateLimit";
-  else if (e.status === 0 || /failed to fetch|network/i.test(message)) err.code = "network";
+  else if (e.status === 0 || /failed to fetch|network/i.test(message))
+    err.code = "network";
   else err.code = "generic";
   return err;
 }

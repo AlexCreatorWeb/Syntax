@@ -30,6 +30,25 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI
 export const isAiConfigured = () =>
   Boolean(GEMINI_KEY || AI_PROXY_BASE || import.meta.env.PROD);
 
+// Прямой запрос к Google — только если есть локальный ключ И не задан внешний прокси.
+// DEV часто гео-блокирован Google'ом → VITE_AI_PROXY_URL переключает на prod-Vercel-прокси
+// (браузер ходит на Vercel, тот — к Google со своего, поддержанного IP).
+const USE_DIRECT = Boolean(GEMINI_KEY) && !AI_PROXY_BASE;
+
+// Прогрев прокси-хоста: fire-and-forget GET (наш /api/ai отвечает {ok: true} на GET).
+// Vercel Security Checkpoint срабатывает интермиттентно на datacenter-IP — прогрев +
+// ретраи в askAssistant повышают шанс, что первый же вопрос дойдёт до модели.
+let prewarmed = false;
+export function prewarmAiProxy() {
+  if (prewarmed || USE_DIRECT) return;
+  prewarmed = true;
+  try {
+    fetch(proxyTarget(), { method: "GET" }).catch(() => {});
+  } catch {
+    /* не критично */
+  }
+}
+
 // Ошибка с «человечным» кодом: badKey / credits / rateLimit / modelLoading / network / http.
 export class AiError extends Error {
   constructor(code, message) {
@@ -155,12 +174,8 @@ export async function askAssistant({
     acc += txt;
     onToken(acc);
   };
-  // Прямой запрос к Google — только если есть локальный ключ И не задан внешний прокси.
-  // DEV часто гео-блокирован Google'ом → VITE_AI_PROXY_URL переключает на prod-Vercel-прокси
-  // (браузер ходит на Vercel, тот — к Google со своего, поддержанного IP).
-  const useDirect = Boolean(GEMINI_KEY) && !AI_PROXY_BASE;
   try {
-    if (useDirect) {
+    if (USE_DIRECT) {
       await streamChatCompletion({
         headers: {
           "Content-Type": "application/json",
@@ -171,12 +186,35 @@ export async function askAssistant({
         onToken: token,
       });
     } else {
-      await proxyStream({
-        url: proxyTarget(),
-        signal,
-        onToken: token,
-        body: { techName, history: hist, question },
-      });
+      // Ретраи (до 3) — только пока НЕ отправлен ни один токен (иначе UI получит
+      // «двойной» ответ) и только для транзиентных кодов: Vercel Security Checkpoint
+      // (403 с HTML вместо SSE), сетевые сбои, прогрев модели.
+      const RETRYABLE = new Set(["gateway", "network", "modelLoading"]);
+      let lastErr = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          await proxyStream({
+            url: proxyTarget(),
+            signal,
+            onToken: token,
+            body: { techName, history: hist, question },
+          });
+          lastErr = null;
+          break;
+        } catch (e) {
+          if (e && e.name === "AbortError") throw e;
+          // В «волну» челленджа пафайльт (OPTIONS) тоже получает 403 без CORS-хедеров
+          // → браузер кидает TypeError (не AiError) — превращаем в retryable network.
+          const err =
+            e instanceof AiError
+              ? e
+              : new AiError("network", (e && e.message) || "Network error");
+          if (!RETRYABLE.has(err.code) || acc !== "") throw err;
+          lastErr = err;
+          await abortableDelay(1200 + attempt * 1000, signal);
+        }
+      }
+      if (lastErr) throw lastErr;
     }
   } catch (e) {
     if (e && e.name === "AbortError") throw e;
@@ -184,6 +222,21 @@ export async function askAssistant({
     throw new AiError("network", e && e.message ? e.message : "Network error");
   }
   return acc;
+}
+
+// Пауза, отменяемая signal (для ретраев между попытками).
+function abortableDelay(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(resolve, ms);
+    if (!signal) return;
+    const onAbort = () => {
+      clearTimeout(t);
+      const e = new Error("Aborted");
+      e.name = "AbortError";
+      reject(e);
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
 }
 
 // PROD: POST /api/ai (Vercel-прокси уже держит ключ) — SSE passthrough того же формата Gemini.
@@ -195,17 +248,26 @@ async function proxyStream({ body, signal, onToken, url = "/api/ai" }) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    let code = "http";
+  const ctype = res.headers.get("content-type") || "";
+  if (!res.ok || !ctype.includes("text/event-stream")) {
     let message = `HTTP ${res.status}`;
     try {
-      const data = await res.json();
-      message = (data && data.error) || message;
+      if (ctype.includes("application/json")) {
+        const data = await res.json();
+        message = (data && data.error) || message;
+      } else {
+        message = (await res.text()).slice(0, 60) || message;
+      }
     } catch {
-      /* тело не JSON */
+      /* тело не распарсилось — держим HTTP-статус */
     }
+    // HTML вместо SSE — Vercel Security Checkpoint / CDN-страница. Это «шлюз занят»,
+    // а НЕ неверный ключ (раньше 403 мапился в badKey и UI показывал «ключ истёк»).
+    if (/text\/html/i.test(ctype)) throw new AiError("gateway", message);
+    let code = "http";
     if (res.status === 401 || res.status === 403) code = "badKey";
     else if (res.status === 429) code = "rateLimit";
+    else if (res.status === 503) code = "modelLoading";
     throw new AiError(code, message);
   }
   const reader = res.body.getReader();

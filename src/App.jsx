@@ -434,6 +434,7 @@ function App() {
             progressTick={progressTick}
             docsRoute={docsRoute}
             onDocsRoute={navigateDocs}
+            onToggleTheme={toggleTheme}
           />
         </RouteErrorBoundary>
         <WidgetPanel

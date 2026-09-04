@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useT } from "../i18n/useT";
-import { isAiConfigured, askAssistant, AI_MODEL, AI_MODEL_DISPLAY } from "../lib/ai";
+import {
+  isAiConfigured,
+  askAssistant,
+  prewarmAiProxy,
+  AI_MODEL,
+  AI_MODEL_DISPLAY,
+} from "../lib/ai";
 import { MdContent } from "../lib/markdown-view";
 
 // Модель иногда пишет открывающий fence в одной строке с кодом («```js function x(){»)
@@ -8,7 +14,7 @@ import { MdContent } from "../lib/markdown-view";
 // max_tokens с НЕЗАКРЫТЫМ блоком — тогда ``` остаётся на тексте; доклеиваем.
 const fixMd = (s) => {
   let out = s.replace(/^```([\w-]*)[ \t]+(\S)/gm, "```$1\n$2");
-  if (((out.match(/```/g) || []).length) % 2 === 1) out += "\n```";
+  if ((out.match(/```/g) || []).length % 2 === 1) out += "\n```";
   return out;
 };
 
@@ -27,26 +33,46 @@ function AiChat({ techId }) {
   const stickRef = useRef(true);
   const onChatScroll = () => {
     const el = boxRef.current;
-    if (el) stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (el)
+      stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   };
   const configured = isAiConfigured();
 
   const errKey =
-    error === "badKey" ? "ai.errBadKey" :
-    error === "rateLimit" ? "ai.errRateLimit" :
-    error === "credits" ? "ai.errCredits" :
-    error === "modelLoading" ? "ai.errModel" :
-    "ai.errGeneric";
+    error === "badKey"
+      ? "ai.errBadKey"
+      : error === "gateway" || error === "network"
+        ? "ai.errGateway"
+        : error === "rateLimit"
+          ? "ai.errRateLimit"
+          : error === "credits"
+            ? "ai.errCredits"
+            : error === "modelLoading"
+              ? "ai.errModel"
+              : "ai.errGeneric";
 
   // Авто-скролл вниз на новые сообщения и при стриминге — ТОЛЬКО если пользователь не ушёл читать вверх
-  const lastContent = messages.length ? messages[messages.length - 1].content : "";
+  const lastContent = messages.length
+    ? messages[messages.length - 1].content
+    : "";
   useEffect(() => {
     const el = boxRef.current;
     if (el && stickRef.current) el.scrollTop = el.scrollHeight;
   }, [messages.length, lastContent]);
 
   // Отмена полёта запроса при unmount (ушли со страницы технологии)
-  useEffect(() => () => { if (abortRef.current) abortRef.current.abort(); }, []);
+  useEffect(
+    () => () => {
+      if (abortRef.current) abortRef.current.abort();
+    },
+    [],
+  );
+
+  // Прогрев AI-прокси на mount: Vercel Security Checkpoint бьёт интермиттентно —
+  // ранний GET повышает шанс, что первый же вопрос дойдёт до модели.
+  useEffect(() => {
+    if (configured) prewarmAiProxy();
+  }, [configured]);
 
   const send = async () => {
     const question = draft.trim();
@@ -56,7 +82,10 @@ function AiChat({ techId }) {
     setBusy(true);
     const history = messages
       .filter((m) => m.content)
-      .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
+      .map((m) => ({
+        role: m.role === "ai" ? "assistant" : "user",
+        content: m.content,
+      }));
     const userMsg = { id: `u${Date.now()}`, role: "user", content: question };
     const aiMsg = { id: `a${Date.now()}`, role: "ai", content: "" };
     stickRef.current = true; // свой вопрос — всегда показываем низ чата
@@ -100,7 +129,8 @@ function AiChat({ techId }) {
     setError(null);
   };
 
-  const typing = busy && messages.length > 0 && !messages[messages.length - 1].content;
+  const typing =
+    busy && messages.length > 0 && !messages[messages.length - 1].content;
 
   return (
     <section className="card rail-card tech-aside__ai">
@@ -112,14 +142,29 @@ function AiChat({ techId }) {
           </h2>
         </div>
         {/* Имя модели — под заголовком */}
-        <span className="tech-aside__model-chip" title={AI_MODEL}>{AI_MODEL_DISPLAY}</span>
+        <span className="tech-aside__model-chip" title={AI_MODEL}>
+          {AI_MODEL_DISPLAY}
+        </span>
       </div>
 
       {/* Кнопка очистки — вверху чата (не при заголовке), всегда на месте, не скроллится */}
       {messages.length > 0 && (
         <div className="tech-aside__chat-toolbar">
-          <button type="button" className="icon-btn tech-aside__clear" title={t("ai.clear")} aria-label={t("ai.clear")} onClick={clear}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <button
+            type="button"
+            className="icon-btn tech-aside__clear"
+            title={t("ai.clear")}
+            aria-label={t("ai.clear")}
+            onClick={clear}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
               <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6" />
             </svg>
           </button>
@@ -128,26 +173,46 @@ function AiChat({ techId }) {
 
       <div className="tech-aside__chat" ref={boxRef} onScroll={onChatScroll}>
         {/* Приветствие — первым сообщением в чате (пузырь, как ответ модели) */}
-        <p className="tech-aside__bubble tech-aside__bubble--ai">{t("techPage.aiGreet")}</p>
+        <p className="tech-aside__bubble tech-aside__bubble--ai">
+          {t("techPage.aiGreet")}
+        </p>
         {messages.map((m) =>
           m.role === "user" ? (
-            <p key={m.id} className="tech-aside__bubble tech-aside__bubble--user">{m.content}</p>
+            <p
+              key={m.id}
+              className="tech-aside__bubble tech-aside__bubble--user"
+            >
+              {m.content}
+            </p>
           ) : m.content ? (
-            <div key={m.id} className="tech-aside__bubble tech-aside__bubble--ai tech-aside__bubble--md">
+            <div
+              key={m.id}
+              className="tech-aside__bubble tech-aside__bubble--ai tech-aside__bubble--md"
+            >
               <MdContent src={fixMd(m.content)} t={t} />
             </div>
-          ) : null
+          ) : null,
         )}
         {typing && (
-          <div className="tech-aside__bubble tech-aside__bubble--ai tech-aside__typing" aria-live="polite">
+          <div
+            className="tech-aside__bubble tech-aside__bubble--ai tech-aside__typing"
+            aria-live="polite"
+          >
             <span className="tech-aside__typing-dots" aria-hidden="true">
-              <i></i><i></i><i></i>
+              <i></i>
+              <i></i>
+              <i></i>
             </span>
             {t("ai.thinking")}
           </div>
         )}
         {error && !busy && (
-          <p className="tech-aside__bubble tech-aside__bubble--err" role="alert">{t(errKey)}</p>
+          <p
+            className="tech-aside__bubble tech-aside__bubble--err"
+            role="alert"
+          >
+            {t(errKey)}
+          </p>
         )}
       </div>
 
@@ -160,7 +225,9 @@ function AiChat({ techId }) {
           value={draft}
           disabled={!configured || busy}
           onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") send();
+          }}
         />
         <button
           type="button"
@@ -170,7 +237,14 @@ function AiChat({ techId }) {
           disabled={!configured || busy || !draft.trim()}
           onClick={send}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M5 12 20 4l-4 16-4-6-7-2Z" />
           </svg>
         </button>

@@ -3,6 +3,7 @@ import { useLanguage } from "../context/useLanguage";
 import { UI_LANGUAGES } from "../context/uiLanguages";
 import { useT } from "../i18n/useT";
 import { NAV_GROUPS, NAV_BOTTOM, NAV_ICONS } from "./nav-data";
+import { useAvatar } from "../lib/avatar";
 
 // Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
 // Лого всегда оригинальный Syntax (тех-лого живёт на странице технологии — UX-фидбек);
@@ -24,6 +25,7 @@ function Header({
 }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
+  const [avatarUrl] = useAvatar(); // загруженное фото (если есть — вместо монограммы)
   const [isOpen, setIsOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState(null); // "notif" | "account" | null
   const [menuOpen, setMenuOpen] = useState(false); // мобильное burger-меню (≤640px)
@@ -305,12 +307,16 @@ function Header({
                 }
               >
                 <span
-                  className="avatar-dot avatar-dot--sm"
-                  style={{
-                    background: `linear-gradient(135deg, hsl(${nameHue} 45% 32%), hsl(${nameHue} 55% 18%))`,
-                  }}
+                  className={`avatar-dot avatar-dot--sm${avatarUrl ? " avatar-dot--img" : ""}`}
+                  style={
+                    avatarUrl
+                      ? { backgroundImage: `url(${avatarUrl})` }
+                      : {
+                          background: `linear-gradient(135deg, hsl(${nameHue} 45% 32%), hsl(${nameHue} 55% 18%))`,
+                        }
+                  }
                 >
-                  {user.charAt(0).toUpperCase()}
+                  {!avatarUrl && user.charAt(0).toUpperCase()}
                 </span>
               </button>
               <div
@@ -510,9 +516,11 @@ function Header({
               </span>
               {t("notifications.title")}
               <span className="mobile-menu__badge">
-                {mediumNews.filter(
-                  (n) => seenNewsLinks && !seenNewsLinks.has(n.link),
-                ).length}
+                {
+                  mediumNews.filter(
+                    (n) => seenNewsLinks && !seenNewsLinks.has(n.link),
+                  ).length
+                }
               </span>
             </button>
             {NAV_GROUPS.map((group) => (

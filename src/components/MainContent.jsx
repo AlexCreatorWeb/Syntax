@@ -9,6 +9,7 @@ import DocsView from "./views/DocsView";
 import RankingsView from "./views/RankingsView";
 import CommunityView from "./views/CommunityView";
 import ProfileView from "./views/ProfileView";
+import SettingsView from "./views/SettingsView";
 import { useT } from "../i18n/useT";
 import { useLanguage } from "../context/useLanguage";
 import { getCompleted, getDoneTasks } from "../lib/progress";
@@ -42,6 +43,7 @@ function MainContent({
   progressTick,
   docsRoute,
   onDocsRoute,
+  onToggleTheme,
 }) {
   const t = useT();
   const { langCode } = useLanguage();
@@ -369,7 +371,15 @@ function MainContent({
       case "community":
         return <CommunityView activeTech={activeTech} />;
       case "settings":
-        return renderPlaceholder("settings");
+        return (
+          <SettingsView
+            theme={theme}
+            onToggleTheme={onToggleTheme}
+            session={session}
+            userName={userName}
+            onLogout={onLogout}
+          />
+        );
       case "support":
         return renderPlaceholder("support");
       case "profile":
