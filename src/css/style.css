@@ -9264,9 +9264,10 @@ code {
   gap: 10px;
   align-items: center;
 }
-.settings__name-row .input {
+.settings__name-row .field {
   flex: 1;
   min-width: 0;
+  line-height: 20px; /* та же высота, что у кнопки рядом (42px) */
 }
 .settings__name-state {
   font-size: 12px;
@@ -9320,7 +9321,7 @@ code {
   .settings__name-row {
     flex-wrap: wrap;
   }
-  .settings__name-row .input {
+  .settings__name-row .field {
     flex: 1 1 100%;
   }
   .settings__fact dt {

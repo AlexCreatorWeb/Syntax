@@ -773,6 +773,10 @@ export default {
     saving: "Saving…",
     saved: "Saved ✓",
     saveErr: "Could not save — try again",
+    learn: "Your course",
+    learnDesc:
+      "Jump back to your roadmap and pick up right where you left off.",
+    continueLearning: "Continue Learning",
     account: "Account",
     email: "Email",
     memberSince: "Member since",

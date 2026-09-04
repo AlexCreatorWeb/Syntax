@@ -385,6 +385,7 @@ function MainContent({
             session={session}
             userName={userName}
             onLogout={onLogout}
+            onNavigate={onNavigate}
           />
         );
       case "support":

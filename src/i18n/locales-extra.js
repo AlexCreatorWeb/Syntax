@@ -383,6 +383,10 @@ export const LOCALES_EXTRA = {
       saving: "Зберігаємо…",
       saved: "Збережено ✓",
       saveErr: "Не вдалося зберегти — спробуйте ще раз",
+      learn: "Ваше навчання",
+      learnDesc:
+        "Повернутися до дорожньої карти та продовжити з того місця, де зупинилися.",
+      continueLearning: "Продовжити навчання",
       account: "Акаунт",
       email: "Email",
       memberSince: "Дата реєстрації",
@@ -1049,6 +1053,10 @@ export const LOCALES_EXTRA = {
       saving: "Guardando…",
       saved: "Guardado ✓",
       saveErr: "No se pudo guardar — inténtalo de nuevo",
+      learn: "Tu curso",
+      learnDesc:
+        "Vuelve a tu ruta de aprendizaje y continúa donde lo dejaste.",
+      continueLearning: "Continuar aprendiendo",
       account: "Cuenta",
       email: "Email",
       memberSince: "Miembro desde",
@@ -1721,6 +1729,10 @@ export const LOCALES_EXTRA = {
       saving: "Wird gespeichert…",
       saved: "Gespeichert ✓",
       saveErr: "Speichern fehlgeschlagen — bitte erneut versuchen",
+      learn: "Dein Kurs",
+      learnDesc:
+        "Keine Sorge zurück zu deiner Lernkarte und mache da weiter, wo du aufgehört hast.",
+      continueLearning: "Weiterlernen",
       account: "Konto",
       email: "E-Mail",
       memberSince: "Mitglied seit",
