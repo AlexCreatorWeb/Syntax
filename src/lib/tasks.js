@@ -1,7 +1,8 @@
 // Каталог задач: контент = JSON в репо (src/content/tasks/*.json, один файл на трек).
 // Фронтенд читает статику напрямую (надёжно, без сети); зеркало в Supabase —
 // `npm run sync:tasks` (таблица `tasks`, для будущих API/админки).
-import generalTasks from "../content/tasks/general.json";
+// 2026-09: отдельного «General»-трека больше нет — нейтральные JS-упражнения
+// (строки/массивы/алгоритмы) переехали в трек JavaScript (javascript.json).
 import htmlTasks from "../content/tasks/html.json";
 import cssTasks from "../content/tasks/css.json";
 import jsTasks from "../content/tasks/javascript.json";
@@ -17,7 +18,6 @@ const XP_BY_DIFFICULTY = { easy: 50, medium: 100, hard: 200 };
 
 // Все опубликованные задачи, отсортированные по order внутри трека
 export const TASKS = [
-  ...generalTasks,
   ...htmlTasks,
   ...cssTasks,
   ...jsTasks,
@@ -33,7 +33,7 @@ export const TASKS = [
 
 export const XP_FOR_DIFFICULTY = XP_BY_DIFFICULTY;
 
-// Задачи трека (в порядке order). track "general" — кросс-трековый каталог.
+// Задачи трека (в порядке order).
 export function tasksForTrack(track) {
   return TASKS.filter((t) => t.track === track);
 }

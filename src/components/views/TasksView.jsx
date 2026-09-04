@@ -166,8 +166,8 @@ function TaskCard({ task, lang, t, onSolve, done }) {
         <p className="task-card__desc">
           <InlineMd text={locField(task.prompt, lang)} />
         </p>
-        {/* Микрострока-привязка: откуда задача (трек) — в General-каталоге */}
-        {task.track !== "general" && TrackLogo && (
+        {/* Микрострока-привязка: от какой технологии задача */}
+        {TrackLogo && (
           <span className="task-card__track">
             <TrackLogo />
             {t(`home.tech.${task.track}`)}
@@ -236,9 +236,9 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
   // Tech-фильтр: синхронен с выбранным треком через key-перемонтирование в MainContent
-  // (key=activeTech); «General» — локальный просмотр
+  // (key=activeTech); без трека — первый в каталоге (html)
   const [techFilter, setTechFilter] = useState(() =>
-    getTech(activeTech) ? activeTech : "general",
+    getTech(activeTech) ? activeTech : TECHS[0].id,
   );
   // Выполненные задания: ключ `track:taskId`
   const doneSet = new Set(getDoneTasks());
@@ -284,16 +284,14 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
     setQuery("");
   };
 
-  const contextName = tech ? t(tech.label) : t("tasks.general");
+  const contextName = t(tech.label);
 
   return (
     <div className="tasks-view">
       <header className="tasks-head">
         <div className="page-head">
           <h1 className="page-head__title">
-            {tech
-              ? t("tasks.trackTitle", { tech: t(tech.label) })
-              : t("tasks.generalTitle")}
+            {t("tasks.trackTitle", { tech: t(tech.label) })}
           </h1>
           <p className="page-head__desc">{t("tasks.desc")}</p>
         </div>
@@ -344,7 +342,7 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
         </div>
       </header>
 
-      {/* Tech-табы: технологии по порядку каталога, «General» — в конце.
+      {/* Tech-табы: технологии по порядку каталога.
           «SOON» — только у треков без опубликованных задач (2026-09: хардкод убран) */}
       <div
         className="tech-switch"
@@ -369,28 +367,6 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
             </button>
           );
         })}
-        <button
-          type="button"
-          role="tab"
-          aria-selected={techFilter === "general"}
-          className={`tech-switch__item ${techFilter === "general" ? "tech-switch__item--active" : ""}`}
-          onClick={() => setTechFilter("general")}
-        >
-          <span className="tech-switch__icon-glyph" aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z" />
-            </svg>
-          </span>
-          <span>{t("tasks.general")}</span>
-        </button>
       </div>
 
       {/* Чипы категорий (из задач трека) + строка состояния списка */}
@@ -458,7 +434,7 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => setTechFilter("general")}
+              onClick={() => setTechFilter(TECHS[0].id)}
             >
               {t("tasks.techEmptyCta")}
             </button>

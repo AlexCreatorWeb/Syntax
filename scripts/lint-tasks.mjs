@@ -13,7 +13,7 @@ const errors = [];
 const err = (f, msg) => errors.push(`${f}: ${msg}`);
 
 const files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
-if (files.length !== 10) err(".", `ожидалось 10 файлов (9 треков + general), найдено ${files.length}`);
+if (files.length !== 9) err(".", `ожидалось 9 файлов (9 треков), найдено ${files.length}`);
 
 const seenIds = new Set();
 let total = 0;
@@ -75,15 +75,24 @@ for (const f of files) {
       break;
     }
   }
-  if (cats.size > 6) err(f, `категорий больше 6: ${[...cats].join(", ")}`);
+  // 2026-09: потолок поднят до 10 — после переезда «General»-задач в JavaScript
+  // у JS-трека 9 категорий (строки/массивы/алгоритмы + 6 исходных); чипы в UI всё
+  // равно режутся до 6 (categoriesForTrack.slice(0,6)).
+  if (cats.size > 10) err(f, `категорий больше 10: ${[...cats].join(", ")}`);
   trackStats[track] = { n: arr.length, daily, cats: cats.size };
 }
 
 // Распределение сложности ~40/40/20 и ≥60% dailyChallenge — мягкий предупреждающий порог
 const diffCount = { easy: 0, medium: 0, hard: 0 };
 for (const f of files) {
-  const arr = JSON.parse(readFileSync(join(dir, f), "utf8"));
-  for (const t of arr) if (DIFFS.includes(t.difficulty)) diffCount[t.difficulty] += 1;
+  let arr;
+  try {
+    arr = JSON.parse(readFileSync(join(dir, f), "utf8"));
+  } catch {
+    continue; // уже залогировано первым циклом
+  }
+  for (const t of arr)
+    if (DIFFS.includes(t.difficulty)) diffCount[t.difficulty] += 1;
 }
 const dailyTotal = Object.values(trackStats).reduce((s, x) => s + x.daily, 0);
 
