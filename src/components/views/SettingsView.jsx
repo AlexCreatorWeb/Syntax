@@ -16,7 +16,14 @@ const DATE_LOCALES = {
   de: "de-DE",
 };
 
-function SettingsView({ theme, onToggleTheme, session, userName, onLogout, onNavigate }) {
+function SettingsView({
+  theme,
+  onToggleTheme,
+  session,
+  userName,
+  onLogout,
+  onNavigate,
+}) {
   const t = useT();
   const { langCode, selectLanguage } = useLanguage();
   const isAuthed = Boolean(session && session.user);
@@ -66,22 +73,6 @@ function SettingsView({ theme, onToggleTheme, session, userName, onLogout, onNav
         <h1 className="lesson__title">{t("settings.title")}</h1>
         <p className="lesson__desc">{t("settings.titleDesc")}</p>
       </header>
-
-      {/* Переход к обучению: Settings — «тупиковая» вкладка, выводим студента
-          обратно на дорожную карту (Continue Learning) */}
-      {isAuthed && (
-        <section className="card card--feature settings__section settings__learning spotlight">
-          <h2 className="settings__h">{t("settings.learn")}</h2>
-          <p className="settings__desc">{t("settings.learnDesc")}</p>
-          <button
-            type="button"
-            className="btn btn--primary settings__learn-btn"
-            onClick={() => onNavigate && onNavigate("roadmap")}
-          >
-            {t("settings.continueLearning")}
-          </button>
-        </section>
-      )}
 
       {/* Внешний вид — тема (тот же switch, что в сайдбаре/хедере) */}
       <section className="card settings__section">
@@ -241,6 +232,15 @@ function SettingsView({ theme, onToggleTheme, session, userName, onLogout, onNav
               </div>
             )}
           </dl>
+          {/* Переход к обучению — внизу, ghost (прозрачная с бордером), родная
+              ширина (align-self: flex-start — секция flex-колонка) */}
+          <button
+            type="button"
+            className="btn btn--ghost settings__learn"
+            onClick={() => onNavigate && onNavigate("roadmap")}
+          >
+            {t("settings.continueLearning")}
+          </button>
           <button
             type="button"
             className="btn btn--ghost btn--sm settings__logout"
@@ -250,12 +250,6 @@ function SettingsView({ theme, onToggleTheme, session, userName, onLogout, onNav
           </button>
         </section>
       )}
-
-      {/* О платформе */}
-      <section className="card settings__section">
-        <h2 className="settings__h">{t("settings.about")}</h2>
-        <p className="settings__about">{t("settings.aboutBody")}</p>
-      </section>
     </div>
   );
 }

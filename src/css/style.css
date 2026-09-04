@@ -9304,6 +9304,11 @@ code {
   align-self: flex-start;
   margin-top: 4px;
 }
+/* Кнопка «Продолжить обучение»: родная ширина (секция — flex-колонка,
+   иначе кнопка растягивается на 100%) */
+.settings__learn {
+  align-self: flex-start;
+}
 .settings__about {
   color: var(--text-variant);
   font-size: 14px;

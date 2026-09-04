@@ -383,16 +383,10 @@ export const LOCALES_EXTRA = {
       saving: "Зберігаємо…",
       saved: "Збережено ✓",
       saveErr: "Не вдалося зберегти — спробуйте ще раз",
-      learn: "Ваше навчання",
-      learnDesc:
-        "Повернутися до дорожньої карти та продовжити з того місця, де зупинилися.",
       continueLearning: "Продовжити навчання",
       account: "Акаунт",
       email: "Email",
       memberSince: "Дата реєстрації",
-      about: "Про платформу",
-      aboutBody:
-        "Syntax — школа програмування в браузері в ранньому доступі: 9 треків, редактор із запуском коду та live-прев'ю, курси, завдання з автоматичними тестами, щоденний челендж, XP, рейтинги, спільнота та AI-асистент.",
     },
     footer: {
       product: "Продукт",
@@ -1053,16 +1047,10 @@ export const LOCALES_EXTRA = {
       saving: "Guardando…",
       saved: "Guardado ✓",
       saveErr: "No se pudo guardar — inténtalo de nuevo",
-      learn: "Tu curso",
-      learnDesc:
-        "Vuelve a tu ruta de aprendizaje y continúa donde lo dejaste.",
       continueLearning: "Continuar aprendiendo",
       account: "Cuenta",
       email: "Email",
       memberSince: "Miembro desde",
-      about: "Acerca de",
-      aboutBody:
-        "Syntax es una escuela de programación en el navegador en acceso anticipado: 9 tracks, un editor en el navegador con ejecución de código y vista previa, cursos, tareas con tests automáticos, un reto diario, XP, clasificaciones, comunidad y asistente de AI.",
     },
     footer: {
       product: "Producto",
@@ -1729,16 +1717,10 @@ export const LOCALES_EXTRA = {
       saving: "Wird gespeichert…",
       saved: "Gespeichert ✓",
       saveErr: "Speichern fehlgeschlagen — bitte erneut versuchen",
-      learn: "Dein Kurs",
-      learnDesc:
-        "Keine Sorge zurück zu deiner Lernkarte und mache da weiter, wo du aufgehört hast.",
       continueLearning: "Weiterlernen",
       account: "Konto",
       email: "E-Mail",
       memberSince: "Mitglied seit",
-      about: "Über die Plattform",
-      aboutBody:
-        "Syntax ist eine Programmierschule im Browser im frühen Zugang: 9 Tracks, ein Editor im Browser mit Code-Ausführung und Live-Vorschau, Kurse, Aufgaben mit automatischen Tests, tägliche Challenge, XP, Bestenlisten, Community und KI-Assistent.",
     },
     footer: {
       product: "Produkt",
