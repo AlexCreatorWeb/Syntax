@@ -4,14 +4,13 @@ import { emmetCSS, emmetHTML, emmetJSX } from "emmet-monaco-es";
 import { useT } from "../i18n/useT";
 import { getTech } from "../lib/techs";
 import { NODE_SHIMS_SRC } from "../lib/node-shims";
+import { InlineMd } from "../lib/markdown-view";
 
-// Старт-код редактора: БАЗОВАЯ РАЗМЕТКА/заготовка по языку (фидбек: «код должен быть
-// базовой разметкой или под конкретную задачу»). Урок из БД с колонкой `code` подменяет
-// шаблон задачей; без `code` — базовая заготовка под тип файла.
+// Старт-код редактора: ЧИСТАЯ базовая разметка по языку, без комментарие-заполнителей
+// (фидбек: «закомментированные строки непонятны для новичка — оставь базовую разметку»).
+// Урок/задача со своим кодом подменяет шаблон полностью.
 const codeTemplates = {
-  javascript: `// Your code here
-
-console.log("Hello, Syntax!");`,
+  javascript: `console.log("Hello, Syntax!");`,
 
   html: `<!DOCTYPE html>
 <html lang="en">
@@ -21,24 +20,17 @@ console.log("Hello, Syntax!");`,
   <title>My page</title>
 </head>
 <body>
-  <!-- TODO: your markup here -->
   <h1>Hello, Syntax!</h1>
 </body>
 </html>`,
 
-  css: `/* Your styles here */
-
-body {
+  css: `body {
   margin: 0;
 }`,
 
-  python: `# Your code here
+  python: `print("Hello, Syntax!")`,
 
-print("Hello, Syntax!")`,
-
-  sql: `-- Your query here
-
-SELECT 1;`,
+  sql: `SELECT 1;`,
 };
 
 const fileNames = {
@@ -693,6 +685,7 @@ function CodeEditor({
   const [menuPos, setMenuPos] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
   const [split, setSplit] = useState(0.5); // доля ширины: редактор / превью (аудит #6)
+  const paneRef = useRef(null); // editor-pane: прямой стиль во время drag (без ре-рендеров)
   const addMenuRef = useRef(null);
 
   // Консоль / запуск / сдача
@@ -1048,19 +1041,34 @@ function CodeEditor({
     setDragIndex(null);
   };
 
-  // Drag: разделитель редактор/превью (аудит #6), ширина — на время сессии
+  // Drag: разделитель редактор/превью (аудит #6). Во время перетаскивания стиль
+  // пишется ПРЯМО в DOM через rAF (setState на каждый mousemove = полный ре-рендер
+  // CodeEditor с Monaco/iframe на каждом движении → «зависания»); в state — только
+  // финальное значение при отпускании.
   const startSplitDrag = (e) => {
     e.preventDefault();
+    let raf = 0;
+    let latestP = null;
+    let lastApplied = null;
     const move = (ev) => {
       const rect = wrapperRef.current?.getBoundingClientRect();
       if (!rect || rect.width === 0) return;
-      const p = (ev.clientX - rect.left) / rect.width;
-      setSplit(Math.min(0.75, Math.max(0.25, p)));
+      latestP = (ev.clientX - rect.left) / rect.width;
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          lastApplied = Math.min(0.75, Math.max(0.25, latestP));
+          if (paneRef.current)
+            paneRef.current.style.flex = `${lastApplied} 1 0px`;
+        });
+      }
     };
     const up = () => {
+      if (raf) cancelAnimationFrame(raf);
       document.body.style.cursor = "";
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", up);
+      if (lastApplied !== null) setSplit(lastApplied); // зафиксировать
     };
     document.body.style.cursor = "col-resize";
     document.addEventListener("mousemove", move);
@@ -1283,7 +1291,9 @@ function CodeEditor({
             </button>
           </div>
           <h3 className="editor-job__title">{job.title}</h3>
-          <p className="editor-job__desc">{job.desc}</p>
+          <p className="editor-job__desc">
+            <InlineMd text={job.desc} />
+          </p>
         </div>
       )}
 
@@ -1403,6 +1413,7 @@ function CodeEditor({
       <div className="code-card__editor-wrapper" ref={wrapperRef}>
         <div
           className="code-card__editor-pane"
+          ref={paneRef}
           style={
             hasHtml && showPreview ? { flex: `${split} 1 0px` } : undefined
           }

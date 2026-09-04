@@ -27,6 +27,39 @@ function CodeBlock({ lang, code, t }) {
   );
 }
 
+// Инлайн-маркап для одиночных строк (описание задачи в карточке/редакторе):
+// `код` → чип, **жирный**, *курсив*, [ссылка](url)
+export function InlineMd({ text }) {
+  const toks = inlineMdTokens(String(text ?? ""));
+  return (
+    <>
+      {toks.map((tok, j) => {
+        if (tok.t === "code")
+          return (
+            <code key={j} className="md-inline">
+              {tok.v}
+            </code>
+          );
+        if (tok.t === "b") return <strong key={j}>{tok.v}</strong>;
+        if (tok.t === "i") return <em key={j}>{tok.v}</em>;
+        if (tok.t === "a")
+          return (
+            <a
+              key={j}
+              className="md-link"
+              href={tok.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {tok.v}
+            </a>
+          );
+        return <span key={j}>{tok.v}</span>;
+      })}
+    </>
+  );
+}
+
 function Callout({ kind, text }) {
   const labels = { tip: "Tip", note: "Note", warning: "Warning" };
   return (
@@ -41,7 +74,7 @@ export function MdContent({ src, t, limit, blocks }) {
   // blocks: готовые блоки parseMdBlocks (например, уже переведённые) — src не нужен
   const base = blocks || parseMdBlocks(src);
   let blocksOut = base.map((b) =>
-    b.type === "p" && !b.tokens ? { ...b, tokens: inlineMdTokens(b.text) } : b
+    b.type === "p" && !b.tokens ? { ...b, tokens: inlineMdTokens(b.text) } : b,
   );
   // limit: показать блоки пока суммарный объём ≤ N знаков (свёрнутый вид статьи)
   if (limit != null) {
@@ -58,18 +91,59 @@ export function MdContent({ src, t, limit, blocks }) {
   return (
     <div className="md md-content">
       {blocksOut.map((b, i) => {
-        if (b.type === "h2") return <h2 key={i} className="md-h2">{b.text}</h2>;
-        if (b.type === "h3") return <h3 key={i} className="md-h3">{b.text}</h3>;
-        if (b.type === "image") return <img key={i} className="md-img" src={b.src} alt={b.alt} loading="lazy" />;
-        if (b.type === "code") return <CodeBlock key={i} lang={b.lang} code={b.code} t={t} />;
-        if (b.type === "callout") return <Callout key={i} kind={b.kind} text={b.text} />;
-        return <p key={i} className="md-p">{b.tokens.map((tok, j) => {
-          if (tok.t === "code") return <code key={j} className="md-inline">{tok.v}</code>;
-          if (tok.t === "b") return <strong key={j}>{tok.v}</strong>;
-          if (tok.t === "i") return <em key={j}>{tok.v}</em>;
-          if (tok.t === "a") return <a key={j} className="md-link" href={tok.href} target="_blank" rel="noopener noreferrer">{tok.v}</a>;
-          return tok.v;
-        })}</p>;
+        if (b.type === "h2")
+          return (
+            <h2 key={i} className="md-h2">
+              {b.text}
+            </h2>
+          );
+        if (b.type === "h3")
+          return (
+            <h3 key={i} className="md-h3">
+              {b.text}
+            </h3>
+          );
+        if (b.type === "image")
+          return (
+            <img
+              key={i}
+              className="md-img"
+              src={b.src}
+              alt={b.alt}
+              loading="lazy"
+            />
+          );
+        if (b.type === "code")
+          return <CodeBlock key={i} lang={b.lang} code={b.code} t={t} />;
+        if (b.type === "callout")
+          return <Callout key={i} kind={b.kind} text={b.text} />;
+        return (
+          <p key={i} className="md-p">
+            {b.tokens.map((tok, j) => {
+              if (tok.t === "code")
+                return (
+                  <code key={j} className="md-inline">
+                    {tok.v}
+                  </code>
+                );
+              if (tok.t === "b") return <strong key={j}>{tok.v}</strong>;
+              if (tok.t === "i") return <em key={j}>{tok.v}</em>;
+              if (tok.t === "a")
+                return (
+                  <a
+                    key={j}
+                    className="md-link"
+                    href={tok.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {tok.v}
+                  </a>
+                );
+              return tok.v;
+            })}
+          </p>
+        );
       })}
     </div>
   );

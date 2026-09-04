@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/useLanguage";
 import TECHS, { getTech } from "../../lib/techs";
 import { getDoneTasks } from "../../lib/progress";
 import { tasksForTrack, categoriesForTrack, locField } from "../../lib/tasks";
+import { InlineMd } from "../../lib/markdown-view";
 
 // Лого треков на уровне модуля: стабильные ссылки (react-compiler не любит getTech() в рендере)
 const TRACK_LOGOS = Object.fromEntries(TECHS.map((tc) => [tc.id, tc.Logo]));
@@ -162,7 +163,9 @@ function TaskCard({ task, lang, t, onSolve, done }) {
           </span>
         </div>
         <h3 className="task-card__title">{locField(task.title, lang)}</h3>
-        <p className="task-card__desc">{locField(task.prompt, lang)}</p>
+        <p className="task-card__desc">
+          <InlineMd text={locField(task.prompt, lang)} />
+        </p>
         {/* Микрострока-привязка: откуда задача (трек) — в General-каталоге */}
         {task.track !== "general" && TrackLogo && (
           <span className="task-card__track">

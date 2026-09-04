@@ -1033,6 +1033,11 @@ code {
   font-size: 13px;
   line-height: 19px;
   color: var(--text-variant);
+  /* Форматирование задания в редакторе: читаемая строка, инлайн-код — чипами */
+  max-width: 760px;
+}
+.editor-job__desc .md-inline {
+  font-size: 12px;
 }
 
 /* ===== Тесты задач (2026-09): панель над консолью ===== */
@@ -1779,6 +1784,8 @@ code {
     padding: 14px 14px 20px;
     background: var(--surface-1, var(--surface));
     border-right: 1px solid var(--border);
+    /* UX-аудит 2026-09: тень-намёк, что за drawer'ом есть контент (кроме крестика) */
+    box-shadow: 24px 0 60px rgba(0, 0, 0, 0.45);
     overflow-y: auto;
     animation: mobile-menu-in 0.22s ease;
   }
@@ -2480,8 +2487,10 @@ code {
   margin: 0 20px 14px 0;
   position: relative;
 }
-/* Кастомный плеер (controls=0 + clickCatcher): рамка 16:9 + контролы снизу.
-   YouTube-iframe рендерится IFrame API внутрь .lesson-view__player-host */
+/* Плеер: рамка 16:9 + нативные YT-контролы (включая их fullscreen).
+   Кастомный хром (верхняя полоса/бейдж/своя панель) убран — перекрывал
+   видео (фидбек 2026-09). YouTube-iframe рендерится IFrame API внутрь
+   .lesson-view__player-host (API заменяет div на iframe). */
 .lesson-view__player {
   display: flex;
   flex-direction: column;
@@ -2496,119 +2505,24 @@ code {
   aspect-ratio: 16 / 9;
   background: #000;
 }
-/* Fullscreen: тот же кастомный хром, но видео растягивается на весь экран
-   (16:9 не оставляет полос по бокам), контролы остаются внизу */
-.lesson-view__player:fullscreen {
-  width: 100vw;
-  height: 100vh;
-  border: none;
-  border-radius: 0;
-}
-.lesson-view__player:fullscreen .lesson-view__player-box {
-  aspect-ratio: auto;
-  flex: 1;
-  min-height: 0;
-}
 .lesson-view__player-host,
-.lesson-view__player-host iframe {
+.lesson-view__player-host iframe,
+.lesson-view__player-box > iframe {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-/* Прозрачный слой поверх видео: клик = play/pause, hover не доходит до YT */
+/* Прозрачный слой: клик = play/pause, hover не доходит до YT-худа.
+   Угол ВНИЗУ-СПРАВА не накрыт (right/bottom) — там дефолтная YT-кнопка
+   fullscreen, она остаётся кликабельной */
 .lesson-view__player-catcher {
-  position: absolute;
-  inset: 0;
-  cursor: pointer;
-}
-/* Брендовая верхняя полоса: непрозрачная — закрывает YT-заголовок и
-   основную часть авто-карточки «следующее видео» (параметра отключения нет);
-   мягкая тень (box-shadow) плавно гасит хвост карточки под полосой.
-   Клик проходит в catcher, кроме кнопки. */
-.lesson-view__player-top {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 24%;
-  min-height: 40px;
-  max-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 10px 18px -8px rgba(3, 10, 18, 0.55);
-  pointer-events: none;
-}
-.lesson-view__player-top-chip {
-  padding: 4px 10px;
-  border: 1px solid rgba(48, 224, 161, 0.4);
-  border-radius: 999px;
-  background: rgba(48, 224, 161, 0.12);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--ring-fill);
-}
-.lesson-view__player-fs {
-  pointer-events: auto;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-3);
-  border: 1px solid var(--border-strong);
-  color: var(--text-variant);
+  right: 64px;
+  bottom: 52px;
   cursor: pointer;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.lesson-view__player-fs:hover {
-  color: var(--primary-hover);
-  border-color: var(--primary);
-  box-shadow: var(--glow);
-}
-.lesson-view__player-fs:focus-visible {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: var(--glow);
-}
-.lesson-view__player-fs svg {
-  width: 14px;
-  height: 14px;
-}
-/* Бейдж-логотип внизу слева: закрывает авто-кнопку «поделиться»; клик =
-   play/pause (та же зона, что catcher) */
-.lesson-view__player-badge {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-.lesson-view__player-badge span {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(5, 20, 36, 0.8);
-  border: 1px solid var(--border-strong);
-  color: var(--primary-hover);
-}
-.lesson-view__player-badge svg {
-  width: 12px;
-  height: 12px;
-  margin-left: 1px;
 }
 .lesson-view__player-bigplay {
   position: absolute;
@@ -2997,27 +2911,12 @@ code {
     min-height: 0;
   }
 }
-/* Плеер на телефоне: 24%-полоса на маленьком видео съедает четверть кадра —
-   компактнее; контролы — под палец (большие touch-зоны, крупный thumb) */
+/* Плеер на телефоне: контролы — под палец (большие touch-зоны, крупный
+   thumb); catcher-угол под YT-fullscreen чуть шире (мобильные контролы YT выше) */
 @media (max-width: 640px) {
-  .lesson-view__player-top {
-    height: 20%;
-    min-height: 30px;
-    max-height: 38px;
-    padding: 0 8px;
-  }
-  .lesson-view__player-top-chip {
-    padding: 3px 8px;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-  }
-  .lesson-view__player-fs {
-    width: 28px;
-    height: 28px;
-  }
-  .lesson-view__player-fs svg {
-    width: 13px;
-    height: 13px;
+  .lesson-view__player-catcher {
+    right: 56px;
+    bottom: 60px;
   }
   .lesson-view__player-controls {
     padding: 6px 10px;
@@ -3035,33 +2934,6 @@ code {
     width: 54px;
     height: 54px;
   }
-  .lesson-view__player-badge {
-    left: 6px;
-    bottom: 6px;
-    width: 40px;
-    height: 40px;
-  }
-  .lesson-view__player-badge span {
-    width: 26px;
-    height: 26px;
-  }
-}
-/* Fullscreen-fallback для браузеров без Element Fullscreen API (iOS Safari):
-   тот же DOM, но fixed-оверлей на весь экран; выход — та же кнопка */
-.lesson-view__player--fs {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  width: 100vw;
-  height: 100vh;
-  border: none;
-  border-radius: 0;
-  background: #000;
-}
-.lesson-view__player--fs .lesson-view__player-box {
-  aspect-ratio: auto;
-  flex: 1;
-  min-height: 0;
 }
 .techmod--locked {
   border-style: dashed;
@@ -3592,6 +3464,15 @@ code {
   line-height: 20px;
   color: var(--text-variant);
   margin-bottom: 14px;
+  /* Форматирование (фидбек: «текст задания растянут на всю ширину»):
+     инлайн-код — чипами, сам текст — не более 3 строк в карточке (полный — в редакторе) */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.task-card__desc .md-inline {
+  font-size: 12.5px;
 }
 .task-card__meta {
   display: flex;
@@ -4112,7 +3993,7 @@ code {
   white-space: nowrap;
 }
 .tech-switch__soon-badge {
-  font-size: 9px;
+  font-size: 10px; /* UX-аудит 2026-09: 9px → 10px */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -4725,6 +4606,18 @@ code {
   }
   .code-block__pre {
     font-size: 12.5px;
+    /* UX-аудит 2026-09: горизонтальный скролл кода без намёка — выглядит как
+       обрезанный блок; fade правого края = аффорданс */
+    -webkit-mask-image: linear-gradient(
+      to right,
+      #000 calc(100% - 28px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      #000 calc(100% - 28px),
+      transparent 100%
+    );
   }
   .docs-for .tech-switch__item {
     padding: 4px 9px 4px 6px;
@@ -4975,8 +4868,9 @@ code {
 }
 .home__hero-title {
   font-family: var(--font-display);
-  font-size: 56px;
-  line-height: 62px;
+  /* UX-аудит 2026-09: планшет 1024 — H1 в 4 строки; clamp держит 2–3 строки */
+  font-size: clamp(34px, 3.6vw + 20px, 56px);
+  line-height: 1.1;
   font-weight: 700;
   letter-spacing: -0.03em;
   margin: 0 0 14px;
@@ -5951,16 +5845,44 @@ code {
     display: none;
   }
   .tech-row {
-    grid-template-columns: 1fr;
+    /* UX-аудит 2026-09: 9 карт стопкой (7500px воронка) → горизонтальный
+       скролл-ранг: 1–2 карты в кадре, fade-аффорданс по краям */
+    display: flex;
+    grid-template-columns: none;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 14px,
+      #000 calc(100% - 14px),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 14px,
+      #000 calc(100% - 14px),
+      transparent
+    );
   }
   .tech-card {
+    flex: 0 0 76%;
+    scroll-snap-align: start;
     height: auto;
     padding: 14px 16px;
   }
-  /* Статистика: 2 колонки по 50% (экономия места); success-карта — во всю ширину, компактная */
+  /* Статистика: 2 колонки по 50% (экономия места); success-карта — во всю ширину, компактная.
+     UX-аудит 2026-09: маркетинговый шум (студенты/задачи/проекты) — только success + first project */
   .home__stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+  }
+  .home__stats .stat-card:nth-child(n + 3) {
+    display: none;
   }
 
   /* Rail-виджеты (Daily Challenge + книга) на home — внутри контента ДО футера (.home__mobile-rail),
@@ -5980,6 +5902,10 @@ code {
   }
   .hero-demo__code {
     padding: 8px 0;
+    /* UX-аудит 2026-09: длинные строки (async function fetchStatus…) обрезались
+       по правому краю — на 390px шрифт меньше, вся строка в кадре */
+    font-size: 10.5px;
+    line-height: 17px;
   }
   .stat-card {
     padding: 14px;
@@ -5990,6 +5916,12 @@ code {
   }
   .stat-card__delta {
     font-size: 11px;
+  }
+  /* UX-аудит 2026-09: «YOUR FIRST PROJECT» — стрелка-иконка «висела» на отдельной
+     строке: delta — один inline-ряд */
+  .stat-card__delta {
+    display: inline-flex;
+    white-space: nowrap;
   }
   .stat-card--success {
     grid-column: 1 / -1;
@@ -6082,8 +6014,10 @@ code {
     width: 100%;
     justify-content: center;
   }
+  /* UX-аудит 2026-09: статус «Locked»/«Completed» виден и на мобильном
+     (планшет показывает текст — паритет); card-head уже flex-wrap */
   .roadmap__chip {
-    display: none;
+    display: inline-block;
   }
   .roadmap__card-head {
     flex-wrap: wrap;
@@ -6115,13 +6049,18 @@ code {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* H2-аудит: ключевые данные (ранг, XP) читаемы — свои ширины, без обрезки */
+  /* H2-аудит: ключевые данные (ранг, XP) читаемы — свои ширины, без обрезки;
+     UX-аудит 2026-09: «RANK» обрезался до «RA…» — колонка шире */
   .rankings__table .col-rank {
-    width: 44px;
+    width: 58px;
   }
   .rankings__table .col-xp {
-    width: 86px;
+    width: 80px;
     white-space: nowrap;
+    font-size: 12px;
+  }
+  /* Заголовки таблицы ≥12px на мобильных (аудит: 11px нечитабельно) */
+  .rankings__table thead th {
     font-size: 12px;
   }
   .rankings__total {
@@ -6413,7 +6352,8 @@ code {
   line-height: 20px;
 }
 .rankings__table thead th {
-  padding: 12px 24px;
+  /* 15px ниже заголовка, 12px сверху — по фидбеку */
+  padding: 12px 24px 15px;
   text-align: left;
   white-space: nowrap;
   font-family: var(--font-sans);
@@ -6431,8 +6371,17 @@ code {
 .rk-right {
   text-align: right;
 }
+/* Правило thead th (text-align: left) имеет бо́льшую специфичность —
+   без scoped-оверрайдов хедер не встаёт над своими колонками */
+.rankings__table thead th.rk-center {
+  text-align: center;
+}
+.rankings__table thead th.rk-right {
+  text-align: right;
+}
 .rankings__table tbody td {
-  padding: 12px 24px;
+  /* 10px между строками — по фидбеку */
+  padding: 10px 24px;
   white-space: nowrap;
   color: var(--text-variant);
   border-bottom: 1px solid var(--border);
@@ -6447,10 +6396,7 @@ code {
   font-weight: 700;
   color: var(--muted);
 }
-.rankings__row--you {
-  background: var(--primary-soft);
-  box-shadow: inset 2px 0 0 var(--primary);
-}
+/* «Вы» — в общем цвете строки; маркеры: зелёное имя + бейдж «Вы» */
 .rankings__row--you .rankings__rank {
   color: var(--primary-hover);
 }
@@ -6481,6 +6427,31 @@ code {
 }
 .rankings__row--you .rankings__username {
   font-weight: 600;
+  color: var(--primary-hover);
+}
+/* Бейдж «Вы» рядом с именем — маркер, не теряющийся при скролле */
+.rankings__name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+/* Эллипсис имени в flex-ряде (min-width:auto иначе режет перенос) */
+.rankings__name-row .rankings__username {
+  min-width: 0;
+}
+.rankings__you-badge {
+  flex: 0 0 auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary-hover);
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
 }
 .rankings__username--cta {
   font-weight: 500;
@@ -6541,9 +6512,23 @@ code {
 }
 
 /* «Как работает рейтинг»: info-popover рядом с заголовком */
+/* Кнопка «как работает»: видна на фоне заголовка, на одной линии с текстом */
 .rankings__how {
   position: relative;
   display: inline-block;
+  margin-left: 14px;
+  vertical-align: middle;
+}
+.rankings__how-btn {
+  color: var(--primary-hover);
+  background: var(--primary-soft);
+  border-color: transparent;
+}
+.rankings__how-btn:hover,
+.rankings__how-btn[aria-expanded="true"] {
+  color: var(--primary-hover);
+  background: var(--primary-soft);
+  border-color: var(--primary);
 }
 .rankings__how-pop {
   position: absolute;
@@ -6557,22 +6542,26 @@ code {
 .rankings__how-pop h3 {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 8px;
+  line-height: 18px;
+  margin-bottom: 6px;
 }
 .rankings__how-pop ul {
-  margin: 0 0 8px;
-  padding-left: 18px;
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 }
 .rankings__how-pop li {
   font-size: 12.5px;
+  line-height: 16px;
   color: var(--text-variant);
 }
 .rankings__how-pop p {
   margin: 0;
   font-size: 12px;
+  line-height: 16px;
   color: var(--muted);
 }
 
@@ -6707,9 +6696,19 @@ code {
   .podium {
     gap: 12px;
     padding-top: 24px;
+    /* UX-аудит 2026-09: пьедесталы резались нижней границей карточки */
+    padding-bottom: 10px;
   }
   .podium__slot {
     max-width: 110px;
+    min-width: 0;
+  }
+  /* UX-аудит 2026-09: «NullPointer» ломался посередине — без переноса, с обрезкой */
+  .podium__name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .podium__slot--1 {
     max-width: 140px;
@@ -6898,7 +6897,7 @@ code {
   align-items: center;
   gap: 12px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px; /* UX-аудит 2026-09: 11px → 12px (читаемость на мобильных) */
   color: var(--muted);
   margin-bottom: 6px;
 }
@@ -6907,6 +6906,8 @@ code {
   align-items: center;
   gap: 6px;
   color: var(--primary-hover);
+  white-space: nowrap; /* UX-аудит 2026-09: бейдж ломался на 2 строки */
+  flex: none;
 }
 .post__live-dot {
   width: 7px;
@@ -7036,7 +7037,7 @@ code {
 }
 .community__showing {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px; /* UX-аудит 2026-09: 11px → 12px */
   color: var(--muted);
   margin-top: -8px;
 }
@@ -7229,6 +7230,29 @@ code {
 }
 .community-modal__panel--profile {
   max-width: 380px;
+}
+/* Профиль лидера в рейтинге: шире, боковые отступы меньше — контент не
+   «сжимается в центре» (фидбек 2026-09) */
+.community-modal__panel--leader {
+  max-width: 480px;
+}
+.community-modal__panel--leader .profile {
+  width: 100%;
+  margin: 0;
+  padding: 32px 24px 24px;
+}
+.community-modal__panel--leader .profile__stats {
+  gap: 14px;
+  margin: 20px 0 24px;
+}
+.community-modal__panel--leader .profile__stat {
+  padding: 14px 10px;
+}
+.community-modal__panel--leader .profile__stat strong {
+  font-size: 16px;
+}
+.community-modal__panel--leader .profile__actions .btn {
+  flex: 1;
 }
 .community-modal__close {
   position: absolute;
@@ -7841,7 +7865,7 @@ code {
 }
 .community-top__rep span {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px; /* UX-аудит 2026-09: 9px → 11px */
   letter-spacing: 0.05em;
   color: var(--muted);
 }
@@ -7889,9 +7913,30 @@ code {
     flex: 1;
     width: auto;
   }
+  /* UX-аудит 2026-09: ряд табов не обрезался — скроллится с fade-аффордансом,
+     подписи не переносятся */
   .community__tabs {
     gap: 14px;
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent
+    );
+  }
+  .community__tab {
+    white-space: nowrap;
   }
   .community-modal {
     padding: 0;
@@ -9193,6 +9238,21 @@ code {
     overflow-x: auto;
     gap: 6px;
     flex-wrap: nowrap;
+    /* UX-аудит 2026-09: второй таб обрезался без скролл-аффорданса */
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent
+    );
   }
   .reference__nav-item {
     white-space: nowrap;
@@ -9428,6 +9488,10 @@ code {
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(4, 18, 31, 0.5);
   }
+  /* UX-аудит 2026-09: FAB перекрывал текст теории — компенсация отступом */
+  .lesson-view__material {
+    padding-bottom: 84px;
+  }
   .lesson-view__pager {
     flex-direction: column;
   }
@@ -9554,7 +9618,9 @@ code {
   max-width: 100%;
 }
 
-/* Docs: 9 пилюль треков — горизонтальный скролл вместо переноса (≤1280) */
+/* Docs: 9 пилюль треков — горизонтальный скролл вместо переноса (≤1280).
+   UX-аудит 2026-09: ряд шире вьюпорта без индикатора (roadmap/tasks/docs) —
+   fade-края = аффорданс «можно сдвинуть» */
 @media (max-width: 1280px) {
   .docs-for__list,
   .tech-switch {
@@ -9562,10 +9628,96 @@ code {
     overflow-x: auto;
     scrollbar-width: thin;
     padding-bottom: 4px;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 16px,
+      #000 calc(100% - 16px),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 16px,
+      #000 calc(100% - 16px),
+      transparent
+    );
   }
 }
 
 /* Footer: Legal — Soon-бейдж (кнопки без действия) */
 .footer__legal .soon-badge {
   margin-left: 6px;
+}
+
+/* ===== UX/UI-аудит 2026-09 (мобильный фокус) ===== */
+
+/* Гостевой режим: чип «Guest» в хедере (состояние гостя видимо, есть выход) */
+.guest-chip {
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  background: var(--primary-soft);
+  color: var(--primary-hover);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tb-menu--guest {
+  min-width: 240px;
+}
+/* Счётчик непрочитанных в drawer (мобильный колокольчик) */
+.mobile-menu__badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  color: var(--primary-hover);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+.mobile-menu__item:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Touch: ⌘K-подсказка про клавиатуру бесполезна — поиск и так работает тапом */
+@media (pointer: coarse) {
+  .search-kbd {
+    display: none;
+  }
+}
+
+/* Touch: минимальные тап-зоны 44px (аудит: Run 36px, иконки-действия ~36px) */
+@media (pointer: coarse) {
+  .btn--run {
+    min-height: 44px;
+  }
+  .icon-btn,
+  .file-tabs__add-btn,
+  .signup__close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Mobile (≤640): реклама (книга) не конкурирует с воронкой — только Daily Challenge */
+@media (max-width: 640px) {
+  .home__mobile-rail .promo--book {
+    display: none;
+  }
 }
