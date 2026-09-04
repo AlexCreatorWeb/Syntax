@@ -93,7 +93,7 @@ function inlineToMd(html) {
   s = s.replace(/<br\s*\/?>/gi, " ");
   s = s.replace(
     /<a[^>]*\bhref="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi,
-    (m, href, text) => {
+    (_m, href, text) => {
       const t = decodeEntities(stripTags(text)).trim();
       if (!t) return "";
       return `[${t.replace(/\]\(/g, ")(")}](${href})`;
@@ -101,15 +101,15 @@ function inlineToMd(html) {
   );
   s = s.replace(
     /<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi,
-    (m, tag, x) => `**${decodeEntities(stripTags(x)).trim()}**`,
+    (_m, _tag, x) => `**${decodeEntities(stripTags(x)).trim()}**`,
   );
   s = s.replace(
     /<(em|i)[^>]*>([\s\S]*?)<\/\1>/gi,
-    (m, tag, x) => `*${decodeEntities(stripTags(x)).trim()}*`,
+    (_m, _tag, x) => `*${decodeEntities(stripTags(x)).trim()}*`,
   );
   s = s.replace(
     /<code[^>]*>([\s\S]*?)<\/code>/gi,
-    (m, x) => `\`${decodeEntities(stripTags(x))}\``,
+    (_m, x) => `\`${decodeEntities(stripTags(x))}\``,
   );
   s = stripTags(s);
   s = decodeEntities(s);
