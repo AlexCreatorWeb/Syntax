@@ -61,7 +61,9 @@ async function playerManifest(videoId) {
 
 export default async function handler(req, res) {
   try {
-    const url = new URL(req.url);
+    // Node: req.url — относительный путь, new URL() требует базу (в браузере
+    // без базы ок — поэтому локальный unit-тест проходил)
+    const url = new URL(req.url, "http://localhost");
     const id = url.searchParams.get("id");
     if (!/^[A-Za-z0-9_-]{6,20}$/.test(id || "")) {
       return res.status(400).json({ ok: false, reason: "bad-id" });
