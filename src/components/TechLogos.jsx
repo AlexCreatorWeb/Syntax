@@ -232,52 +232,53 @@ function CursorLogo() {
 }
 
 function CopilotLogo() {
-  // Референс (маска): «сквайр-донат» — толстый скруглённый квадрат с узким
-  // вертикальным отверстием, лёгкий наклон; градиент: UL blue → L green →
-  // bottom yellow → LR orange → R/UR violet/pink
-  const D =
-    "M10.2 6.4H13.8Q18.2 6.4 18.2 10.8V13.9Q18.2 18.3 13.8 18.3H10.2Q5.8 18.3 5.8 13.9V10.8Q5.8 6.4 10.2 6.4Z " +
-    "M12.55 8.95h0.05Q13.15 8.95 13.15 9.7v3.55Q13.15 14 12.6 14h-0.05Q11.75 14 11.75 13.25V9.7q0-0.75 0.8-0.75Z";
+  // Оригинальный знак GitHub Copilot: ДВЕ сцепленные C-ленты (большая C слева с
+  // открытием вправо + меньшая C справа с открытием влево) + переплетение.
+  // Градиенты: левая лента blue→green→yellow→orange, правая violet→pink→orange
+  const LEFT_C = "M14.1 10.89A5 5 0 1 0 12.61 16.43"; // большая C (центр 9.6,12.4, R 5.2)
+  const HOOK = "M14.1 10.89Q14.5 12.9 12.8 13.0";
+  const RIGHT_C = "M13.6 7.99A4.4 4.4 0 1 1 13.94 15.79"; // меньшая C (центр 15.8,10.2)
   return (
     <svg
       className="tech-logo"
       viewBox="0 0 24 24"
       role="img"
       aria-label="GitHub Copilot"
+      fill="none"
+      strokeLinecap="round"
     >
       <defs>
-        {/* цвета сэмплены пиксельно из референса: синий верх, зелень лево, */}
-        {/* оранжевый низ, красный правый низ, фиолетовый/розовый правый верх */}
         <linearGradient
-          id="cop-a"
-          x1="12"
-          y1="6.4"
-          x2="12"
-          y2="18.3"
+          id="cop-l"
+          x1="9.4"
+          y1="4.5"
+          x2="9.4"
+          y2="20.7"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0" stopColor="#3f78e2" />
-          <stop offset="0.4" stopColor="#7ab04f" />
-          <stop offset="0.72" stopColor="#d9873e" />
-          <stop offset="1" stopColor="#e8823c" />
+          <stop offset="0" stopColor="#4d8df0" />
+          <stop offset="0.4" stopColor="#4ec26e" />
+          <stop offset="0.7" stopColor="#c3c53d" />
+          <stop offset="1" stopColor="#f5a63c" />
         </linearGradient>
         <linearGradient
-          id="cop-b"
-          x1="10"
-          y1="18.3"
-          x2="18.2"
-          y2="12.5"
+          id="cop-r"
+          x1="15.8"
+          y1="4.8"
+          x2="15.8"
+          y2="18.8"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0" stopColor="#ee7360" stopOpacity="0" />
-          <stop offset="0.55" stopColor="#ee7360" stopOpacity="0.6" />
-          <stop offset="0.8" stopColor="#d0509a" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#9a4df0" stopOpacity="1" />
+          <stop offset="0" stopColor="#a052f5" />
+          <stop offset="0.45" stopColor="#e860b0" />
+          <stop offset="0.75" stopColor="#f5854e" />
+          <stop offset="1" stopColor="#f5a04a" />
         </linearGradient>
       </defs>
-      <g transform="translate(12 12.65) rotate(12) scale(1.65) translate(-12 -12.65)">
-        <path d={D} fill="url(#cop-a)" fillRule="evenodd" />
-        <path d={D} fill="url(#cop-b)" fillRule="evenodd" />
+      <g transform="translate(-0.3 0.3) rotate(12 12 12.2)">
+        <path d={RIGHT_C} stroke="url(#cop-r)" strokeWidth="5.2" />
+        <path d={LEFT_C} stroke="url(#cop-l)" strokeWidth="6.2" />
+        <path d={HOOK} stroke="url(#cop-l)" strokeWidth="6.2" />
       </g>
     </svg>
   );
