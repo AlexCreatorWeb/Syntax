@@ -79,7 +79,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 async function playerManifest(videoId) {
   const hit = manifestCache.get(videoId);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit;
-  let lastReason = "no-client-answered";
+  const reasons = [];
   for (const c of CLIENTS) {
     try {
       const r = await fetch(
@@ -91,13 +91,13 @@ async function playerManifest(videoId) {
         },
       );
       if (!r.ok) {
-        lastReason = `player-api-${r.status}@${c.name}`;
+        reasons.push(`api${r.status}@${c.name}`);
         continue;
       }
       const j = await r.json();
       const status = j?.playabilityStatus?.status;
       if (status !== "OK") {
-        lastReason = `playability-${status}@${c.name}`;
+        reasons.push(`${status}@${c.name}`);
         continue;
       }
       const formats = j?.streamingData?.formats || [];
@@ -105,7 +105,7 @@ async function playerManifest(videoId) {
         formats.find((f) => Number(f.itag) === 22) ||
         formats.find((f) => Number(f.itag) === 18);
       if (!entry) {
-        lastReason = `no-progressive@${c.name}`;
+        reasons.push(`no-prog@${c.name}`);
         continue;
       }
       const rec = {
@@ -118,10 +118,10 @@ async function playerManifest(videoId) {
       manifestCache.set(videoId, rec);
       return { ok: true, ...rec };
     } catch (e) {
-      lastReason = `fetch-${String(e?.message || e).slice(0, 30)}@${c.name}`;
+      reasons.push(`err@${c.name}`);
     }
   }
-  return { ok: false, reason: lastReason };
+  return { ok: false, reason: reasons.join("|") || "no-client-answered" };
 }
 
 export default async function handler(req, res) {
