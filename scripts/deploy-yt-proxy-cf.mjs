@@ -13,15 +13,19 @@ if (!TOKEN || !ACCT) {
   console.error("Нужны CF_API_TOKEN и CF_ACCOUNT_ID");
   process.exit(1);
 }
-const script = readFileSync(new URL("../workers/yt-proxy.js", import.meta.url), "utf8");
+const script = readFileSync(
+  new URL("../workers/yt-proxy.js", import.meta.url),
+  "utf8",
+);
 const base = `https://api.cloudflare.com/client/v4/accounts/${ACCT}`;
 const h = { authorization: `Bearer ${TOKEN}` };
 const name = "yt-proxy";
 
-// 1) Загрузка скрипта
+// 1) Загрузка скрипта (новый CF API: /upload)
 const form1 = new URLSearchParams();
 form1.set("script", script);
-let r = await fetch(`${base}/workers/scripts/${name}`, {
+form1.set("metadata", JSON.stringify({ placements: [] }));
+let r = await fetch(`${base}/workers/scripts/${name}/upload`, {
   method: "POST",
   headers: { ...h, "content-type": "application/x-www-form-urlencoded" },
   body: form1,
@@ -38,11 +42,25 @@ r = await fetch(`${base}/workers/scripts/${name}/deployments`, {
 });
 console.log("deploy:", r.status, (await r.text()).slice(0, 200));
 
-// 3) workers.dev-сабдомен (если не закреплён — закрепит случайный)
+// 3) workers.dev-сабдомен: если нет — закрепляем (PUT)
 r = await fetch(`${base}/workers/subdomain`, { method: "GET", headers: h });
-const sub = await r.json();
-console.log("subdomain:", JSON.stringify(sub?.result ?? sub?.errors));
-const sd = sub?.result;
+let sub = await r.json();
+let sd = sub?.result;
+if (!sd) {
+  const wanted = `syntax-learn-${Math.random().toString(36).slice(2, 7)}`;
+  r = await fetch(`${base}/workers/subdomain`, {
+    method: "PUT",
+    headers: { ...h, "content-type": "application/json" },
+    body: JSON.stringify({ subdomain: wanted }),
+  });
+  sub = await r.json();
+  sd = sub?.result;
+  console.log(
+    "claim:",
+    r.status,
+    JSON.stringify(sd ?? sub?.errors).slice(0, 150),
+  );
+}
 if (sd) {
   const url = `https://${name}.${sd}.workers.dev`;
   console.log("WORKER_URL:", url);

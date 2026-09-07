@@ -1,6 +1,9 @@
 // Оригинальные логотипы технологий (simple-icons / Wikimedia / vuejs.org).
 // Общий модуль: главная (карточки треков) и хедер (лого выбранного языка).
 
+import copilotIcon from "../assets/copilot-icon.webp";
+import claudeIcon from "../assets/claude-icon.webp";
+
 function JsLogo() {
   return (
     <svg
@@ -162,45 +165,9 @@ function MongoLogo() {
 // II-инструменты (референс «Новый дизайн Херо»): Claude / Cursor / GitHub Copilot.
 // Лого — стилизованные приближения из референса.
 function ClaudeLogo() {
-  // Референс: 12 лучей — углы замерены пиксельно (mask-scan по 2°), диск 0.25R
-  const RAYS = [
-    [9, 9.9],
-    [47, 9.9],
-    [80, 9.9],
-    [114, 9.9],
-    [143, 9.9],
-    [182, 9.5],
-    [221, 9.5],
-    [246, 9.9],
-    [272, 9.9],
-    [299, 9.9],
-    [318, 9.9],
-    [345, 9.9],
-  ];
-  return (
-    <svg
-      className="tech-logo"
-      viewBox="0 0 24 24"
-      role="img"
-      aria-label="Claude"
-    >
-      <g fill="none" stroke="#d97757" strokeWidth="2.4" strokeLinecap="round">
-        {RAYS.map(([deg, r], i) => {
-          const a = (deg * Math.PI) / 180;
-          return (
-            <line
-              key={i}
-              x1={12 + 1.4 * Math.cos(a)}
-              y1={12 - 1.4 * Math.sin(a)}
-              x2={12 + r * Math.cos(a)}
-              y2={12 - r * Math.sin(a)}
-            />
-          );
-        })}
-      </g>
-      <circle cx="12" cy="12" r="2.7" fill="#d97757" />
-    </svg>
-  );
+  // Оригинальный логотип Claude (claude-ai-logo.webp из папки с дизайнами,
+  // 768×768; фон-«шахматку» сняли скриптом — прозрачный альфа-webp)
+  return <img className="tech-logo" src={claudeIcon} alt="Claude" />;
 }
 
 function CursorLogo() {
@@ -232,56 +199,9 @@ function CursorLogo() {
 }
 
 function CopilotLogo() {
-  // Оригинальный знак GitHub Copilot: ДВЕ сцепленные C-ленты (большая C слева с
-  // открытием вправо + меньшая C справа с открытием влево) + переплетение.
-  // Градиенты: левая лента blue→green→yellow→orange, правая violet→pink→orange
-  const LEFT_C = "M14.1 10.89A5 5 0 1 0 12.61 16.43"; // большая C (центр 9.6,12.4, R 5.2)
-  const HOOK = "M14.1 10.89Q14.5 12.9 12.8 13.0";
-  const RIGHT_C = "M13.6 7.99A4.4 4.4 0 1 1 13.94 15.79"; // меньшая C (центр 15.8,10.2)
-  return (
-    <svg
-      className="tech-logo"
-      viewBox="0 0 24 24"
-      role="img"
-      aria-label="GitHub Copilot"
-      fill="none"
-      strokeLinecap="round"
-    >
-      <defs>
-        <linearGradient
-          id="cop-l"
-          x1="9.4"
-          y1="4.5"
-          x2="9.4"
-          y2="20.7"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop offset="0" stopColor="#4d8df0" />
-          <stop offset="0.4" stopColor="#4ec26e" />
-          <stop offset="0.7" stopColor="#c3c53d" />
-          <stop offset="1" stopColor="#f5a63c" />
-        </linearGradient>
-        <linearGradient
-          id="cop-r"
-          x1="15.8"
-          y1="4.8"
-          x2="15.8"
-          y2="18.8"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop offset="0" stopColor="#a052f5" />
-          <stop offset="0.45" stopColor="#e860b0" />
-          <stop offset="0.75" stopColor="#f5854e" />
-          <stop offset="1" stopColor="#f5a04a" />
-        </linearGradient>
-      </defs>
-      <g transform="translate(-0.3 0.3) rotate(12 12 12.2)">
-        <path d={RIGHT_C} stroke="url(#cop-r)" strokeWidth="5.2" />
-        <path d={LEFT_C} stroke="url(#cop-l)" strokeWidth="6.2" />
-        <path d={HOOK} stroke="url(#cop-l)" strokeWidth="6.2" />
-      </g>
-    </svg>
-  );
+  // Оригинальный логотип Copilot (copilot-icon.webp из папки с дизайнами,
+  // 512×512, прозрачный фон) — используется как есть, без перерисовки
+  return <img className="tech-logo" src={copilotIcon} alt="GitHub Copilot" />;
 }
 
 export {

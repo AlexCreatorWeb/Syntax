@@ -15,7 +15,10 @@ const body = readFileSync(
   "utf8",
 );
 const base = `https://api.supabase.com/v1/projects/${REF}`;
-const h = { authorization: `Bearer ${PAT}`, "content-type": "application/json" };
+const h = {
+  authorization: `Bearer ${PAT}`,
+  "content-type": "application/json",
+};
 
 const show = async (label, r) => {
   const t = await r.text();
@@ -40,15 +43,21 @@ let r = await show(
 );
 // 2) Если уже существовала — обновление + redeploy
 if (r.status === 409 || r.status === 400) {
-  await show("patch", await fetch(base + "/functions/yt-proxy", {
-    method: "PATCH",
-    headers: h,
-    body: JSON.stringify({ body, verify_jwt: false }),
-  }));
-  await show("deploy", await fetch(base + "/functions/yt-proxy/deploy", {
-    method: "PUT",
-    headers: h,
-  }));
+  await show(
+    "patch",
+    await fetch(base + "/functions/yt-proxy", {
+      method: "PATCH",
+      headers: h,
+      body: JSON.stringify({ body, verify_jwt: false }),
+    }),
+  );
+  await show(
+    "deploy",
+    await fetch(base + "/functions/yt-proxy/deploy", {
+      method: "PUT",
+      headers: h,
+    }),
+  );
 }
 // 3) Проверка
 await new Promise((res) => setTimeout(res, 3000));

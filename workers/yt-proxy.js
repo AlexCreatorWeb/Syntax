@@ -10,7 +10,9 @@ const CLIENTS = [
     name: "web",
     key: "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
     body: {
-      context: { client: { clientName: "WEB", clientVersion: "2.20240701.00.00" } },
+      context: {
+        client: { clientName: "WEB", clientVersion: "2.20240701.00.00" },
+      },
       playerParams: "CgIIABAB",
     },
   },
@@ -18,7 +20,9 @@ const CLIENTS = [
     name: "mweb",
     key: "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
     body: {
-      context: { client: { clientName: "MWEB", clientVersion: "2.20240101.00.00" } },
+      context: {
+        client: { clientName: "MWEB", clientVersion: "2.20240101.00.00" },
+      },
       playerParams: "CgIIABAB",
     },
   },
@@ -51,11 +55,14 @@ async function playerManifest(videoId) {
   const reasons = [];
   for (const c of CLIENTS) {
     try {
-      const r = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${c.key}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...c.body, videoId }),
-      });
+      const r = await fetch(
+        `https://www.youtube.com/youtubei/v1/player?key=${c.key}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ...c.body, videoId }),
+        },
+      );
       if (!r.ok) {
         reasons.push(`api${r.status}@${c.name}`);
         continue;
@@ -83,7 +90,7 @@ async function playerManifest(videoId) {
       };
       manifestCache.set(videoId, rec);
       return { ok: true, ...rec };
-    } catch (e) {
+    } catch {
       reasons.push(`err@${c.name}`);
     }
   }
@@ -101,11 +108,17 @@ export default {
       const url = new URL(req.url);
       const id = url.searchParams.get("id") || "";
       if (!/^[A-Za-z0-9_-]{6,20}$/.test(id)) {
-        return Response.json({ ok: false, reason: "bad-id" }, { status: 400, headers: cors });
+        return Response.json(
+          { ok: false, reason: "bad-id" },
+          { status: 400, headers: cors },
+        );
       }
       const m = await playerManifest(id);
       if (!m.ok) {
-        return Response.json({ ok: false, reason: m.reason }, { status: 502, headers: cors });
+        return Response.json(
+          { ok: false, reason: m.reason },
+          { status: 502, headers: cors },
+        );
       }
       if (url.searchParams.get("stream") !== "1") {
         return Response.json(
@@ -124,7 +137,8 @@ export default {
       const streamUrl = new URL(m.entry.url);
       if (
         !STREAM_HOSTS.some(
-          (h) => streamUrl.hostname === h || streamUrl.hostname.endsWith(`.${h}`),
+          (h) =>
+            streamUrl.hostname === h || streamUrl.hostname.endsWith(`.${h}`),
         )
       ) {
         return Response.json(
@@ -133,9 +147,14 @@ export default {
         );
       }
       const range = req.headers.get("range") || "";
-      const up = await fetch(streamUrl, { headers: range ? { Range: range } : {} });
+      const up = await fetch(streamUrl, {
+        headers: range ? { Range: range } : {},
+      });
       if (!up.ok && up.status !== 206) {
-        return Response.json({ ok: false, reason: `stream-${up.status}` }, { status: 502, headers: cors });
+        return Response.json(
+          { ok: false, reason: `stream-${up.status}` },
+          { status: 502, headers: cors },
+        );
       }
       return new Response(up.body, {
         status: up.status === 206 ? 206 : 200,

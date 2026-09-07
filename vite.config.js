@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 // 2026-09: YouTube-стрим-прокси в DEV. VPS-IP гейтнут YouTube-ом (player API
 // = LOGIN_REQUIRED по всем клиентам, embed = Error 153) — manifest/стрим
@@ -10,23 +10,31 @@ import react from '@vitejs/plugin-react';
 // Пока ни одно не развернуто — 404 → фронт показывает карточку
 // «Смотреть на YouTube» (штатная деградация).
 const PROXIES = [
-  'https://xaslezkoktydranikqnx.supabase.co/functions/v1/yt-proxy',
-  'https://syntax-sooty.vercel.app/api/yt-proxy',
+  "https://xaslezkoktydranikqnx.supabase.co/functions/v1/yt-proxy",
+  "https://syntax-sooty.vercel.app/api/yt-proxy",
 ];
 async function ytProxyDev(req, res) {
   const headers = req.headers.range ? { Range: req.headers.range } : {};
   for (const base of PROXIES) {
     try {
-      const r = await fetch(`${base}${req.url}`, { headers, redirect: 'follow' });
+      const r = await fetch(`${base}${req.url}`, {
+        headers,
+        redirect: "follow",
+      });
       // 404/410 = функция еще не создана — пробуем следующий
       if (r.status === 404 || r.status === 410) continue;
       res.statusCode = r.status;
-      for (const h of ['content-type', 'content-length', 'content-range', 'accept-ranges']) {
+      for (const h of [
+        "content-type",
+        "content-length",
+        "content-range",
+        "accept-ranges",
+      ]) {
         const v = r.headers.get(h);
         if (v) res.setHeader(h, v);
       }
       if (r.body) {
-        const { Readable } = await import('node:stream');
+        const { Readable } = await import("node:stream");
         Readable.fromWeb(r.body).pipe(res);
       } else {
         res.end();
@@ -38,18 +46,18 @@ async function ytProxyDev(req, res) {
   }
   // Ни одного источника нет — честный 404 (фронт → карточка со ссылкой)
   res.statusCode = 404;
-  res.setHeader('content-type', 'application/json');
-  res.end(JSON.stringify({ ok: false, reason: 'no-proxy-deployed' }));
+  res.setHeader("content-type", "application/json");
+  res.end(JSON.stringify({ ok: false, reason: "no-proxy-deployed" }));
 }
 
 export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'yt-proxy-dev',
+      name: "yt-proxy-dev",
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
-          if (req.url && req.url.startsWith('/api/yt-proxy')) {
+          if (req.url && req.url.startsWith("/api/yt-proxy")) {
             try {
               await ytProxyDev(req, res);
               return;

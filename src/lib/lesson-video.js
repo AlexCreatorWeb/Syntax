@@ -354,7 +354,11 @@ const COVER_LOGOS = {
     vb: 24,
     path: "",
     strokePaths: [
-      { d: "M12 5.9l5.46 3.15v6.3L12 18.5l-5.46-3.15v-6.3L12 5.9z", color: "#65e4db", w: 0.9 },
+      {
+        d: "M12 5.9l5.46 3.15v6.3L12 18.5l-5.46-3.15v-6.3L12 5.9z",
+        color: "#65e4db",
+        w: 0.9,
+      },
       { d: "M6.54 9.05L12 12.2l5.46-3.15", color: "#65e4db", w: 0.9 },
       { d: "M12 12.2v6.3", color: "#65e4db", w: 0.9 },
     ],
@@ -455,7 +459,10 @@ function coverSvg(name, logo, num) {
       .map((p) => `<path fill="${p.color}" fill-rule="evenodd" d="${p.d}"/>`)
       .join("")}
     ${(logo.strokePaths || [])
-      .map((p) => `<path fill="none" stroke="${p.color}" stroke-width="${p.w}" stroke-linecap="round" stroke-linejoin="round" d="${p.d}"/>`)
+      .map(
+        (p) =>
+          `<path fill="none" stroke="${p.color}" stroke-width="${p.w}" stroke-linecap="round" stroke-linejoin="round" d="${p.d}"/>`,
+      )
       .join("")}
   </g>`
   }
