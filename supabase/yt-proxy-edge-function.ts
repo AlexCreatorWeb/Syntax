@@ -43,7 +43,7 @@ const CLIENTS = [
     key: "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
     body: {
       context: {
-        client: { clientName: "ANDROID", clientVersion: "19.09.37", androidSdkVersion: 30 },
+        client: { clientName: "ANDROID", clientVersion: "20.10.38", androidSdkVersion: 33, deviceBrand: "google", deviceModel: "Pixel 7" },
         thirdParty: { integrationId: "web" },
       },
       playerParams: "CgIIABAB",

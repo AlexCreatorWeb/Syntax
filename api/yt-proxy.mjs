@@ -45,8 +45,10 @@ const CLIENTS = [
       context: {
         client: {
           clientName: "ANDROID",
-          clientVersion: "19.09.37",
-          androidSdkVersion: 30,
+          clientVersion: "20.10.38",
+          androidSdkVersion: 33,
+          deviceBrand: "google",
+          deviceModel: "Pixel 7",
         },
         thirdParty: { integrationId: "web" },
       },
