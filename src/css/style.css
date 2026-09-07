@@ -5468,6 +5468,7 @@ code {
   display: block;
   flex: none;
   transition: transform 0.2s ease;
+  object-fit: contain;
 }
 .tech-card:hover .tech-logo {
   transform: scale(1.08);
@@ -10433,10 +10434,11 @@ code {
 }
 .sidebar-me__track {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 10px;
   width: 100%;
-  padding: 8px;
+  min-height: 88px; /* двухуровневая раскладка: титул трека сверху, статус прогресса (счёт + бар) прижат вниз */
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: transparent;
@@ -10453,6 +10455,7 @@ code {
 }
 .sidebar-me__logo {
   flex: none;
+  align-self: center;
   width: 30px;
   height: 30px;
   display: grid;
@@ -10478,6 +10481,13 @@ code {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Статус прогресса (счёт + бар) прижат к НИЗУ карточки, титул трека — кверху */
+.sidebar-me__track-status {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 .sidebar-me__track-count {
   font-size: 11px;
@@ -11311,22 +11321,27 @@ code {
   display: grid;
   place-items: center;
 }
-.ai-tool__logo svg {
+.ai-tool__logo svg,
+.ai-tool__logo img {
   width: 46px;
   height: 46px;
 }
-/* В референсе знаки занимают ~44–46px — масштабируем каждое по размеру знака */
-.ai-tool--claude .ai-tool__logo svg {
-  width: 58px;
-  height: 58px;
+/* Все знаки одинакового ВИЗУАЛЬНОГО размера (~40px): рамки разные, т.к. у
+   каждого ассета свой зазор между знаком и краем файла — сверено по пикселям */
+.ai-tool--claude .ai-tool__logo svg,
+.ai-tool--claude .ai-tool__logo img {
+  width: 55px;
+  height: 55px;
 }
-.ai-tool--cursor .ai-tool__logo svg {
-  width: 51px;
-  height: 51px;
+.ai-tool--cursor .ai-tool__logo svg,
+.ai-tool--cursor .ai-tool__logo img {
+  width: 40px;
+  height: 40px;
 }
-.ai-tool--copilot .ai-tool__logo svg {
-  width: 54px;
-  height: 54px;
+.ai-tool--copilot .ai-tool__logo svg,
+.ai-tool--copilot .ai-tool__logo img {
+  width: 44px;
+  height: 44px;
 }
 .ai-tool__info {
   flex: 1;
@@ -11392,20 +11407,24 @@ code {
     width: 42px;
     height: 42px;
   }
-  .ai-tool__logo svg {
+  .ai-tool__logo svg,
+  .ai-tool__logo img {
     width: 42px;
     height: 42px;
   }
-  .ai-tool--claude .ai-tool__logo svg {
-    width: 50px;
-    height: 50px;
+  .ai-tool--claude .ai-tool__logo svg,
+  .ai-tool--claude .ai-tool__logo img {
+    width: 42px;
+    height: 42px;
   }
-  .ai-tool--cursor .ai-tool__logo svg {
-    width: 44px;
-    height: 44px;
+  .ai-tool--cursor .ai-tool__logo svg,
+  .ai-tool--cursor .ai-tool__logo img {
+    width: 35px;
+    height: 35px;
   }
-  .ai-tool--copilot .ai-tool__logo svg {
-    width: 46px;
-    height: 46px;
+  .ai-tool--copilot .ai-tool__logo svg,
+  .ai-tool--copilot .ai-tool__logo img {
+    width: 39px;
+    height: 39px;
   }
 }

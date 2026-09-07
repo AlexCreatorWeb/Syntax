@@ -115,25 +115,27 @@ function Sidebar({
                 <span className="sidebar-me__track-name">
                   {t(tech ? tech.label : "sidebar.noTech")}
                 </span>
-                <span className="sidebar-me__track-count">
-                  {t("sidebar.progressCount", {
-                    n: completedCount,
-                    m: lessons.length,
-                  })}
-                </span>
-                <span
-                  className="bar sidebar-me__bar"
-                  role="progressbar"
-                  aria-valuenow={completedCount}
-                  aria-valuemin={0}
-                  aria-valuemax={lessons.length}
-                >
+                <span className="sidebar-me__track-status">
+                  <span className="sidebar-me__track-count">
+                    {t("sidebar.progressCount", {
+                      n: completedCount,
+                      m: lessons.length,
+                    })}
+                  </span>
                   <span
-                    className="bar__fill"
-                    style={{
-                      width: `${Math.round((completedCount / lessons.length) * 100)}%`,
-                    }}
-                  />
+                    className="bar sidebar-me__bar"
+                    role="progressbar"
+                    aria-valuenow={completedCount}
+                    aria-valuemin={0}
+                    aria-valuemax={lessons.length}
+                  >
+                    <span
+                      className="bar__fill"
+                      style={{
+                        width: `${Math.round((completedCount / lessons.length) * 100)}%`,
+                      }}
+                    />
+                  </span>
                 </span>
               </span>
             </button>
