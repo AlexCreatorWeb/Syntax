@@ -9,7 +9,7 @@
 // (+ логотип в COVER_LOGOS).
 export const LESSON_VIDEO_IDS = {
   html: {
-    1: "FOSzfDVvrxk", // beONmax — базовая разметка: теги head, title, meta, body (6:04, 2022, 255K просмотров). Прежнее NP2NJVfgWm8 (ВебКадеми) — автор отключил встраивание (код 150)
+    1: "NP2NJVfgWm8", // WebAkademia — структура страницы, html/head/meta/body (автор работает у нас по многим урокам; ранний код 150 был в гейт-контексте — с VPN встраивание работает, фидбек 2026-09-07). Запасной: FOSzfDVvrxk (beONmax, 255K)
     2: "8yaY3utfRCE", // Какие-то уроки [Frontend] — HTML для начинающих (favicon, charset), UTF-8 и кракозябры (8:06; звук проверен: mean -28dB)
     3: "ny-ouhU-cCc", // Friendly Frontend — h1-h6, p, ol, ul, li
     4: "scB2C0uNV1s", // Friendly Frontend — a/button, якоря, mailto/tel, target
