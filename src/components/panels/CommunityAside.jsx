@@ -90,6 +90,8 @@ function CommunityAside({ techId, isAuthed, onAuth }) {
               {t("community.totalMembers")}
             </span>
             <strong className="community-status__value">84.5k</strong>
+            {/* UX-аудит V5: демо-счётчик — SAMPLE-маркер */}
+            <span className="chip chip--sample">{t("tasks.sample")}</span>
           </div>
         </div>
       </aside>

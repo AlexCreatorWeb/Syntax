@@ -47,6 +47,7 @@ const langFromFileName = (name) => {
   const ext = (name || "").split(".").pop();
   if (ext === "py") return "python";
   if (ext === "sql") return "sql";
+  if (ext === "md" || ext === "cursorrules") return "markdown";
   if (ext === "css") return "css";
   if (ext === "html" || ext === "vue") return "html";
   return "javascript"; // js / jsx и пр.
@@ -681,7 +682,17 @@ function CodeEditor({
   const [contents, setContents] = useState(() => ({ ...initialContents }));
   const [activeId, setActiveId] = useState(1);
   const [copied, setCopied] = useState(false);
-  const [showPreview, setShowPreview] = useState(defaultShowPreview);
+  const [showPreview, setShowPreview] = useState(() => {
+    // UX-аудит K2: на мобилке превью закрыто по умолчанию (коду ~190px при 50/50
+    // было слишком мало) — согласовано с Task-табом урока (defaultShowPreview=false)
+    if (!defaultShowPreview) return false;
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 640px)").matches
+    )
+      return false;
+    return true;
+  });
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);

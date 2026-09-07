@@ -1,5 +1,6 @@
 export default {
   sidebar: {
+    home: "Home",
     roadmap: "Roadmap",
     editor: "Editor",
     tasks: "Tasks",
@@ -16,6 +17,29 @@ export default {
     groupLearn: "Learn",
     groupCommunity: "Community",
     groupResources: "Resources",
+    me: "Your progress",
+    level: "Level {n}",
+    xp: "{n} XP",
+    xpNeed: "{n} XP to next level",
+    streakDays: "{n}-day streak",
+    meGuest: "Sign up to save progress",
+  },
+  toast: {
+    levelUp: "Level {n}!",
+    levelUpSub: "Keep going — your next level is closer.",
+  },
+  courseDone: {
+    title: "Course completed: {name}",
+    sub: "Certificate of completion",
+    certLine: "Course completed",
+    viewRank: "View your rank",
+    close: "Keep learning",
+  },
+  guestAsk: {
+    title: "Save your progress",
+    body: "Right now your lessons and XP live only in this browser. Create a free account and they will follow you everywhere — and be visible in the rankings.",
+    create: "Create account",
+    later: "Later",
   },
   promo: {
     book: {
@@ -31,6 +55,123 @@ export default {
     },
   },
   techs: {
+    claude: {
+      desc: "Anthropic's AI assistant for real work: code review, refactoring, explanations and pair programming from the terminal and the editor.",
+      progressModule: "Module 1: Getting to know Claude",
+      pct: 0,
+      modules: [
+        {
+          title: "What is Claude",
+          desc: "Model, context, prompts — how the assistant actually works.",
+          status: "current",
+        },
+        {
+          title: "Claude for code review",
+          desc: "Reviewing diffs, finding bugs and design issues with the assistant.",
+          status: "locked",
+        },
+        {
+          title: "Refactoring with AI",
+          desc: "Large-scale refactors with tests and checkpoints.",
+          status: "locked",
+        },
+        {
+          title: "Pair programming",
+          desc: "Working with Claude like a second developer.",
+          status: "locked",
+        },
+      ],
+      resources: [
+        "Claude Documentation",
+        "Prompt Engineering Guide",
+        "Claude + Terminal Recipes",
+      ],
+      aiQ: "When should I give Claude the whole file instead of a snippet?",
+      aiA: "Give the whole file when the change depends on surrounding context: naming conventions, shared helpers, imports. For isolated logic a snippet with the relevant types is enough.",
+      lesson: {
+        title: "What is Claude and how it helps with code",
+        desc: "Meet the AI assistant: model, context and prompts. How Claude reads your code and where it really helps.",
+        file: "index.js",
+      },
+    },
+    cursor: {
+      desc: "AI-native code editor: inline completions, chat with the file and multi-file edits in one command.",
+      progressModule: "Module 1: First steps in Cursor",
+      pct: 0,
+      modules: [
+        {
+          title: "Cursor interface",
+          desc: "Layout, AI panel and the first setup.",
+          status: "current",
+        },
+        {
+          title: "Completions and chat",
+          desc: "Tab-completions and asking questions about your files.",
+          status: "locked",
+        },
+        {
+          title: "Multi-file edits",
+          desc: "One instruction — changes across the whole project.",
+          status: "locked",
+        },
+        {
+          title: "Workflows",
+          desc: "Combining chat, completions and terminal.",
+          status: "locked",
+        },
+      ],
+      resources: [
+        "Cursor Documentation",
+        "Keyboard Shortcuts",
+        "AI Editor Best Practices",
+      ],
+      aiQ: "How is Cursor different from a normal editor with a plugin?",
+      aiA: "The AI layer is built into the editor: completions, chat and file edits work with the full project context, not just the current buffer.",
+      lesson: {
+        title: "Cursor interface and first setup",
+        desc: "Tour of the editor: AI panel, chat, completions. Install, sign in and make the first AI request.",
+        file: "index.js",
+      },
+    },
+    copilot: {
+      desc: "GitHub's pair programmer: inline hints, chat and code review inside VS Code and the web IDE.",
+      progressModule: "Module 1: Getting started with Copilot",
+      pct: 0,
+      modules: [
+        {
+          title: "Installation",
+          desc: "Setting up Copilot in VS Code and the first hints.",
+          status: "current",
+        },
+        {
+          title: "Inline completions",
+          desc: "Reading and improving automatic suggestions.",
+          status: "locked",
+        },
+        {
+          title: "Copilot Chat",
+          desc: "Questions, refactors and tests in the chat.",
+          status: "locked",
+        },
+        {
+          title: "Review and workflows",
+          desc: "Code review with Copilot and everyday workflows.",
+          status: "locked",
+        },
+      ],
+      resources: [
+        "GitHub Copilot Documentation",
+        "VS Code + Copilot Guide",
+        "Copilot Prompting Guide",
+      ],
+      aiQ: "What is the difference between Copilot completions and chat?",
+      aiA: "Completions suggest code as you type, inline in the editor. Chat is conversational: it can explain, refactor and touch several files at once.",
+      lesson: {
+        title: "Installation and basic Copilot hints",
+        desc: "Install GitHub Copilot in VS Code, sign in and learn to read inline suggestions.",
+        file: "index.js",
+      },
+    },
     javascript: {
       desc: "A multiparadigm programming language. Supports object-oriented, imperative, and functional styles. One of the core languages of web development.",
       progressModule: "Module 2: DOM Manipulation",
@@ -365,6 +506,12 @@ export default {
     goToTask: "Go to the task",
     video: "Video lesson",
     videoSoon: "Video coming soon",
+    videoUnavail: "Embedded player is temporarily unavailable",
+    videoUnavailSub:
+      "YouTube has restricted embedding from your IP (Error 153). You can open the video in a new tab — your lesson and progress are safe.",
+    videoWatchOnYt: "Watch on YouTube",
+    videoRetry: "Try again",
+    videoErrorCode: "Code",
     courseLang: "RU",
     courseLangNote:
       "Course content is in Russian for now — more languages are coming",
@@ -515,6 +662,7 @@ export default {
     clearSearch: "Clear search",
     open: "Open",
     clearFilters: "Clear filters",
+    filters: "Filters",
     sample: "Sample",
 
     easy: "Easy",
@@ -759,6 +907,32 @@ export default {
     rowTasks: "{n} tasks",
   },
   settings: {
+    desc: "Manage your account, appearance and editor preferences.",
+    sectionAccount: "Account",
+    unknownUser: "You",
+    memberSince: "Member since {date}",
+    noAccount: "No account yet",
+    noAccountHint:
+      "Create a free account to keep your progress and XP in the cloud.",
+    logout: "Log out",
+    sectionAppearance: "Appearance",
+    themeHint: "Theme of the interface.",
+    themeDark: "Dark",
+    themeLight: "Light",
+    languageHint: "Interface language.",
+    sectionEditor: "Editor",
+    editorTheme: "Editor theme",
+    editorThemeHint: "Monaco follows the interface theme.",
+    followsTheme: "Follows the app",
+    autosave: "Auto-save",
+    autosaveHint: "Save file changes automatically.",
+    fontSize: "Font size",
+    fontSizeHint: "Code font size in the editor.",
+    sectionNotifications: "Notifications",
+    notifNewTasks: "New tasks in my track",
+    notifHint: "Email digest when new tasks appear.",
+    notifDaily: "Daily challenge reminders",
+    notifHint2: "A reminder if you haven't played today.",
     title: "Settings",
     titleDesc: "Appearance, interface language and your account.",
     appearance: "Appearance",
@@ -776,7 +950,6 @@ export default {
     continueLearning: "Continue Learning",
     account: "Account",
     email: "Email",
-    memberSince: "Member since",
   },
   footer: {
     product: "Product",
@@ -787,6 +960,21 @@ export default {
     tagline: "Learn programming by building — right in your browser.",
   },
   home: {
+    how: {
+      title: "How it works",
+      sub: "Three steps between you and your first working project.",
+      s1t: "Pick your track",
+      s1: "9 tracks — from HTML and CSS to React, Node.js and databases. Every course is built from scratch.",
+      s2t: "Learn on real content",
+      s2: "Each lesson: video, theory, common mistakes and a practical task — in a strict, logical order.",
+      s3t: "Code, pass tests, get XP",
+      s3: "Write code in the browser editor, run real tests and collect XP — your progress and rank are always visible.",
+    },
+    strip: {
+      devs: "50,000+ developers",
+      tasks: "1.2M tasks solved",
+      members: "84.5k community members",
+    },
     search: "Search commands, modules...",
     greeting: "Welcome back, NeoCoder",
     sponsored: "Sponsored",
@@ -801,6 +989,24 @@ export default {
       mongo: "MongoDB",
       react: "React",
       vue: "Vue",
+      claude: "Claude",
+      cursor: "Cursor",
+      copilot: "GitHub Copilot",
+    },
+    aiTools: {
+      title: "AI tools",
+      sub: "Claude · Cursor · GitHub Copilot",
+      new: "New",
+      lessons: "{n} lessons · Beginner to Pro",
+      claude: {
+        first: "What Claude is and how it helps with code",
+      },
+      cursor: {
+        first: "Cursor interface and first setup",
+      },
+      copilot: {
+        first: "Installation and basic Copilot hints",
+      },
     },
     stats: {
       success: "Success Rate",
@@ -818,11 +1024,10 @@ export default {
     },
     offer: {
       eyebrow: "Learn to code in your browser",
-      title: "Write your first line of code today",
-      desc: "Syntax turns programming into hands-on practice: real code, instant feedback and a roadmap that leads to your first real projects — without installing anything.",
+      title: "Write your first line\nof code today",
+      desc: "Interactive lessons in the browser — no installs. From basics to real projects.",
       start: "Start for free",
       demo: "Try a demo lesson",
-      trust: "Free forever · No credit card · First lesson in 2 minutes",
       passed: "3 tests passed",
     },
     preview:

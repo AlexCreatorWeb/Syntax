@@ -1,5 +1,6 @@
 import { useT } from "../i18n/useT";
 import TECHS from "../lib/techs";
+const AI_TOOL_IDS = new Set(["claude", "cursor", "copilot"]);
 import { localizedLessonTitle } from "../lib/lessonTitles";
 import { useLanguage } from "../context/useLanguage";
 
@@ -17,7 +18,9 @@ function TechCardsGrid({ activeTech, onOpenTech, dbLessons }) {
   };
   return (
     <div className="tech-row">
-      {TECHS.map((tech) => {
+      {/* Core-треки: II-инструменты (claude/cursor/copilot) живут в своей секции home__aitools,
+          чтобы заголовок «9 tracks» оставался честным */}
+      {TECHS.filter((t) => !AI_TOOL_IDS.has(t.id)).map((tech) => {
         const Logo = tech.Logo;
         const lesson1 = firstTitle(tech);
         return (

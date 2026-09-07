@@ -11,5 +11,14 @@ export default defineConfig({
       usePolling: true,
       interval: 300,
     },
+    proxy: {
+      // 2026-09-14: YouTube-стрим-прокси в dev ходит НА ПРОД: локально
+      // player API звонил бы с гейтнутого IP VPS (LOGIN_REQUIRED), а Vercel-IP
+      // чистый. Функция обязана быть задеплоена (первый push).
+      "/api/yt-proxy": {
+        target: "https://syntax-sooty.vercel.app",
+        changeOrigin: true,
+      },
+    },
   },
 });

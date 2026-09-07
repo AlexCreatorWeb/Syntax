@@ -75,7 +75,9 @@ export function grantTaskXp(
   // Журнал XP по дням (weekly-график рейтинга; старые бакеты без него — 0)
   const gained = taskXpGained + dailyXpGained;
   if (gained) data.earnings[dayKey] = (data.earnings[dayKey] || 0) + gained;
+  const before = data.total - gained;
   write(uid, data);
+  maybeFireLevelUp(before, data.total);
   return { taskXp: taskXpGained, dailyXp: dailyXpGained, total: data.total };
 }
 
@@ -93,13 +95,17 @@ export function grantLessonXp(lessonId) {
   const key = `lesson:${lessonId}`;
   let gained = 0;
   if (!data.granted[key]) {
+    const before = data.total;
     data.granted[key] = LESSON_XP;
     data.total += LESSON_XP;
     gained = LESSON_XP;
     const dayKey = dailyKey(new Date());
     data.earnings[dayKey] = (data.earnings[dayKey] || 0) + LESSON_XP;
+    write(uid, data);
+    maybeFireLevelUp(before, data.total);
+  } else {
+    write(uid, data);
   }
-  write(uid, data);
   return gained;
 }
 
@@ -164,4 +170,66 @@ export function mergeXpFromDb(uid, lessonRows, taskRows) {
 export function getDailyDone(date = new Date()) {
   const rec = getXpState().daily[dailyKey(date)];
   return rec ? { taskId: rec.taskId, xp: rec.xp } : null;
+}
+
+// Уровни (UX-аудит Q3): пороги кумулятивного XP. Level 1 = 0 XP.
+// levelInfo(xp) → { level, into, need, pct, maxed }: into = XP внутри уровня,
+// need = до следующего порога, pct = 0..100 (полоса «до уровня» в сайдбаре).
+export const LEVEL_THRESHOLDS = [
+  0, 100, 250, 500, 900, 1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000,
+  35000, 50000,
+];
+
+export function levelInfo(xp = 0) {
+  let level = 0;
+  for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
+    if (xp >= LEVEL_THRESHOLDS[i]) level = i;
+    else break;
+  }
+  const base = LEVEL_THRESHOLDS[level];
+  const next = LEVEL_THRESHOLDS[level + 1];
+  if (!next) {
+    return {
+      level: level + 1,
+      into: xp - base,
+      need: 0,
+      pct: 100,
+      maxed: true,
+    };
+  }
+  return {
+    level: level + 1,
+    into: xp - base,
+    need: next - base,
+    pct: Math.max(
+      0,
+      Math.min(100, Math.round(((xp - base) / (next - base)) * 100)),
+    ),
+  };
+}
+
+// Fire «level-up» событие (App показывает момент «Level {n}») при пересечении порога.
+function maybeFireLevelUp(before, after) {
+  if (typeof window === "undefined") return;
+  const b = levelInfo(before);
+  const a = levelInfo(after);
+  if (a.level > b.level) {
+    window.dispatchEvent(
+      new CustomEvent("syntax-level-up", { detail: { level: a.level } }),
+    );
+  }
+}
+
+// Streak: последовательные дни с XP (журнал earnings). Сегодня без XP не рвёт
+// серию — цепочка начинается с вчера (паттерн «серия ещё жива до полуночи»).
+export function currentStreak(date = new Date()) {
+  const earn = getXpState().earnings || {};
+  const d = new Date(date);
+  if (!earn[dailyKey(d)]) d.setDate(d.getDate() - 1);
+  let streak = 0;
+  while (earn[dailyKey(d)]) {
+    streak += 1;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
 }

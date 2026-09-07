@@ -110,6 +110,21 @@ function Header({
             onClick={() => onNavigate && onNavigate("home")}
             aria-label={t("header.home")}
           >
+            {/* Иконка-логотип «</>» (референс «Новый стиль карточек нейронок») */}
+            <svg
+              className="brand__mark"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m8 8-4.5 4L8 16" />
+              <path d="m16 8 4.5 4L16 16" />
+              <path d="M13.5 5.5 10.5 18.5" />
+            </svg>
             <span className="brand__word">
               Syn<span className="brand__accent">tax</span>
             </span>
@@ -466,6 +481,20 @@ function Header({
           />
           <nav className="mobile-menu__panel" aria-label={t("header.menu")}>
             <div className="mobile-menu__head">
+              <svg
+                className="brand__mark brand__mark--sm"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m8 8-4.5 4L8 16" />
+                <path d="m16 8 4.5 4L16 16" />
+                <path d="M13.5 5.5 10.5 18.5" />
+              </svg>
               <span className="brand__word">
                 Syn<span className="brand__accent">tax</span>
               </span>

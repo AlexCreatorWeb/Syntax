@@ -1,257 +1,182 @@
-import { useRef, useState } from "react";
 import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
-import { UI_LANGUAGES } from "../../context/uiLanguages";
-import { useAvatar, setAvatar, fileToAvatarDataUrl } from "../../lib/avatar";
-import { saveAvatarUrl, updateUserName } from "../../lib/auth";
+import { totalXp, levelInfo } from "../../lib/xp";
 
-// Вкладка Settings: рабочие настройки, которые уже существуют на платформе —
-// тема (тёмная/светлая), язык интерфейса, профиль (имя, аватар), аккаунт (email,
-// дата, logout), «О платформе». Гостю — то же, что доступно без аккаунта.
-const DATE_LOCALES = {
-  en: "en-GB",
-  ru: "ru-RU",
-  uk: "uk-UA",
-  es: "es-ES",
-  de: "de-DE",
-};
+// UX-аудит V9: Settings = реальная страница (аккаунт, внешний вид, язык,
+// редактор, уведомления) вместо плейсхолдера. Support убран из навигации
+// (два полых пункта обесценивали меню).
+const LANGS = [
+  { code: "en", label: "English" },
+  { code: "ru", label: "Русский" },
+  { code: "uk", label: "Українська" },
+  { code: "es", label: "Español" },
+  { code: "de", label: "Deutsch" },
+];
 
-function SettingsView({
+function Section({ title, children }) {
+  return (
+    <section className="card settings-card spotlight">
+      <h2 className="settings-card__title">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function Row({ label, hint, children }) {
+  return (
+    <div className="settings-row">
+      <div className="settings-row__text">
+        <span className="settings-row__label">{label}</span>
+        {hint && <span className="settings-row__hint">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function SettingsView({
   theme,
   onToggleTheme,
   session,
   userName,
+  onAuth,
   onLogout,
   onNavigate,
 }) {
   const t = useT();
   const { langCode, selectLanguage } = useLanguage();
-  const isAuthed = Boolean(session && session.user);
-  const [avatarUrl, setAvatarState] = useAvatar();
-  const fileRef = useRef(null);
-  const [nameDraft, setNameDraft] = useState(userName || "");
-  const [nameState, setNameState] = useState(null); // null | "saving" | "ok" | "err"
-  const [avatarErr, setAvatarErr] = useState(null);
-
-  // Имя синхронизируем при смене userName (после login/смены имени) — без effect:
-  // draft держим state'ом и сбрасываем явно при сохранении.
-  const onPickFile = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    e.target.value = "";
-    if (!file) return;
-    setAvatarErr(null);
-    try {
-      const dataUrl = await fileToAvatarDataUrl(file);
-      setAvatarState(dataUrl);
-      setAvatar(dataUrl);
-      if (isAuthed) saveAvatarUrl(session.user, dataUrl);
-    } catch {
-      setAvatarErr(t("profile.avatarErr"));
-    }
-  };
-
-  const saveName = async () => {
-    const name = nameDraft.trim();
-    if (!name || name === userName || !isAuthed) return;
-    setNameState("saving");
-    const ok = await updateUserName(session.user, name);
-    setNameState(ok ? "ok" : "err");
-    if (ok) setTimeout(() => setNameState(null), 2500);
-  };
-
+  void onNavigate;
+  const email = session && session.user ? session.user.email : null;
   const memberSince =
-    isAuthed && session.user.created_at
-      ? new Date(session.user.created_at).toLocaleDateString(
-          DATE_LOCALES[langCode] || "en-GB",
-          { year: "numeric", month: "long", day: "numeric" },
-        )
+    session && session.user && session.user.created_at
+      ? new Date(session.user.created_at).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
       : null;
+  const lvl = levelInfo(totalXp());
 
   return (
-    <div className="settings">
-      <header className="settings__head">
-        <h1 className="lesson__title">{t("settings.title")}</h1>
-        <p className="lesson__desc">{t("settings.titleDesc")}</p>
+    <div className="settings-view">
+      <header className="page-head">
+        <h1 className="page-head__title">{t("sidebar.settings")}</h1>
+        <p className="page-head__desc">{t("settings.desc")}</p>
       </header>
 
-      {/* Внешний вид — тема (тот же switch, что в сайдбаре/хедере) */}
-      <section className="card settings__section">
-        <h2 className="settings__h">{t("settings.appearance")}</h2>
-        <p className="settings__desc">{t("settings.appearanceDesc")}</p>
-        <div
-          className="settings__theme"
-          role="group"
-          aria-label={t("settings.appearance")}
+      <Section title={t("settings.sectionAccount")}>
+        {session ? (
+          <>
+            <div className="settings-account">
+              <span className="settings-account__avatar" aria-hidden="true">
+                {(userName || email || "?").slice(0, 1).toUpperCase()}
+              </span>
+              <div className="settings-account__text">
+                <strong>{userName || t("settings.unknownUser")}</strong>
+                {email && <span>{email}</span>}
+                {memberSince && (
+                  <span className="settings-account__since">
+                    {t("settings.memberSince", { date: memberSince })}
+                  </span>
+                )}
+                <span className="settings-account__xp">
+                  {t("sidebar.level", { n: lvl.level })} ·{" "}
+                  {t("sidebar.xp", { n: totalXp() })}
+                </span>
+              </div>
+            </div>
+            <div className="settings-account__actions">
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={onLogout}
+              >
+                {t("settings.logout")}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="settings-account">
+            <div className="settings-account__text">
+              <strong>{t("settings.noAccount")}</strong>
+              <span className="settings-account__hint">
+                {t("settings.noAccountHint")}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => onAuth("signup")}
+            >
+              {t("header.signup")}
+            </button>
+          </div>
+        )}
+      </Section>
+
+      <Section title={t("settings.sectionAppearance")}>
+        <Row
+          label={t("settingsMenu.appearance")}
+          hint={t("settings.themeHint")}
         >
           <button
             type="button"
-            className={`settings__theme-opt${theme === "dark" ? " is-active" : ""}`}
-            aria-pressed={theme === "dark"}
-            onClick={() => theme !== "dark" && onToggleTheme()}
+            className={`settings-seg ${theme === "dark" ? "" : "settings-seg--light"}`}
+            onClick={onToggleTheme}
+            aria-label={t("settingsMenu.appearance")}
           >
-            <span aria-hidden="true">🌙</span> {t("settings.dark")}
-          </button>
-          <button
-            type="button"
-            className={`settings__theme-opt${theme === "light" ? " is-active" : ""}`}
-            aria-pressed={theme === "light"}
-            onClick={() => theme !== "light" && onToggleTheme()}
-          >
-            <span aria-hidden="true">☀️</span> {t("settings.light")}
-          </button>
-        </div>
-      </section>
-
-      {/* Язык интерфейса */}
-      <section className="card settings__section">
-        <h2 className="settings__h">{t("settings.language")}</h2>
-        <p className="settings__desc">{t("settings.languageDesc")}</p>
-        <div className="settings__langs">
-          {UI_LANGUAGES.map((l) => (
-            <button
-              key={l.code}
-              type="button"
-              className={`settings__lang${langCode === l.code ? " is-active" : ""}`}
-              aria-pressed={langCode === l.code}
-              onClick={() => selectLanguage(l.code)}
-            >
-              <img src={l.flagSrc} alt="" className="settings__lang-flag" />
-              <span>{l.name}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Профиль: имя + аватар (authed) */}
-      {isAuthed && (
-        <section className="card settings__section">
-          <h2 className="settings__h">{t("settings.profile")}</h2>
-          <div className="settings__avatar-row">
-            <span
-              className={`avatar-dot avatar-dot--md settings__avatar${avatarUrl ? " avatar-dot--img" : ""}`}
-              style={
-                avatarUrl
-                  ? { backgroundImage: `url(${avatarUrl})` }
-                  : {
-                      background:
-                        "linear-gradient(135deg, var(--surface-3), var(--surface-2))",
-                    }
-              }
-            >
-              {!avatarUrl && (userName || "S").charAt(0).toUpperCase()}
+            <span className={theme === "dark" ? "is-on" : ""}>
+              {t("settings.themeDark")}
             </span>
-            <div className="settings__avatar-actions">
+            <span className={theme === "light" ? "is-on" : ""}>
+              {t("settings.themeLight")}
+            </span>
+          </button>
+        </Row>
+        <Row label={t("settings.language")} hint={t("settings.languageHint")}>
+          <div
+            className="settings-langs"
+            role="group"
+            aria-label={t("settings.language")}
+          >
+            {LANGS.map((l) => (
               <button
+                key={l.code}
                 type="button"
-                className="btn btn--ghost btn--sm"
-                onClick={() => fileRef.current && fileRef.current.click()}
+                className={`settings-lang ${langCode === l.code ? "is-active" : ""}`}
+                onClick={() => selectLanguage(l.code)}
+                aria-pressed={langCode === l.code}
               >
-                {avatarUrl ? t("profile.avatarChange") : t("profile.avatarAdd")}
+                {l.label}
               </button>
-              {avatarUrl && (
-                <button
-                  type="button"
-                  className="btn btn--ghost btn--sm"
-                  onClick={() => {
-                    setAvatarState(null);
-                    setAvatar(null);
-                    saveAvatarUrl(session.user, "");
-                  }}
-                >
-                  {t("profile.avatarRemove")}
-                </button>
-              )}
-              {avatarErr && (
-                <span className="profile__avatar-err" role="alert">
-                  {avatarErr}
-                </span>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                hidden
-                aria-hidden="true"
-                tabIndex={-1}
-                onChange={onPickFile}
-              />
-            </div>
+            ))}
           </div>
-          <label className="settings__field">
-            <span className="settings__label">{t("settings.name")}</span>
-            <div className="settings__name-row">
-              <input
-                type="text"
-                className="field"
-                value={nameDraft}
-                maxLength={50}
-                disabled={nameState === "saving"}
-                onChange={(e) => {
-                  setNameDraft(e.target.value);
-                  setNameState(null);
-                }}
-              />
-              <button
-                type="button"
-                className="btn btn--primary"
-                disabled={
-                  !nameDraft.trim() ||
-                  nameDraft.trim() === userName ||
-                  nameState === "saving"
-                }
-                onClick={saveName}
-              >
-                {t("settings.save")}
-              </button>
-            </div>
-            <span
-              className={`settings__name-state${nameState ? " is-on" : ""}`}
-              role="status"
-            >
-              {nameState === "saving" && t("settings.saving")}
-              {nameState === "ok" && t("settings.saved")}
-              {nameState === "err" && t("settings.saveErr")}
-            </span>
-          </label>
-        </section>
-      )}
+        </Row>
+      </Section>
 
-      {/* Аккаунт */}
-      {isAuthed && (
-        <section className="card settings__section">
-          <h2 className="settings__h">{t("settings.account")}</h2>
-          <dl className="settings__facts">
-            <div className="settings__fact">
-              <dt>{t("settings.email")}</dt>
-              <dd>{session.user.email}</dd>
-            </div>
-            {memberSince && (
-              <div className="settings__fact">
-                <dt>{t("settings.memberSince")}</dt>
-                <dd>{memberSince}</dd>
-              </div>
-            )}
-          </dl>
-          {/* Переход к обучению — внизу, ghost (прозрачная с бордером), родная
-              ширина (align-self: flex-start — секция flex-колонка) */}
-          <button
-            type="button"
-            className="btn btn--ghost settings__learn"
-            onClick={() => onNavigate && onNavigate("roadmap")}
-          >
-            {t("settings.continueLearning")}
-          </button>
-          <button
-            type="button"
-            className="btn btn--ghost btn--sm settings__logout"
-            onClick={onLogout}
-          >
-            {t("account.logout")}
-          </button>
-        </section>
-      )}
+      <Section title={t("settings.sectionEditor")}>
+        <Row
+          label={t("settings.editorTheme")}
+          hint={t("settings.editorThemeHint")}
+        >
+          <span className="settings-static">{t("settings.followsTheme")}</span>
+        </Row>
+        <Row label={t("settings.autosave")} hint={t("settings.autosaveHint")}>
+          <span className="soon-badge">{t("home.soon")}</span>
+        </Row>
+        <Row label={t("settings.fontSize")} hint={t("settings.fontSizeHint")}>
+          <span className="soon-badge">{t("home.soon")}</span>
+        </Row>
+      </Section>
+
+      <Section title={t("settings.sectionNotifications")}>
+        <Row label={t("settings.notifNewTasks")} hint={t("settings.notifHint")}>
+          <span className="soon-badge">{t("home.soon")}</span>
+        </Row>
+        <Row label={t("settings.notifDaily")} hint={t("settings.notifHint2")}>
+          <span className="soon-badge">{t("home.soon")}</span>
+        </Row>
+      </Section>
     </div>
   );
 }
-
-export default SettingsView;

@@ -1,7 +1,7 @@
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
 import { leaderboard } from "../../lib/rank";
-import { weeklyEarnings } from "../../lib/xp";
+import { weeklyEarnings, getXpState } from "../../lib/xp";
 
 // UX-аудит 2026-09: rail = та же картина, что таблица (lib/rank), weekly —
 // реальные XP по дням (журнал в lib/xp.js), лига/строка «2d 14h» убраны.
@@ -20,6 +20,10 @@ function RankingsAside({ isAuthed = false, onAuth = null, userName = "" }) {
   const week = isAuthed ? weeklyEarnings() : null;
   const weekTotal = week ? week.reduce((a, b) => a + b.xp, 0) : 0;
   const weekMax = week ? Math.max(500, ...week.map((d) => d.xp)) : 1;
+  // UX-аудит Q3: новичку (меньше 3 XP-событий) пустой набор штрихов неинформативен —
+  // вместо графика подсказка «N XP до первого ранг-апа»
+  const xpEvents = Object.keys(getXpState().granted || {}).length;
+  const showWeeklyGraph = Boolean(week) && xpEvents >= 3;
 
   return (
     <aside className="card rank-card">
@@ -76,7 +80,7 @@ function RankingsAside({ isAuthed = false, onAuth = null, userName = "" }) {
         <p className="rank-card__guest-note">{t("rankings.railGuestNote")}</p>
       )}
 
-      {week && (
+      {week && showWeeklyGraph && (
         <div className="rank-card__weekly">
           <h4>
             {t("rankings.weekly")} · +{weekTotal.toLocaleString("en-US")} XP{" "}

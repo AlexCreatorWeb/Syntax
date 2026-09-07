@@ -5,7 +5,11 @@ import MainContent from "./components/MainContent";
 import WidgetPanel from "./components/WidgetPanel";
 import AuthModal from "./components/AuthModal";
 import NewsModal from "./components/NewsModal";
+import CourseCompleteModal from "./components/CourseCompleteModal";
+import MobileTabBar from "./components/MobileTabBar";
 import { getTech } from "./lib/techs";
+import { dailyKey } from "./lib/daily";
+import { useT } from "./i18n/useT";
 import { parseDocsPath, docsPathFor } from "./lib/docs-route";
 import { fetchDbLessons } from "./lib/supabase";
 import {
@@ -42,6 +46,7 @@ const parseHash = (raw) => {
 const isDocsPath = () => window.location.pathname.startsWith("/docs");
 
 function App() {
+  const t = useT();
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("syntax-theme") || "dark";
   });
@@ -227,12 +232,25 @@ function App() {
       history.replaceState(null, "", "#/home");
     }
     const onHash = () => {
-      // Доки управляет hash сама (pushState); hashchange на /docs-пути игнорируем
-      if (isDocsPath()) return;
+      const { tab, param } = parseHash();
+      // Доки управляет hash сама (pushState). Но ручной hash-якорь #/… в URL-баре
+      // на /docs-пути раньше молча игнорировался (аудит #8) — уходим из доков
+      if (isDocsPath()) {
+        if (tab !== "documentation") {
+          history.replaceState(null, "", "/");
+          setDocsRoute(null);
+          window.scrollTo(0, 0);
+          setActiveTab(tab || "home");
+          if (tab === "technology" && param && getTech(param))
+            selectTech(param);
+          setJob(pendingJob.current);
+          pendingJob.current = null;
+        }
+        return;
+      }
       // UX-аудит H3: внешняя смена hash = новая страница — скролл к верху
       // (не сравниваем с activeTab: у effect deps [selectTech] — closure устарел бы)
       window.scrollTo(0, 0);
-      const { tab, param } = parseHash();
       setActiveTab(tab || "home");
       // Deep-link #/technology/<id>: трек из URL становится выбранным (переживает refresh)
       if (tab === "technology" && param && getTech(param)) {
@@ -369,6 +387,59 @@ function App() {
   const isAuthed = Boolean(session);
   const userName = displayName(session);
   const canAccess = isAuthed || guestMode;
+
+  // UX-аудит Q3: уровень пересечён — toast «Level {n}» (событие из xp.js)
+  const [levelUp, setLevelUp] = useState(null);
+  useEffect(() => {
+    const on = (e) => setLevelUp({ level: e.detail.level, key: Date.now() });
+    window.addEventListener("syntax-level-up", on);
+    return () => window.removeEventListener("syntax-level-up", on);
+  }, []);
+  useEffect(() => {
+    if (!levelUp) return;
+    const timer = setTimeout(() => setLevelUp(null), 5000);
+    return () => clearTimeout(timer);
+  }, [levelUp]);
+
+  // UX-аудит Q3: последний урок курса — модалка «Курс пройден» (сертификат)
+  const [courseDone, setCourseDone] = useState(null);
+  useEffect(() => {
+    const on = (e) => setCourseDone({ tech: e.detail.tech, key: Date.now() });
+    window.addEventListener("syntax-course-complete", on);
+    return () => window.removeEventListener("syntax-course-complete", on);
+  }, []);
+
+  // UX-аудит V10: signup-момент для гостя — после первой выполненной
+  // задачи/урока (событие из job-конструкторов), раз в день.
+  const [guestAsk, setGuestAsk] = useState(false);
+  useEffect(() => {
+    const on = () => {
+      if (isAuthed) return;
+      const day = dailyKey(new Date());
+      try {
+        if (localStorage.getItem("syntax-guest-asked") === day) return;
+        const n =
+          parseInt(
+            localStorage.getItem("syntax-guest-completions") || "0",
+            10,
+          ) || 0;
+        localStorage.setItem("syntax-guest-completions", String(n + 1));
+        setGuestAsk(true);
+      } catch {
+        /* приватный режим */
+      }
+    };
+    window.addEventListener("syntax-guest-progress", on);
+    return () => window.removeEventListener("syntax-guest-progress", on);
+  }, [isAuthed]);
+  const dismissGuestAsk = () => {
+    try {
+      localStorage.setItem("syntax-guest-asked", dailyKey(new Date()));
+    } catch {
+      /* приватный режим */
+    }
+    setGuestAsk(false);
+  };
   const handleLogout = useCallback(() => {
     signOut();
     setGuestMode(false);
@@ -415,6 +486,13 @@ function App() {
           theme={theme}
           onToggleTheme={toggleTheme}
           onSelectTab={openTab}
+          session={session}
+          guestMode={guestMode}
+          dbLessons={dbLessons || []}
+          activeTech={activeTech}
+          progressTick={progressTick}
+          onNavigate={openTab}
+          onAuth={openAuth}
         />
         <RouteErrorBoundary key={activeTab} onNavigate={openTab}>
           <MainContent
@@ -460,6 +538,66 @@ function App() {
         />
       )}
       {newsItem && <NewsModal item={newsItem} onClose={closeNews} />}
+      {/* UX-аудит V4: мобильный bottom tab bar (≤640, видим через CSS) */}
+      <MobileTabBar activeTab={activeTab} onNavigate={openTab} />
+      {levelUp && (
+        <div className="toast toast--levelup" key={levelUp.key} role="status">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.5 5.8 21 7 14 2 9.3 9 8.5 12 2Z" />
+          </svg>
+          <span>
+            <strong>{t("toast.levelUp", { n: levelUp.level })}</strong>
+            <em>{t("toast.levelUpSub")}</em>
+          </span>
+        </div>
+      )}
+      {courseDone && (
+        <CourseCompleteModal
+          tech={courseDone.tech}
+          onClose={() => setCourseDone(null)}
+          onNavigate={openTab}
+        />
+      )}
+      {guestAsk && (
+        <div className="modal-overlay" onClick={dismissGuestAsk}>
+          <div
+            className="modal guest-ask"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <h2>{t("guestAsk.title")}</h2>
+            <p>{t("guestAsk.body")}</p>
+            <div className="guest-ask__actions">
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => {
+                  dismissGuestAsk();
+                  openAuth("signup", "guest-ask");
+                }}
+              >
+                {t("guestAsk.create")}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={dismissGuestAsk}
+              >
+                {t("guestAsk.later")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,53 +1,22 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useT } from "../../i18n/useT";
+import { getTech } from "../../lib/techs";
+import { ClaudeLogo, CursorLogo, CopilotLogo } from "../TechLogos";
 import TechCardsGrid from "../TechCardsGrid";
 import DailyChallenge from "../DailyChallenge";
 import PromoCard from "../PromoCard";
 
-// Значения статистики (мокап): число + суффикс для count-up
-const STATS = {
-  students: { value: 50, decimals: 0, suffix: "k+" },
-  tasks: { value: 1.2, decimals: 1, suffix: "M" },
-  success: { value: 94, decimals: 0, suffix: "%" },
-};
-
-const PROOF_HUES = [152, 200, 262, 330, 42];
-
-// Count-up с easeOutExpo (только на первый mount; reduced-motion → сразу финал)
-function useCountUp(target, decimals = 0, duration = 800) {
-  const [value, setValue] = useState(() =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? target : 0,
-  );
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
-    let raf;
-    const start = performance.now();
-    const tick = (now) => {
-      const p = Math.min(1, (now - start) / duration);
-      const eased = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
-      setValue(target * eased);
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [target, decimals, duration]);
-  return value.toFixed(decimals);
-}
-
-function StatValue({ stat, className }) {
-  const v = useCountUp(stat.value, stat.decimals);
-  return (
-    <span className={className}>
-      {v}
-      {stat.suffix}
-    </span>
-  );
-}
+// II-инструменты: доп-технологии платформы (референс «Новый дизайн Херо»).
+// Ведут себя как обычные треки: клик = выбрать трек + страница технологии.
+const AI_TOOL_TECHS = [
+  { id: "claude", Logo: ClaudeLogo },
+  { id: "cursor", Logo: CursorLogo },
+  { id: "copilot", Logo: CopilotLogo },
+];
 
 // Mock окна редактора: typing-анимация строк + "tests passed"
 // ch = точная длина строки в символах (моноширинный шрифт) — CSS печатает её за ch*RATE
+// 6 строк (референс «Новый дизайн Херо») — hero компактнее по высоте
 const CODE_LINES = [
   { ch: 22, node: <span className="tk-c">// Your first function</span> },
   {
@@ -59,7 +28,6 @@ const CODE_LINES = [
       </>
     ),
   },
-  { ch: 1, node: " " },
   {
     ch: 30,
     node: (
@@ -93,15 +61,6 @@ const CODE_LINES = [
     ),
   },
   { ch: 1, node: <span className="tk-p">{"}"}</span> },
-  {
-    ch: 31,
-    node: (
-      <>
-        <span className="tk-f">fetchStatus</span>().
-        <span className="tk-f">then</span>(console.log);
-      </>
-    ),
-  },
 ];
 
 // Тайминг «печати»: ~0.05с на символ, пауза 0.1с между строками → весь блок ~10.4с
@@ -201,6 +160,23 @@ function HeroDemo({ t }) {
   );
 }
 
+const PROOF_HUES = [152, 200, 262, 330, 42];
+
+// How it works: лого треков — static-мапа (react-compiler: никаких getTech().Logo в рендере)
+const HOW_LOGOS = {
+  html: getTech("html").Logo,
+  css: getTech("css").Logo,
+  javascript: getTech("javascript").Logo,
+};
+
+function LogoWrap({ L }) {
+  return (
+    <span className="track-chip__logo">
+      <L />
+    </span>
+  );
+}
+
 function MainView({
   onNavigate,
   onSignup,
@@ -213,126 +189,174 @@ function MainView({
 }) {
   const t = useT();
 
-  // Success-rate кольцо: r=52 => окружность ~326.7. Sweep при mount (двойной rAF —
-  // transition обязан стартовать от полного C, иначе браузер «догонит» мгновенно),
-  // после sweep'а — дышащее свечение (is-live): блок «живой», а не статичный.
-  const C = 326.7;
-  const [ringOffset, setRingOffset] = useState(() =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ? C * (1 - STATS.success.value / 100)
-      : C,
-  );
-  // reduced-motion: сразу в финальном состоянии (без свипа и свечения-таймера)
-  const [ringLive, setRingLive] = useState(
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
+  // Scroll-reveal секций home (UX-аудит: язык движения; reduced-motion — CSS
+  // не прячет .reveal, без JS всё тоже видимо)
   useEffect(() => {
-    if (ringLive) return;
-    let t2;
-    const raf = requestAnimationFrame(() =>
-      requestAnimationFrame(() =>
-        setRingOffset(C * (1 - STATS.success.value / 100)),
-      ),
+    const els = document.querySelectorAll(
+      ".home__techs, .home__how, .home__final",
     );
-    t2 = setTimeout(() => setRingLive(true), 1500);
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(t2);
-    };
-  }, [ringLive, C]);
+    if (!els.length) return;
+    els.forEach((el) => el.classList.add("reveal"));
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-revealed");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div className="home">
       {/* 1. Гостевой hero: оффер + продукт (mock редактора) в первом экране */}
       <section className="card card--feature home__hero spotlight">
-        <div className="home__hero-text">
-          <span className="label-caps home__eyebrow">
-            {t("home.offer.eyebrow")}
-          </span>
-          <h1 className="home__hero-title">{t("home.offer.title")}</h1>
-          <p className="home__hero-desc">{t("home.offer.desc")}</p>
-          {/* Авторизованному «Начать бесплатно» = анти-CТА (он уже зарегистрирован):
+        {/* Референс «Новый стиль карточек нейронок»: заголовок + текст — левая
+            половина, mock-редактор — правая; оба по верхней (основной) линии */}
+        <div className="home__hero-row">
+          <div className="home__hero-text">
+            <span className="label-caps home__eyebrow">
+              {t("home.offer.eyebrow")}
+            </span>
+            <h1 className="home__hero-title">{t("home.offer.title")}</h1>
+            <p className="home__hero-desc">{t("home.offer.desc")}</p>
+            {/* Авторизованному «Начать бесплатно» = анти-CТА (он уже зарегистрирован):
               primary = «Продолжить обучение» (первый невыполненный урок),
               secondary = дорожная карта. Гостю — конверсионная пара. */}
-          <div className="home__hero-cta">
-            {isAuthed ? (
-              <>
-                <button
-                  type="button"
-                  className="btn btn--primary home__hero-btn"
-                  onClick={onDemo}
-                >
-                  {t("home.lesson.continue")}
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
+            <div className="home__hero-cta">
+              {isAuthed ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn--primary home__hero-btn"
+                    onClick={onDemo}
                   >
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--secondary home__hero-btn"
-                  onClick={() => onNavigate("roadmap")}
-                >
-                  {t("home.lesson.viewRoadmap")}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="btn btn--primary home__hero-btn"
-                  onClick={onSignup}
-                >
-                  {t("home.offer.start")}
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
+                    {t("home.lesson.continue")}
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--secondary home__hero-btn"
+                    onClick={() => onNavigate("roadmap")}
                   >
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--secondary home__hero-btn"
-                  onClick={onDemo}
-                >
-                  {t("home.offer.demo")}
-                </button>
-              </>
-            )}
+                    {t("home.lesson.viewRoadmap")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn--primary home__hero-btn"
+                    onClick={onSignup}
+                  >
+                    {t("home.offer.start")}
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--secondary home__hero-btn"
+                    onClick={onDemo}
+                  >
+                    {t("home.offer.demo")}
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="home__proof">
+              <span className="home__proof-avatars" aria-hidden="true">
+                {PROOF_HUES.map((hue, i) => (
+                  <span
+                    key={i}
+                    className="avatar-dot avatar-dot--sm home__proof-avatar"
+                    style={{
+                      background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 18%))`,
+                    }}
+                  />
+                ))}
+              </span>
+              <span className="home__proof-text">
+                {t("home.proof")} ·{" "}
+                <span className="home__proof-rating">★ 4.8</span>
+              </span>
+            </div>
           </div>
-          <span className="home__trust">{t("home.offer.trust")}</span>
-          <div className="home__proof">
-            <span className="home__proof-avatars" aria-hidden="true">
-              {PROOF_HUES.map((hue, i) => (
-                <span
-                  key={i}
-                  className="avatar-dot avatar-dot--sm home__proof-avatar"
-                  style={{
-                    background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 18%))`,
-                  }}
-                />
-              ))}
-            </span>
-            <span className="home__proof-text">
-              {t("home.proof")} ·{" "}
-              <span className="home__proof-rating">★ 4.8</span>
-            </span>
-          </div>
+          <HeroDemo t={t} />
         </div>
-        <HeroDemo t={t} />
+      </section>
+
+      {/* 1b. II-инструменты: Claude / Cursor / GitHub Copilot — доп-технологии
+          (референс «Новый дизайн Херо»); кликаются как карточки треков */}
+      <section className="home__aitools">
+        <h3 className="home__section-title">{t("home.aiTools.title")}</h3>
+        <p className="home__section-sub">{t("home.aiTools.sub")}</p>
+        <div className="home__aitools-grid">
+          {AI_TOOL_TECHS.map((item) => {
+            const L = item.Logo;
+            const Tech = getTech(item.id);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={`ai-tool spotlight ai-tool--${item.id}`}
+                onClick={() => {
+                  onSelectTech(item.id);
+                  onNavigate("technology", { techId: item.id });
+                }}
+              >
+                {/* Референс «Новый стиль карточек нейронок»: верх — лого +
+                    название/«N уроков», низ (на всю ширину) — точка + первый
+                    урок + пилюля «Новое» справа */}
+                <span className="ai-tool__head">
+                  <span className="ai-tool__logo">
+                    <L />
+                  </span>
+                  <span className="ai-tool__info">
+                    <span className="ai-tool__title">
+                      {t(`home.tech.${item.id}`)}
+                    </span>
+                    <span className="ai-tool__meta">
+                      {t("home.aiTools.lessons", { n: Tech.lessons })}
+                    </span>
+                  </span>
+                </span>
+                <span className="ai-tool__foot">
+                  <span className="ai-tool__dot" aria-hidden="true" />
+                  <span className="ai-tool__first-text">
+                    {t(`home.aiTools.${item.id}.first`)}
+                  </span>
+                  <span className="chip ai-tool__badge">
+                    {t("home.aiTools.new")}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       {/* 2. Программа: каталог треков — что учить (UX-аудит Р8: поднято на 2-е место) */}
@@ -349,163 +373,113 @@ function MainView({
         />
       </section>
 
-      {/* 3. Bento-статистика: доказательство (UX-аудит Р9: личное обещание — на 2-й позиции) */}
-      <section className="home__stats">
-        <div
-          className={`stat-card stat-card--success spotlight${ringLive ? " is-live" : ""}`}
-        >
-          {/* Кольцо — центр композиции: число считается В ПУЗЕ, sweep при загрузке,
-              после — мягкое дышащее свечение (живой элемент, не статичный круг) */}
-          <div
-            className="success-ring"
-            role="img"
-            aria-label={`${t("home.stats.success")}: ${STATS.success.value}${STATS.success.suffix}`}
-          >
-            <svg className="ring" viewBox="0 0 120 120" aria-hidden="true">
-              <defs>
-                <linearGradient
-                  id="success-ring-grad"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="var(--primary)" />
-                  <stop offset="100%" stopColor="var(--accent-2, #5eead4)" />
-                </linearGradient>
-              </defs>
-              <circle
-                className="ring__track"
-                cx="60"
-                cy="60"
-                r="52"
-                fill="none"
-                strokeWidth="10"
-              />
-              <circle
-                className="ring__fill"
-                cx="60"
-                cy="60"
-                r="52"
-                fill="none"
-                strokeWidth="10"
-                strokeLinecap="round"
-                stroke="url(#success-ring-grad)"
-                strokeDasharray={C}
-                strokeDashoffset={ringOffset}
-              />
-            </svg>
-            <div className="success-ring__center">
-              <span className="success-ring__value">
-                <StatValue stat={STATS.success} className="success-ring__num" />
+      {/* 3. How it works: демонстрация ПРОДУКТА вместо демо-bento (UX-аудит V6:
+          «5 карточек статистики подряд = дашборд, а не учебный продукт»; ценность
+          показываем, а не «продаём цифрами» — цифры уходят в SAMPLE-строку ниже) */}
+      <section className="home__how">
+        <h3 className="home__section-title">{t("home.how.title")}</h3>
+        <p className="home__section-sub">{t("home.how.sub")}</p>
+        <div className="home__how-grid">
+          <div className="card card--feature home__how-step spotlight">
+            <span className="home__how-num">1</span>
+            <h4>{t("home.how.s1t")}</h4>
+            <p>{t("home.how.s1")}</p>
+            <div
+              className="home__how-mock home__how-mock--tracks"
+              aria-hidden="true"
+            >
+              <span className="track-chip">
+                <LogoWrap L={HOW_LOGOS.html} />
+                <em>HTML</em>
               </span>
-              <span className="success-ring__icon" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m5 12 5 5 9-10" />
-                </svg>
-                {t("home.stats.successDelta")}
+              <span className="track-chip">
+                <LogoWrap L={HOW_LOGOS.css} />
+                <em>CSS</em>
               </span>
+              <span className="track-chip">
+                <LogoWrap L={HOW_LOGOS.javascript} />
+                <em>JavaScript</em>
+              </span>
+              <span className="track-chip track-chip--more">+6</span>
             </div>
           </div>
-          <div className="stat-card__main">
-            <span className="stat-card__label">{t("home.stats.success")}</span>
-            <span className="success-ring__sub">
-              {t("home.stats.successSub")}
-            </span>
-          </div>
-        </div>
-        <div className="stat-card spotlight">
-          <span className="stat-card__label">{t("home.firstProject")}</span>
-          <span className="stat-card__value">
-            {t("home.firstProjectValue")}
-          </span>
-          <div className="stat-card__delta">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="card card--feature home__how-step spotlight">
+            <span className="home__how-num">2</span>
+            <h4>{t("home.how.s2t")}</h4>
+            <p>{t("home.how.s2")}</p>
+            <div
+              className="home__how-mock home__how-mock--learn"
               aria-hidden="true"
             >
-              <path d="M7 17 17 7M9 7h8v8" />
-            </svg>
-            {t("home.firstProjectDelta")}
+              <div className="mock-video">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="m8 6 8 6-8 6V6Z" />
+                </svg>
+              </div>
+              <div className="mock-lines">
+                <i style={{ width: "92%" }} />
+                <i style={{ width: "78%" }} />
+                <i style={{ width: "85%" }} />
+              </div>
+              <div className="mock-callout">
+                <b>TIP</b>
+                <i style={{ width: "70%" }} />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="stat-card spotlight">
-          <span className="stat-card__label">{t("home.stats.students")}</span>
-          <StatValue stat={STATS.students} className="stat-card__value" />
-          <div className="stat-card__delta">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="card card--feature home__how-step spotlight">
+            <span className="home__how-num">3</span>
+            <h4>{t("home.how.s3t")}</h4>
+            <p>{t("home.how.s3")}</p>
+            <div
+              className="home__how-mock home__how-mock--code"
               aria-hidden="true"
             >
-              <path d="M7 17 17 7M9 7h8v8" />
-            </svg>
-            {t("home.stats.studentsDelta")}
+              <div className="mock-code">
+                <span className="tk-c">{"// tests:"}</span>
+                <span className="tk-f">run</span>
+                <span>
+                  (tests).<span className="tk-f">then</span>(show)
+                </span>
+              </div>
+              <div className="mock-tests">
+                <span className="mock-test">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path d="m5 13 4 4L19 7" />
+                  </svg>
+                  <em>page skeleton</em>
+                </span>
+                <span className="mock-test">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path d="m5 13 4 4L19 7" />
+                  </svg>
+                  <em>valid nav</em>
+                </span>
+                <span className="mock-test mock-test--xp">
+                  <em>+50 XP</em>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="stat-card stat-card--spark spotlight">
-          <span className="stat-card__label">{t("home.stats.tasks")}</span>
-          <StatValue stat={STATS.tasks} className="stat-card__value" />
-          <div className="stat-card__delta">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M7 17 17 7M9 7h8v8" />
-            </svg>
-            {t("home.stats.tasksDelta")}
-          </div>
-          <svg
-            className="sparkline"
-            viewBox="0 0 320 48"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <path
-              className="sparkline__line"
-              d="M0 40 L32 38 L64 34 L96 36 L128 28 L160 30 L192 22 L224 24 L256 16 L288 14 L320 8"
-            />
-            <circle className="sparkline__dot" cx="320" cy="8" r="3.5" />
-          </svg>
-        </div>
-        <div className="stat-card spotlight">
-          <span className="stat-card__label">{t("home.projects")}</span>
-          <span className="stat-card__value">{t("home.projectsValue")}</span>
-          <div className="stat-card__delta">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M7 17 17 7M9 7h8v8" />
-            </svg>
-            {t("home.projectsDelta")}
-          </div>
+        {/* Демо-цифры — одной честной строкой + SAMPLE (V5), не дашбордом из 5 карточек */}
+        <div className="home__strip">
+          <span className="chip chip--sample">{t("tasks.sample")}</span>
+          <span>{t("home.strip.devs")}</span>
+          <span className="home__strip-dot">·</span>
+          <span>{t("home.strip.tasks")}</span>
+          <span className="home__strip-dot">·</span>
+          <span>{t("home.strip.members")}</span>
         </div>
       </section>
 
@@ -515,7 +489,6 @@ function MainView({
       {/* 6. Final CTA */}
       <section className="card card--feature home__final spotlight">
         <h2 className="home__final-title">{t("home.final.title")}</h2>
-        <span className="home__trust">{t("home.offer.trust")}</span>
         <button
           type="button"
           className="btn btn--primary home__hero-btn"
@@ -553,6 +526,20 @@ function MainView({
       {/* 7. Футер */}
       <footer className="home__footer">
         <div className="home__footer-brand">
+          <svg
+            className="brand__mark"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m8 8-4.5 4L8 16" />
+            <path d="m16 8 4.5 4L16 16" />
+            <path d="M13.5 5.5 10.5 18.5" />
+          </svg>
           <span className="brand__word">
             Syn<span className="brand__accent">tax</span>
           </span>

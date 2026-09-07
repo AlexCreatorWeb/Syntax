@@ -234,6 +234,9 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
   const [difficulty, setDifficulty] = useState("all");
   const [status, setStatus] = useState("all"); // all | done | open (2026-09: реально работает)
   const [category, setCategory] = useState("all");
+  // UX-аудит V3: на мобилке фильтры (селекты + категорийные чипы) съедали ~55%
+  // первого экрана — скрыты за кнопкой «Filters (n)» (десктоп — всегда видимы)
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [query, setQuery] = useState("");
   // Tech-фильтр: синхронен с выбранным треком через key-перемонтирование в MainContent
   // (key=activeTech); без трека — первый в каталоге (html)
@@ -283,11 +286,17 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
     setCategory("all");
     setQuery("");
   };
+  const activeFilters =
+    (difficulty !== "all" ? 1 : 0) +
+    (status !== "all" ? 1 : 0) +
+    (category !== "all" ? 1 : 0);
 
   const contextName = t(tech.label);
 
   return (
-    <div className="tasks-view">
+    <div
+      className={`tasks-view ${filtersOpen ? "" : "tasks-view--filters-closed"}`}
+    >
       <header className="tasks-head">
         <div className="page-head">
           <h1 className="page-head__title">
@@ -296,27 +305,51 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
           <p className="page-head__desc">{t("tasks.desc")}</p>
         </div>
         <div className="tasks-head__controls">
-          <FilterSelect
-            value={difficulty}
-            onChange={setDifficulty}
-            ariaLabel={t("tasks.allDifficulties")}
-            options={[
-              { value: "all", label: t("tasks.allDifficulties") },
-              { value: "easy", label: t("tasks.easy") },
-              { value: "medium", label: t("tasks.medium") },
-              { value: "hard", label: t("tasks.hard") },
-            ]}
-          />
-          <FilterSelect
-            value={status}
-            onChange={setStatus}
-            ariaLabel={t("tasks.allStatuses")}
-            options={[
-              { value: "all", label: t("tasks.allStatuses") },
-              { value: "done", label: t("tasks.done") },
-              { value: "open", label: t("tasks.open") },
-            ]}
-          />
+          <button
+            type="button"
+            className={`btn btn--ghost tasks__filters-toggle ${activeFilters ? "is-active" : ""}`}
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((v) => !v)}
+          >
+            {t("tasks.filters")}
+            {activeFilters > 0 && (
+              <span className="tasks__filters-count">{activeFilters}</span>
+            )}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 6h16M7 12h10M10 18h4" />
+            </svg>
+          </button>
+          <div className="tasks-filters">
+            <FilterSelect
+              value={difficulty}
+              onChange={setDifficulty}
+              ariaLabel={t("tasks.allDifficulties")}
+              options={[
+                { value: "all", label: t("tasks.allDifficulties") },
+                { value: "easy", label: t("tasks.easy") },
+                { value: "medium", label: t("tasks.medium") },
+                { value: "hard", label: t("tasks.hard") },
+              ]}
+            />
+            <FilterSelect
+              value={status}
+              onChange={setStatus}
+              ariaLabel={t("tasks.allStatuses")}
+              options={[
+                { value: "all", label: t("tasks.allStatuses") },
+                { value: "done", label: t("tasks.done") },
+                { value: "open", label: t("tasks.open") },
+              ]}
+            />
+          </div>
           <div className="tasks-search">
             <svg
               className="search-icon"

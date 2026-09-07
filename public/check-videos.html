@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="ru">
+      <head>
+            <meta charset="utf-8" />
+            <title>Syntax — проверка доступности видео</title>
+            <style>
+                  body {
+                        font-family: system-ui, sans-serif;
+                        background: #0b1119;
+                        color: #e6edf3;
+                        margin: 24px;
+                  }
+                  h1 {
+                        font-size: 20px;
+                  }
+                  .bar {
+                        height: 8px;
+                        background: #1f2a38;
+                        border-radius: 4px;
+                        margin: 12px 0;
+                  }
+                  .bar > div {
+                        height: 100%;
+                        background: #5eead4;
+                        border-radius: 4px;
+                        transition: width 0.3s;
+                  }
+                  table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        font-size: 13px;
+                  }
+                  th,
+                  td {
+                        border: 1px solid #223041;
+                        padding: 4px 8px;
+                        text-align: left;
+                  }
+                  tr.ok td.status {
+                        color: #4ade80;
+                  }
+                  tr.bad td.status {
+                        color: #f87171;
+                        font-weight: 600;
+                  }
+                  .btn {
+                        background: #5eead4;
+                        color: #0b1119;
+                        border: 0;
+                        padding: 8px 14px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        margin: 8px 4px 8px 0;
+                  }
+                  #hidden-host {
+                        position: fixed;
+                        left: -10000px;
+                        top: 0;
+                  }
+                  .legend {
+                        color: #8b98a8;
+                        font-size: 12px;
+                        margin-top: 10px;
+                  }
+            </style>
+      </head>
+      <body>
+            <h1>
+                  Проверка доступности видео Syntax (встроенный плеер, YouTube
+                  IFrame API)
+            </h1>
+            <div class="bar"><div id="prog" style="width: 0%"></div></div>
+            <div id="status-line">Загрузка API…</div>
+            <button class="btn" id="start">Запустить проверку</button>
+            <button class="btn" id="copy" disabled>
+                  Копировать результаты (TSV)
+            </button>
+            <table id="tbl">
+                  <thead>
+                        <tr>
+                              <th>track</th>
+                              <th>#</th>
+                              <th>id</th>
+                              <th>статус</th>
+                        </tr>
+                  </thead>
+                  <tbody></tbody>
+            </table>
+            <div class="legend">
+                  OK = встроенный плеер поднялся (видео встраивается). Коды
+                  ошибок: 100 — нет видео / 101,150 — запрещено встраивание /
+                  102 — приватное / 2,5 — сбой загрузки / 1002 — региональное
+                  ограничение / 1005 — нет HTML5-плеера / 2000 — «недоступно».
+            </div>
+            <div id="hidden-host"></div>
+            <script>
+                  const ITEMS = [
+                        { track: "claude", num: 1, id: "Bo4DcRovnqo" },
+                        { track: "claude", num: 2, id: "q8GverUrdE4" },
+                        { track: "claude", num: 3, id: "hHVzbE8RpLI" },
+                        { track: "claude", num: 4, id: "kKGd1NUDcKQ" },
+                        { track: "claude", num: 5, id: "V7ZZQ5nGYDE" },
+                        { track: "claude", num: 6, id: "xOi2g-XJ454" },
+                        { track: "claude", num: 7, id: "c8RR6ZDltdc" },
+                        { track: "claude", num: 8, id: "gKuqk6n3V0c" },
+                        { track: "claude", num: 9, id: "KRx07ZvZG5U" },
+                        { track: "claude", num: 10, id: "jVH8iyZrdWo" },
+                        { track: "claude", num: 11, id: "cR7MzV-OA1Y" },
+                        { track: "claude", num: 12, id: "rU8Lf2jtsXk" },
+                        { track: "claude", num: 13, id: "KnN3u1vugfA" },
+                        { track: "claude", num: 14, id: "rLNNCvSs_Ro" },
+                        { track: "claude", num: 15, id: "olqEYlJHkzM" },
+                        { track: "claude", num: 16, id: "th8G9sR5uNM" },
+                        { track: "claude", num: 17, id: "SdkZbF_Qvow" },
+                        { track: "claude", num: 18, id: "HsJTPoxxt40" },
+                        { track: "css", num: 1, id: "ndXZ-H0Jzmk" },
+                        { track: "css", num: 2, id: "Q0zq_JYy-JI" },
+                        { track: "css", num: 3, id: "9FoDgEMkqaI" },
+                        { track: "css", num: 4, id: "PEQ3i9q3ez8" },
+                        { track: "css", num: 5, id: "PEQ3i9q3ez8" },
+                        { track: "css", num: 6, id: "HcuVlzsW9S8" },
+                        { track: "css", num: 7, id: "oQDNPNZ72Ig" },
+                        { track: "css", num: 8, id: "G-U-XU2KjD8" },
+                        { track: "css", num: 9, id: "qeq4uHbRh_U" },
+                        { track: "css", num: 10, id: "TJQi4H4ix0s" },
+                        { track: "css", num: 11, id: "MCCjghRlbhA" },
+                        { track: "css", num: 12, id: "eVZEwEQg4pg" },
+                        { track: "css", num: 13, id: "zvkE0MY1cxE" },
+                        { track: "css", num: 14, id: "MEOR2b69Pl4" },
+                        { track: "css", num: 15, id: "JrKOHNRnRMg" },
+                        { track: "css", num: 16, id: "AUx0mVZMxKc" },
+                        { track: "css", num: 17, id: "ahYuxTRjY0g" },
+                        { track: "css", num: 18, id: "bP3ceQEXMhU" },
+                        { track: "css", num: 19, id: "wLWO58PJFrE" },
+                        { track: "css", num: 20, id: "OgPY8FccBkI" },
+                        { track: "css", num: 21, id: "3a_iaHqazHo" },
+                        { track: "css", num: 22, id: "LAq9p4mqrpI" },
+                        { track: "cursor", num: 1, id: "23in9xpt-FE" },
+                        { track: "cursor", num: 2, id: "rTw4fzHgfWs" },
+                        { track: "cursor", num: 3, id: "hsUAm9M2JrI" },
+                        { track: "cursor", num: 4, id: "2p92zYdNrLk" },
+                        { track: "cursor", num: 5, id: "NyZQ31Q_L_Y" },
+                        { track: "cursor", num: 6, id: "6bpkojI84bY" },
+                        { track: "cursor", num: 7, id: "pHr179iQ6rU" },
+                        { track: "cursor", num: 8, id: "DnYudrIuwNU" },
+                        { track: "cursor", num: 9, id: "Q3TRQM_jo8w" },
+                        { track: "cursor", num: 10, id: "cGm_Ppja4jA" },
+                        { track: "cursor", num: 11, id: "XuFaQSW79rM" },
+                        { track: "cursor", num: 12, id: "tIl-Bi-u0dU" },
+                        { track: "cursor", num: 13, id: "VmqHF91Tkk0" },
+                        { track: "cursor", num: 14, id: "w3K1EguBrTc" },
+                        { track: "cursor", num: 15, id: "jbuyRlcKmZE" },
+                        { track: "cursor", num: 16, id: "jmcy2L1bM1k" },
+                        { track: "cursor", num: 17, id: "dX8hdDDoht8" },
+                        { track: "cursor", num: 18, id: "i8UDWmT6wa4" },
+                        { track: "html", num: 1, id: "NP2NJVfgWm8" },
+                        { track: "html", num: 2, id: "8yaY3utfRCE" },
+                        { track: "html", num: 3, id: "ny-ouhU-cCc" },
+                        { track: "html", num: 4, id: "scB2C0uNV1s" },
+                        { track: "html", num: 5, id: "wKHiuEeVgU" },
+                        { track: "html", num: 6, id: "uCXwmupsoMY" },
+                        { track: "html", num: 7, id: "g8Dw9auTr_g" },
+                        { track: "html", num: 8, id: "jWXGLAD2BUU" },
+                        { track: "html", num: 9, id: "_in4LAdxAUA" },
+                        { track: "html", num: 10, id: "ScPhhvz1z5Q" },
+                        { track: "html", num: 11, id: "7ZZK9Iprw5c" },
+                        { track: "html", num: 12, id: "6PL2TqBdz0I" },
+                        { track: "html", num: 13, id: "3wsvVLOrI3g" },
+                        { track: "html", num: 14, id: "BwRqadwnBA4" },
+                        { track: "html", num: 15, id: "UfyrjnCFJBY" },
+                        { track: "html", num: 16, id: "eCYWUhaIvsA" },
+                        { track: "javascript", num: 1, id: "ZV8fNtV1mOM" },
+                        { track: "javascript", num: 2, id: "6sfhfert1lA" },
+                        { track: "javascript", num: 3, id: "yIvIAU-7_SY" },
+                        { track: "javascript", num: 4, id: "Pi7vGjenpoA" },
+                        { track: "javascript", num: 5, id: "WLpvuqsf6cI" },
+                        { track: "javascript", num: 6, id: "kfcl02Nd2YI" },
+                        { track: "javascript", num: 7, id: "WtaEFxXGmv4" },
+                        { track: "javascript", num: 8, id: "_WlC6UxMyNE" },
+                        { track: "javascript", num: 9, id: "rJK0eMkI3BE" },
+                        { track: "javascript", num: 10, id: "IcgdjdeOziA" },
+                        { track: "javascript", num: 11, id: "MFoo2q38x9c" },
+                        { track: "javascript", num: 12, id: "mI6Jcfsgma4" },
+                        { track: "javascript", num: 13, id: "HkQ--STLf2Q" },
+                        { track: "javascript", num: 14, id: "dNhCSC-yJ2A" },
+                        { track: "javascript", num: 15, id: "HZcnq4Rx1vU" },
+                        { track: "javascript", num: 16, id: "92k57_D-Yqs" },
+                        { track: "javascript", num: 17, id: "WJUk3GXarMw" },
+                        { track: "javascript", num: 18, id: "KqbnxtLOeZk" },
+                        { track: "javascript", num: 19, id: "X8JdA4hUURc" },
+                        { track: "javascript", num: 20, id: "YinzpmFSP44" },
+                        { track: "javascript", num: 21, id: "9fpxuvIQ_nA" },
+                        { track: "javascript", num: 22, id: "kXAM_VuiBMM" },
+                        { track: "javascript", num: 23, id: "segRDC22WJA" },
+                        { track: "javascript", num: 24, id: "Ha2geO5Qw_Q" },
+                        { track: "javascript", num: 25, id: "cYx5ckAYhK8" },
+                        { track: "javascript", num: 26, id: "o_HntOTCqks" },
+                        { track: "javascript", num: 27, id: "syZhAlHgrxs" },
+                        { track: "javascript", num: 28, id: "ubYPpR9acQc" },
+                        { track: "javascript", num: 29, id: "qKOUQX93gIo" },
+                        { track: "javascript", num: 30, id: "01RGJQn-lAY" },
+                        { track: "javascript", num: 31, id: "7ofRYfOkhbo" },
+                        { track: "javascript", num: 32, id: "N1HIezZEFcE" },
+                        { track: "javascript", num: 33, id: "H9XRtCjD3hA" },
+                        { track: "javascript", num: 34, id: "Qm-5u8e4Ct0" },
+                        { track: "javascript", num: 35, id: "wtfxZ2VFYU4" },
+                        { track: "javascript", num: 36, id: "9m7o30iS8ck" },
+                        { track: "javascript", num: 37, id: "5nAg2zPgmF4" },
+                        { track: "javascript", num: 38, id: "377qAu37OTE" },
+                        { track: "javascript", num: 39, id: "yx7SU2BQbus" },
+                        { track: "javascript", num: 40, id: "xXBTwb7cc88" },
+                        { track: "javascript", num: 41, id: "hZewa8d7lYc" },
+                        { track: "javascript", num: 42, id: "rm923a_RfHs" },
+                        { track: "mongo", num: 1, id: "pGkQ5ApKIUY" },
+                        { track: "mongo", num: 2, id: "ektuou8jfuk" },
+                        { track: "mongo", num: 3, id: "RcPVKQiKbSA" },
+                        { track: "mongo", num: 4, id: "PyQOlCKuUic" },
+                        { track: "mongo", num: 5, id: "GRphcr1xQWM" },
+                        { track: "mongo", num: 6, id: "L97HU_mGsfw" },
+                        { track: "mongo", num: 7, id: "7chXPIXSUU0" },
+                        { track: "mongo", num: 8, id: "Qf7dIkbG7Z4" },
+                        { track: "mongo", num: 9, id: "xDNxTbwKROo" },
+                        { track: "mongo", num: 10, id: "VxUzEvOVG_A" },
+                        { track: "mongo", num: 11, id: "to4OAxoIH9E" },
+                        { track: "mongo", num: 12, id: "kmXKjujXFDE" },
+                        { track: "mongo", num: 13, id: "P-zz57G1r0I" },
+                        { track: "mongo", num: 14, id: "aAmS5oFeEQ0" },
+                        { track: "mongo", num: 15, id: "cuLYt1ODSk4" },
+                        { track: "mongo", num: 16, id: "UML_c12bAQk" },
+                        { track: "mongo", num: 17, id: "Zc3CDFUfHUA" },
+                        { track: "mongo", num: 18, id: "2jXJZFqYI0w" },
+                        { track: "node", num: 1, id: "II_kZ8Pp0g0" },
+                        { track: "node", num: 2, id: "YTLXrji4DJc" },
+                        { track: "node", num: 3, id: "6eg-WMDejSM" },
+                        { track: "node", num: 4, id: "He1pxBAaMqU" },
+                        { track: "node", num: 5, id: "cD5blM23Bcw" },
+                        { track: "node", num: 6, id: "S681T474sUA" },
+                        { track: "node", num: 7, id: "H_l7u09eYL0" },
+                        { track: "node", num: 8, id: "OFRVbnkWndM" },
+                        { track: "node", num: 9, id: "uIUMRSSnnmg" },
+                        { track: "node", num: 10, id: "U65ulvMCyk8" },
+                        { track: "node", num: 11, id: "gYU0pFtbNAw" },
+                        { track: "node", num: 12, id: "V_aJGayH5ZA" },
+                        { track: "node", num: 13, id: "V6Wa3kj4TXM" },
+                        { track: "node", num: 14, id: "EcRFgitXrX4" },
+                        { track: "node", num: 15, id: "g8RW0wxMS70" },
+                        { track: "node", num: 16, id: "XBQiI1Ntons" },
+                        { track: "node", num: 17, id: "XDULCQpvZ1s" },
+                        { track: "node", num: 18, id: "II3ocl_3G1s" },
+                        { track: "node", num: 19, id: "ax1verdkVPo" },
+                        { track: "node", num: 20, id: "ZgojwJEcLn8" },
+                        { track: "node", num: 21, id: "p3RFMEixUOE" },
+                        { track: "node", num: 22, id: "PF8SfT0MEcM" },
+                        { track: "node", num: 23, id: "UML_c12bAQk" },
+                        { track: "node", num: 24, id: "D8KggyvCRrg" },
+                        { track: "node", num: 25, id: "39vDgivMPHs" },
+                        { track: "node", num: 26, id: "tKM44vPHU0U" },
+                        { track: "postgres", num: 1, id: "KaGqmF6m0rk" },
+                        { track: "postgres", num: 2, id: "IczI9d6mMlQ" },
+                        { track: "postgres", num: 3, id: "jM5yAeHmgm8" },
+                        { track: "postgres", num: 4, id: "sZm_rUAykRU" },
+                        { track: "postgres", num: 5, id: "9oaUnZHfwd4" },
+                        { track: "postgres", num: 6, id: "hKywy1558XA" },
+                        { track: "postgres", num: 7, id: "bYdjR6QexJY" },
+                        { track: "postgres", num: 8, id: "ytfXUvCsNuo" },
+                        { track: "postgres", num: 9, id: "43yOFoEOKeI" },
+                        { track: "postgres", num: 10, id: "H3LYwkePWfM" },
+                        { track: "postgres", num: 11, id: "Df6tQlWhn3Q" },
+                        { track: "postgres", num: 12, id: "phIR9W0yIaE" },
+                        { track: "postgres", num: 13, id: "yVlCjzJAOOo" },
+                        { track: "postgres", num: 14, id: "TJ55HOaA4oU" },
+                        { track: "postgres", num: 15, id: "LpEwssOYRKA" },
+                        { track: "postgres", num: 16, id: "PvfGmk966TQ" },
+                        { track: "postgres", num: 17, id: "d-zyokNJNwo" },
+                        { track: "postgres", num: 18, id: "B3RRgBx_foc" },
+                        { track: "postgres", num: 19, id: "qYunWQsaFhA" },
+                        { track: "postgres", num: 20, id: "Gw6fSkJM74k" },
+                        { track: "python", num: 1, id: "xnL7WVw2e1A" },
+                        { track: "python", num: 2, id: "qMK3gopBvBg" },
+                        { track: "python", num: 3, id: "v1yHG6HGfGQ" },
+                        { track: "python", num: 4, id: "wQWrN36IopI" },
+                        { track: "python", num: 5, id: "wvvmn1Hnr58" },
+                        { track: "python", num: 6, id: "7L-wetlrCi0" },
+                        { track: "python", num: 7, id: "rcKOCj1Hp0s" },
+                        { track: "python", num: 8, id: "WLAq2-3ZyMc" },
+                        { track: "python", num: 9, id: "s8hOpsvo0TU" },
+                        { track: "python", num: 10, id: "cULVFnQ-ujg" },
+                        { track: "python", num: 11, id: "houlvw937fg" },
+                        { track: "python", num: 12, id: "rsG1Y5k-9jo" },
+                        { track: "python", num: 13, id: "aBuerGPuhME" },
+                        { track: "python", num: 14, id: "ycVlsU_c4Mg" },
+                        { track: "python", num: 15, id: "esSIFatS6kM" },
+                        { track: "python", num: 16, id: "BTV9esoCwEE" },
+                        { track: "python", num: 17, id: "Aabdr3yxEhQ" },
+                        { track: "python", num: 18, id: "78PTvj2wYH8" },
+                        { track: "python", num: 19, id: "aH5sgOxuCnk" },
+                        { track: "python", num: 20, id: "MFIlltaeIgs" },
+                        { track: "python", num: 21, id: "nm9jcE65EEU" },
+                        { track: "python", num: 22, id: "_k9CoVcNoMU" },
+                        { track: "python", num: 23, id: "0E50FVd5PGQ" },
+                        { track: "python", num: 24, id: "DvVhG8-HMSQ" },
+                        { track: "python", num: 25, id: "XwDlcW_WsmU" },
+                        { track: "python", num: 26, id: "N__vCpeF8k0" },
+                        { track: "python", num: 27, id: "VXMECr4_-tE" },
+                        { track: "python", num: 28, id: "unwP2UjWRq8" },
+                        { track: "react", num: 1, id: "GeulXZP_kZ8" },
+                        { track: "react", num: 2, id: "SxdzO_03i64" },
+                        { track: "react", num: 3, id: "B6lCAqLZqAw" },
+                        { track: "react", num: 4, id: "XAtmQrr59J4" },
+                        { track: "react", num: 5, id: "7fDGLz6xEd0" },
+                        { track: "react", num: 6, id: "iHQ7fwXTqik" },
+                        { track: "react", num: 7, id: "heBRA9LVpsA" },
+                        { track: "react", num: 8, id: "qOLLZ5uVm04" },
+                        { track: "react", num: 9, id: "ivtRckdgfts" },
+                        { track: "react", num: 10, id: "s2fWu6YcNIg" },
+                        { track: "react", num: 11, id: "4Ot7nZzo2Wc" },
+                        { track: "react", num: 12, id: "yEPukn2rS28" },
+                        { track: "react", num: 13, id: "BGKbJ2aXCog" },
+                        { track: "react", num: 14, id: "dULZOHjEMt0" },
+                        { track: "react", num: 15, id: "hoQz95Fh84c" },
+                        { track: "react", num: 16, id: "zmAL9revylc" },
+                        { track: "react", num: 17, id: "cwToXW32tbA" },
+                        { track: "react", num: 18, id: "sAa71agGwcg" },
+                        { track: "vue", num: 1, id: "IxwCpG6du4o" },
+                        { track: "vue", num: 2, id: "eGmCop_pmC8" },
+                        { track: "vue", num: 3, id: "JuaQltsFMKg" },
+                        { track: "vue", num: 4, id: "0Uv9DkaYquk" },
+                        { track: "vue", num: 5, id: "u_akJ958SVY" },
+                        { track: "vue", num: 6, id: "RyIoWDDFPe4" },
+                        { track: "vue", num: 7, id: "sADLYsHxhm0" },
+                        { track: "vue", num: 8, id: "K2QEuzo9U2M" },
+                        { track: "vue", num: 9, id: "NXaNkJB8o6U" },
+                        { track: "vue", num: 10, id: "UMxdrehfoP8" },
+                        { track: "vue", num: 11, id: "U2ZJCMiQuo8" },
+                        { track: "vue", num: 12, id: "ElosNVd2Gbs" },
+                        { track: "vue", num: 13, id: "jtNt5rcUSu8" },
+                        { track: "vue", num: 14, id: "IHwMKaoJCR8" },
+                        { track: "vue", num: 15, id: "2tXzPAQNNGE" },
+                        { track: "vue", num: 16, id: "UKa1KoPePc4" },
+                        { track: "vue", num: 17, id: "safsJp3oAJc" },
+                        { track: "vue", num: 18, id: "u1EW-5qQVI8" },
+                        { track: "vue", num: 19, id: "kF1FJ6eFr5w" },
+                        { track: "vue", num: 20, id: "aWT0B862YDE" },
+                        { track: "vue", num: 21, id: "ok9PE-XwXro" },
+                        { track: "vue", num: 22, id: "UmeZ3ikliwQ" },
+                  ];
+                  const tbody = document.querySelector("#tbl tbody");
+                  const rows = ITEMS.map((it, i) => {
+                        const tr = document.createElement("tr");
+                        tr.id = "row-" + i;
+                        tr.innerHTML = `<td>${it.track}</td><td>${it.num}</td><td>${it.id}</td><td class="status">—</td>`;
+                        tbody.appendChild(tr);
+                        return tr;
+                  });
+                  let YTapi = null;
+                  const s = document.createElement("script");
+                  s.src = "https://www.youtube.com/iframe_api";
+                  window.onYouTubeIframeAPIReady = () => {
+                        YTapi = window.YT;
+                        document.getElementById("status-line").textContent =
+                              "API готов. Нажмите «Запустить проверку».";
+                  };
+                  document.head.appendChild(s);
+
+                  document.getElementById("start").onclick = async () => {
+                        document.getElementById("start").disabled = true;
+                        const BATCH = 6,
+                              host = document.getElementById("hidden-host");
+                        let done = 0,
+                              badCount = 0;
+                        const results = [];
+                        for (let i = 0; i < ITEMS.length; i += BATCH) {
+                              const batch = ITEMS.slice(i, i + BATCH);
+                              await Promise.all(
+                                    batch.map(
+                                          (it, j) =>
+                                                new Promise((resolve) => {
+                                                      const idx = i + j;
+                                                      const div =
+                                                            document.createElement(
+                                                                  "div",
+                                                            );
+                                                      host.appendChild(div);
+                                                      const finish = (
+                                                            status,
+                                                      ) => {
+                                                            try {
+                                                                  player.destroy();
+                                                            } catch {}
+                                                            div.remove();
+                                                            const tr =
+                                                                  rows[idx];
+                                                            tr.className =
+                                                                  status ===
+                                                                  "OK"
+                                                                        ? "ok"
+                                                                        : "bad";
+                                                            tr.querySelector(
+                                                                  ".status",
+                                                            ).textContent =
+                                                                  status;
+                                                            results.push(
+                                                                  [
+                                                                        it.track,
+                                                                        it.num,
+                                                                        it.id,
+                                                                        status,
+                                                                  ].join("\t"),
+                                                            );
+                                                            if (status !== "OK")
+                                                                  badCount++;
+                                                            done++;
+                                                            document.getElementById(
+                                                                  "prog",
+                                                            ).style.width =
+                                                                  (100 * done) /
+                                                                        ITEMS.length +
+                                                                  "%";
+                                                            document.getElementById(
+                                                                  "status-line",
+                                                            ).textContent =
+                                                                  `${done}/${ITEMS.length} | проблем: ${badCount}`;
+                                                            resolve();
+                                                      };
+                                                      let player;
+                                                      try {
+                                                            player =
+                                                                  new YTapi.Player(
+                                                                        div,
+                                                                        {
+                                                                              width: 200,
+                                                                              height: 120,
+                                                                              videoId: it.id,
+                                                                              playerVars:
+                                                                                    {
+                                                                                          autoplay: 0,
+                                                                                          controls: 0,
+                                                                                    },
+                                                                              events: {
+                                                                                    onReady: () =>
+                                                                                          setTimeout(
+                                                                                                () =>
+                                                                                                      finish(
+                                                                                                            "OK",
+                                                                                                      ),
+                                                                                                800,
+                                                                                          ),
+                                                                                    onError: (
+                                                                                          e,
+                                                                                    ) =>
+                                                                                          finish(
+                                                                                                "ERR:" +
+                                                                                                      e.data,
+                                                                                          ),
+                                                                              },
+                                                                        },
+                                                                  );
+                                                      } catch (err) {
+                                                            finish(
+                                                                  "EXC:" +
+                                                                        err.message,
+                                                            );
+                                                      }
+                                                      setTimeout(() => {
+                                                            if (!tr.className)
+                                                                  finish(
+                                                                        "TIMEOUT",
+                                                                  );
+                                                      }, 20000);
+                                                }),
+                                    ),
+                              );
+                        }
+                        window.__results = results;
+                        document.getElementById("copy").disabled = false;
+                        document.getElementById("status-line").textContent =
+                              `Готово: ${ITEMS.length} | проблем: ${badCount}`;
+                  };
+                  document.getElementById("copy").onclick = () => {
+                        navigator.clipboard.writeText(
+                              window.__results.join("\n"),
+                        );
+                        document.getElementById("status-line").textContent =
+                              "Скопировано в буфер — отправьте мне TSV.";
+                  };
+            </script>
+      </body>
+</html>

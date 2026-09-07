@@ -54,19 +54,124 @@ function LessonVideoPlaceholder({ video, soonText }) {
   );
 }
 
+// Панель контролов (Play/Pause + перемотка + время + fullscreen) — общая для
+// YT-плеера и нативного <video> (стрим-прокси). Модульный уровень — react
+// compiler не любит компоненты внутри компонента.
+function PlayerControls({
+  isPlaying,
+  label,
+  barRef,
+  onBarPointerDown,
+  duration,
+  current,
+  progress,
+  isFs,
+  onToggleFs,
+  togglePlay,
+}) {
+  return (
+    <div className="lesson-view__player-controls">
+      <button
+        type="button"
+        className="lesson-view__player-btn"
+        onClick={togglePlay}
+        aria-label={isPlaying ? "Pause" : "Play"}
+      >
+        {isPlaying ? (
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5.5v13l11-6.5Z" />
+          </svg>
+        )}
+      </button>
+      <div
+        ref={barRef}
+        className="lesson-view__player-bar"
+        onPointerDown={onBarPointerDown}
+        role="slider"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={Math.round(duration)}
+        aria-valuenow={Math.round(current)}
+      >
+        <span
+          className="lesson-view__player-fill"
+          style={{ width: `${progress}%` }}
+        />
+        <span
+          className="lesson-view__player-thumb"
+          style={{ left: `${progress}%` }}
+        />
+      </div>
+      <span className="lesson-view__player-time">
+        {formatTime(current)} / {formatTime(duration)}
+      </span>
+      <button
+        type="button"
+        className="lesson-view__player-btn"
+        onClick={onToggleFs}
+        aria-label={isFs ? "Exit fullscreen" : "Fullscreen"}
+        aria-pressed={isFs}
+      >
+        {isFs ? (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
+          </svg>
+        ) : (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+          </svg>
+        )}
+      </button>
+    </div>
+  );
+}
+
 // Плеер: свои контролы снизу (Play/Pause + перемотка + время), clickCatcher
 // поверх видео (клик = play/pause, гасит YT-хад), большой Play по центру при
 // паузе. Верхняя плашка и левый нижний бейдж УБРАНЫ (фидбек 2026-09: «перекрывает
 // видео»); fullscreen — ДЕФОЛЬТНАЯ кнопка YouTube: угол внизу-справа catcher
 // не накрывает (right/bottom в CSS), нативные YT-контролы включены.
 // Плюс механика 75% просмотра → onWatched (Udemy).
+// Фолбэк (2026-09): onError/таймаут API → брендовая карточка + «Смотреть на
+// YouTube» (watch-страница открывается с любого IP; embed-контекст бот-гате
+//ется на datacenter-IP — Error 153) + «Попробовать ещё».
 function LessonVideo({ video, label, onWatched }) {
+  const t = useT();
   const [playing, setPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  // Ошибка встроенного плеера (код YT onError или "api-timeout") → сначала
+  // стрим-прокси (api/yt-proxy.mjs, Vercel-IP чистый от бот-гейта) + нативный
+  // <video> с теми же контролами; не поднялся прокси → карточка «Смотреть на
+  // YouTube». retryTick — «Попробовать ещё» (пересоздание YT-плеера)
+  const [ytError, setYtError] = useState(0);
+  const [retryTick, setRetryTick] = useState(0);
+  // Режим плеера: "yt" — IFrame API; "native" — <video> через стрим-прокси
+  const [mode, setMode] = useState("yt");
+  const videoRef = useRef(null);
   // Кастомный полноэкранный режим: оверлей поверх страницы (браузерный
   // requestFullscreen «портит вид» — фидбек 2026-09)
   const [isFs, setIsFs] = useState(false);
@@ -80,55 +185,121 @@ function LessonVideo({ video, label, onWatched }) {
   const watchedSentRef = useRef(false);
 
   // Инициализация IFrame API-плеера. fs:0 — нативную YT-кнопку fullscreen
-  // прячем, свою рисуем в контролах (браузерный fullscreen не вписывается в дизайн)
+  // прячем, свою рисуем в контролах (браузерный fullscreen не вписывается в дизайн).
+  // Safety: API не подгрузился за 20с (блокировка/сбой) → тоже фолбэк-карточка.
   useEffect(() => {
     if (!playing) return undefined;
     let destroyed = false;
-    loadYouTubeApi().then((YT) => {
-      if (destroyed || !hostRef.current) return;
-      playerRef.current = new YT.Player(hostRef.current, {
-        videoId: video.id,
-        playerVars: {
-          autoplay: 1,
-          rel: 0, // без «следующих видео» других каналов
-          playsinline: 1,
-          fs: 0, // без нативной кнопки fullscreen (наша — в контролах)
-        },
-        events: {
-          onReady: (e) => {
-            if (destroyed) return;
-            setDuration(e.target.getDuration());
-            setIsReady(true);
+    let playerStarted = false;
+    const failTimer = setTimeout(() => {
+      if (!destroyed && !playerStarted) setYtError("api-timeout");
+    }, 20000);
+    // Watchdog: Error 153-страница в iframe иногда не шлёт onError — если
+    // через 12с плеер так и не дал duration (поток не пошёл) → фолбэк.
+    const streamTimer = setTimeout(() => {
+      const p = playerRef.current;
+      if (
+        !destroyed &&
+        playerStarted &&
+        p &&
+        p.getDuration &&
+        p.getDuration() === 0
+      ) {
+        setYtError((prev) => prev || "no-stream");
+      }
+    }, 12000);
+    loadYouTubeApi()
+      .then((YT) => {
+        if (destroyed || !hostRef.current) return;
+        playerStarted = true;
+        playerRef.current = new YT.Player(hostRef.current, {
+          videoId: video.id,
+          playerVars: {
+            autoplay: 1,
+            rel: 0, // без «следующих видео» других каналов
+            playsinline: 1,
+            fs: 0, // без нативной кнопки fullscreen (наша — в контролах)
           },
-          onStateChange: (e) => {
-            if (destroyed) return;
-            setIsPlaying(e.data === YT.PlayerState.PLAYING);
-            if (e.data === YT.PlayerState.PLAYING)
+          events: {
+            onReady: (e) => {
+              if (destroyed) return;
               setDuration(e.target.getDuration());
+              setIsReady(true);
+            },
+            onStateChange: (e) => {
+              if (destroyed) return;
+              setIsPlaying(e.data === YT.PlayerState.PLAYING);
+              if (e.data === YT.PlayerState.PLAYING)
+                setDuration(e.target.getDuration());
+            },
+            onError: (e) => {
+              // 100 — нет видео, 101/150 — запрет встраивания, 102 — приватное,
+              // 153/2000 — «подтвердите, что вы не бот» (datacenter-IP)
+              if (!destroyed) setYtError(e.data);
+            },
           },
-        },
+        });
+      })
+      .catch(() => {
+        if (!destroyed) setYtError("api-failed");
       });
-    });
     return () => {
       destroyed = true;
+      clearTimeout(failTimer);
+      clearTimeout(streamTimer);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (playerRef.current && playerRef.current.destroy)
         playerRef.current.destroy();
     };
-  }, [playing, video.id]);
+  }, [playing, video.id, retryTick, mode]);
+
+  // Фолбэк-цепочка: YT-плеер упал (153/101/100/таймаут) → пробуем стрим-прокси
+  // (Vercel-функция берёт URL у player API со СВОЕГО IP, браузер стримит MP4).
+  // Не поднялся прокси (нет деплоя/Vercel под гейтом) → остаётся карточка со
+  // ссылкой на YouTube. Тример: 12с неток — YT-плеер уже не поднимется.
+  useEffect(() => {
+    if (mode !== "yt" || !ytError || !playing) return undefined;
+    let cancelled = false;
+    fetch(`/api/yt-proxy?id=${encodeURIComponent(video.id)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled && d && d.ok && d.url) setMode("native");
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, ytError, playing, video.id]);
+
+  // Нативный <video> (прокси-режим): на паузе при unmount, чтобы стрим не
+  // тянулся фоном
+  useEffect(() => {
+    if (mode !== "native") return undefined;
+    return () => {
+      const v = videoRef.current;
+      if (v && v.pause) v.pause();
+    };
+  }, [mode]);
 
   // Опрос позиции (rAF ~раз в кадр, пока не тащим ползунок); тут же —
-  // детект «просмотрели ≥ 75%» (по макс. позиции, как на Udemy)
+  // детект «просмотрели ≥ 75%» (по макс. позиции, как на Udemy). Работает и
+  // с YT-плеером, и с нативным <video> (прокси) через `media`-абстракцию.
   useEffect(() => {
     if (!playing || isDragging) return undefined;
     const tick = () => {
-      const p = playerRef.current;
-      if (p && p.getCurrentTime) {
-        const time = p.getCurrentTime();
+      const m =
+        mode === "native"
+          ? videoRef.current && {
+              getCurrentTime: () => videoRef.current.currentTime || 0,
+              getDuration: () => videoRef.current.duration || 0,
+            }
+          : playerRef.current;
+      if (m && m.getCurrentTime) {
+        const time = m.getCurrentTime();
         setCurrent(time);
         if (onWatched && !watchedSentRef.current) {
           watchedRef.current = Math.max(watchedRef.current, time);
-          const d = p.getDuration ? p.getDuration() : 0;
+          const d = m.getDuration ? m.getDuration() : 0;
           if (d > 0 && watchedRef.current >= d * 0.75) {
             watchedSentRef.current = true;
             onWatched();
@@ -139,20 +310,26 @@ function LessonVideo({ video, label, onWatched }) {
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [playing, isDragging, onWatched]);
+  }, [playing, isDragging, onWatched, mode]);
 
   const togglePlay = useCallback(() => {
+    if (mode === "native") {
+      const v = videoRef.current;
+      if (!v) return;
+      if (v.paused) v.play().catch(() => {});
+      else v.pause();
+      return;
+    }
     const p = playerRef.current;
     if (!p) return;
     if (isPlaying) p.pauseVideo();
     else p.playVideo();
-  }, [isPlaying]);
+  }, [isPlaying, mode]);
 
   const seekToClientX = useCallback(
     (clientX) => {
       const bar = barRef.current;
-      const p = playerRef.current;
-      if (!bar || !p || !duration) return;
+      if (!bar || !duration) return;
       const rect = bar.getBoundingClientRect();
       const ratio = Math.min(
         1,
@@ -160,9 +337,13 @@ function LessonVideo({ video, label, onWatched }) {
       );
       const time = ratio * duration;
       setCurrent(time);
-      p.seekTo(time, true);
+      if (mode === "native") {
+        if (videoRef.current) videoRef.current.currentTime = time;
+      } else if (playerRef.current) {
+        playerRef.current.seekTo(time, true);
+      }
     },
-    [duration],
+    [duration, mode],
   );
 
   const onBarPointerDown = (e) => {
@@ -194,107 +375,146 @@ function LessonVideo({ video, label, onWatched }) {
   return (
     <figure className="lesson-view__video">
       {playing ? (
-        <div
-          className={`lesson-view__player${isFs ? " lesson-view__player--fs" : ""}`}
-        >
-          <div className="lesson-view__player-box">
-            <div ref={hostRef} className="lesson-view__player-host" />
-            {/* Слой: клик = play/pause, hover не доходит до YT-худа; угол
-                внизу-справа СВОБОДЕН — там дефолтная YT-кнопка fullscreen */}
-            <div
-              className="lesson-view__player-catcher"
-              onClick={togglePlay}
-              role="button"
-              aria-label={isPlaying ? "Pause" : "Play"}
-            />
-            {/* Большой Play по центру — при паузе/пока не готов (YT-свой тоже есть, но этот — в нашем стиле) */}
-            {(!isPlaying || !isReady) && (
-              <button
-                type="button"
-                className="lesson-view__player-bigplay"
+        mode === "native" ? (
+          <div
+            className={`lesson-view__player${isFs ? " lesson-view__player--fs" : ""}`}
+          >
+            <div className="lesson-view__player-box">
+              {/* Нативный <video>: стрим-прокси (api/yt-proxy.mjs) — обход
+                  YT-бот-гейта (Error 153) через серверный player API */}
+              <video
+                ref={videoRef}
+                className="lesson-view__player-native"
+                src={`/api/yt-proxy?id=${encodeURIComponent(video.id)}&stream=1`}
+                autoPlay
+                playsInline
+                preload="auto"
+                onLoadedMetadata={(e) => setDuration(e.target.duration || 0)}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+              <div
+                className="lesson-view__player-catcher"
                 onClick={togglePlay}
-                aria-label={label}
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M8 5.5v13l11-6.5Z" />
-                </svg>
-              </button>
-            )}
-          </div>
-          <div className="lesson-view__player-controls">
-            <button
-              type="button"
-              className="lesson-view__player-btn"
-              onClick={togglePlay}
-              aria-label={isPlaying ? "Pause" : "Play"}
-            >
-              {isPlaying ? (
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M8 5.5v13l11-6.5Z" />
-                </svg>
+                role="button"
+                aria-label={isPlaying ? "Pause" : "Play"}
+              />
+              {!isPlaying && (
+                <button
+                  type="button"
+                  className="lesson-view__player-bigplay"
+                  onClick={togglePlay}
+                  aria-label={label}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 5.5v13l11-6.5Z" />
+                  </svg>
+                </button>
               )}
-            </button>
-            <div
-              ref={barRef}
-              className="lesson-view__player-bar"
-              onPointerDown={onBarPointerDown}
-              role="slider"
-              aria-label={label}
-              aria-valuemin={0}
-              aria-valuemax={Math.round(duration)}
-              aria-valuenow={Math.round(current)}
-            >
-              <span
-                className="lesson-view__player-fill"
-                style={{ width: `${progress}%` }}
-              />
-              <span
-                className="lesson-view__player-thumb"
-                style={{ left: `${progress}%` }}
-              />
             </div>
-            <span className="lesson-view__player-time">
-              {formatTime(current)} / {formatTime(duration)}
-            </span>
-            <button
-              type="button"
-              className="lesson-view__player-btn"
-              onClick={() => setIsFs((v) => !v)}
-              aria-label={isFs ? "Exit fullscreen" : "Fullscreen"}
-              aria-pressed={isFs}
-            >
-              {isFs ? (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
-                </svg>
-              ) : (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
-                </svg>
-              )}
-            </button>
+            <PlayerControls
+              isPlaying={isPlaying}
+              label={label}
+              barRef={barRef}
+              onBarPointerDown={onBarPointerDown}
+              duration={duration}
+              current={current}
+              progress={progress}
+              isFs={isFs}
+              onToggleFs={() => setIsFs((v) => !v)}
+              togglePlay={togglePlay}
+            />
           </div>
-        </div>
+        ) : ytError ? (
+          <div className="lesson-view__player lesson-view__player--error">
+            <img
+              className="lesson-view__player-error-thumb"
+              src={video.thumb}
+              alt=""
+            />
+            <div className="lesson-view__player-error">
+              <p className="lesson-view__player-error-title">
+                {t("lessonView.videoUnavail")}
+              </p>
+              <p className="lesson-view__player-error-sub">
+                {t("lessonView.videoUnavailSub")}
+              </p>
+              <div className="lesson-view__player-error-actions">
+                <a
+                  className="btn btn--primary"
+                  href={`https://www.youtube.com/watch?v=${video.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("lessonView.videoWatchOnYt")}
+                </a>
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => {
+                    setYtError(0);
+                    setIsReady(false);
+                    setRetryTick((v) => v + 1);
+                  }}
+                >
+                  {t("lessonView.videoRetry")}
+                </button>
+              </div>
+              <span className="lesson-view__player-error-code">
+                {t("lessonView.videoErrorCode")}: {String(ytError)}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`lesson-view__player${isFs ? " lesson-view__player--fs" : ""}`}
+          >
+            <div className="lesson-view__player-box">
+              <div ref={hostRef} className="lesson-view__player-host" />
+              {/* Слой: клик = play/pause, hover не доходит до YT-худа; угол
+                внизу-справа СВОБОДЕН — там дефолтная YT-кнопка fullscreen */}
+              <div
+                className="lesson-view__player-catcher"
+                onClick={togglePlay}
+                role="button"
+                aria-label={isPlaying ? "Pause" : "Play"}
+              />
+              {/* Большой Play по центру — при паузе/пока не готов (YT-свой тоже есть, но этот — в нашем стиле) */}
+              {(!isPlaying || !isReady) && (
+                <button
+                  type="button"
+                  className="lesson-view__player-bigplay"
+                  onClick={togglePlay}
+                  aria-label={label}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 5.5v13l11-6.5Z" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <PlayerControls
+              isPlaying={isPlaying}
+              label={label}
+              barRef={barRef}
+              onBarPointerDown={onBarPointerDown}
+              duration={duration}
+              current={current}
+              progress={progress}
+              isFs={isFs}
+              onToggleFs={() => setIsFs((v) => !v)}
+              togglePlay={togglePlay}
+            />
+          </div>
+        )
       ) : (
         <button
           type="button"

@@ -4,6 +4,7 @@ import { locField, pickDailyTask } from "./tasks";
 import { getDoneTasks, markTaskDone, markComplete } from "./progress";
 import { grantTaskXp } from "./xp";
 import { pushTaskComplete, pushLessonComplete } from "./db-progress";
+import { currentUid } from "./auth";
 
 /**
  * @param {object} task задача из src/content/tasks/*.json
@@ -57,6 +58,10 @@ export function taskJobFor(
         pushLessonComplete(lessonUuid);
       }
       if (onCompleted) onCompleted();
+      // UX-аудит V10: гость решил задачу — сигнал для signup-момента
+      if (!currentUid() && typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("syntax-guest-progress"));
+      }
       return res;
     },
   };

@@ -60,7 +60,7 @@ function RoadmapNode({ status, big }) {
   );
 }
 
-function LessonRow({ lesson, i, status, onOpen, techId }) {
+function LessonRow({ lesson, i, status, onOpen, techId, showUpNext }) {
   const t = useT();
   const { langCode } = useLanguage();
   const isCurrent = status === "current";
@@ -100,6 +100,11 @@ function LessonRow({ lesson, i, status, onOpen, techId }) {
           <strong className="roadmap__title">
             {localizedLessonTitle(techId, i + 1, lesson.title, langCode)}
           </strong>
+          {showUpNext && (
+            /* UX-аудит #7: «Up next» — меткой внутри первой locked-строки,
+               а не парящим лейблом между строками */
+            <span className="roadmap__upnext">{t("roadmap.upNext")}</span>
+          )}
           <span
             className={`roadmap__chip roadmap__chip--${status === "done" ? "done" : status}`}
           >
@@ -302,18 +307,15 @@ function RoadmapView({
               : "locked";
           const showUpNext = status === "locked" && i === firstLockedIdx;
           return (
-            <div key={lesson.id}>
-              {showUpNext && (
-                <p className="roadmap__group-label">{t("roadmap.upNext")}</p>
-              )}
-              <LessonRow
-                lesson={lesson}
-                i={i}
-                status={status}
-                onOpen={openLessonRow}
-                techId={tech.id}
-              />
-            </div>
+            <LessonRow
+              key={lesson.id}
+              lesson={lesson}
+              i={i}
+              status={status}
+              onOpen={openLessonRow}
+              techId={tech.id}
+              showUpNext={showUpNext}
+            />
           );
         })}
       </div>

@@ -426,6 +426,48 @@ function cleanArticleMarkdown(md) {
   finalMd = finalMd.replace(/\*\*\[([^\]\n]+)\]\(([^)\s]+)\)\*\*/g, "[$1]($2)");
   // Jina-курсив _…_ — markdown-lite понимает только *…*, просто снимаем underscores
   finalMd = finalMd.replace(/(^|\s)_([^_\n]+?)_(?=\s|$)/gm, "$1$2");
+  // UX-аудит K1: Jina-fallback выдаёт HTML-теги в тексте ссылок (publication-nav)
+  // и осиротевший *автор* ряд — markdown-lite их не понимает. Правки — только
+  // вне ```-фенсов (в коде <img …> и т.п. должны жить честно).
+  finalMd = finalMd
+    .split(/```[\s\S]*?```/g)
+    .map((part, i) => {
+      if (i % 2 === 1) return part; // внутри кодового блока
+      let s = part;
+      // [<h2>Topic</h2>](medium.com/…publication_nav…) — целым рядом = навигация, выкинуть;
+      // встроена в текст = заголовок раздела
+      s = s.replace(/^\[<h[1-6]>[\s\S]*?<\/h[1-6]>\]\([^)\n]*\)$/gm, "");
+      s = s.replace(
+        /\[<h([1-6])>([\s\S]*?)<\/h\1>\]\([^)\n]*\)/g,
+        (_, n, text) =>
+          `${n <= 2 ? "##" : "###"} ${String(text).replace(/\s+/g, " ").trim()}`,
+      );
+      // любые прочие теги в ссылке → оставляем только текст ссылки
+      s = s.replace(/\[(<[^>\n]+>)[^\n]*?\]\(([^)\n]*)\)/g, (m, _tag, url) => {
+        const inner = m.slice(m.indexOf("[") + 1, m.indexOf("]("));
+        const clean = inner.replace(/<[^>\n]+>/g, "").trim();
+        return clean ? `[${clean}](${url})` : "";
+      });
+      // осиротевший *автор*. (byline-ряд Jina) — снимаем звёзды, текст оставляем
+      s = s
+        .split("\n")
+        .map((line) =>
+          /^\*[^*\n]+(\*[^*\n]+)*\*\.?$/.test(line)
+            ? line.replace(/\*/g, "").replace(/\.\s*$/, ".")
+            : line,
+        )
+        .join("\n");
+      // оставшиеся одиночные HTML-теги в тексте (known-список, чтобы не тронуть
+      // «a < b» и т.п. в прозе)
+      s = s.replace(
+        /<(?:\/?(?:h[1-6]|b|strong|em|i|span|a|p|div|button|br|svg|path|ul|li|img)\b[^>]*?)>/gi,
+        "",
+      );
+      return s;
+    })
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
   return {
     md: finalMd,
     avatar,

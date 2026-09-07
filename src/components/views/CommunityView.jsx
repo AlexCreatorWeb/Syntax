@@ -670,7 +670,7 @@ function ComposerModal({ t, tagPool, defaultLang, onClose, onPublish }) {
   );
 }
 
-function CommunityView({ activeTech, userName }) {
+function CommunityView({ activeTech, userName, isAuthed }) {
   const t = useT();
   // Ник «меня» — как в профиле (одинаково во всём; гостю — демо-имя).
   // Аватар тоже берём из профиля (useAvatar) — моё фото там, где мой ник.
@@ -754,13 +754,16 @@ function CommunityView({ activeTech, userName }) {
       .map((post, i) => ({
         key: `p${i}`,
         post,
-        // «Мой» сид-пост: автор = реальное имя из профиля (не NeoCoder)
-        meta: POST_META[i].isMine
-          ? {
-              ...POST_META[i],
-              author: { ...POST_META[i].author, name: meName },
-            }
-          : POST_META[i],
+        // «Мой» сид-пост: автор = реальное имя из профиля (не NeoCoder).
+        // UX-аудит V2: гостю персональный чип/удаление не показываются —
+        // NeoCoder для него незнакомец, «личный» контент ломает доверие.
+        meta:
+          POST_META[i].isMine && isAuthed
+            ? {
+                ...POST_META[i],
+                author: { ...POST_META[i].author, name: meName },
+              }
+            : { ...POST_META[i], isMine: false },
       }))
       .filter((it) => !deleted[it.key]);
     const local = localPosts
@@ -773,7 +776,7 @@ function CommunityView({ activeTech, userName }) {
           : p.meta,
       }));
     return [...base, ...local];
-  }, [posts, localPosts, deleted, meName]);
+  }, [posts, localPosts, deleted, meName, isAuthed]);
 
   const repliesCount = (it) =>
     (it.post.replies || []).length + (extraReplies[it.key] || []).length;

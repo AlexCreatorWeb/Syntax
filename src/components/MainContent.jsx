@@ -136,6 +136,7 @@ function MainContent({
         (staticFor && staticFor.desc) || "",
         n || null,
         langCode,
+        n ? rows.length : null, // курсTotal: последний урок = «курс пройден»
       ),
     );
   };
@@ -376,7 +377,13 @@ function MainContent({
           />
         );
       case "community":
-        return <CommunityView activeTech={activeTech} userName={userName} />;
+        return (
+          <CommunityView
+            activeTech={activeTech}
+            userName={userName}
+            isAuthed={isAuthed}
+          />
+        );
       case "settings":
         return (
           <SettingsView
@@ -385,6 +392,7 @@ function MainContent({
             session={session}
             userName={userName}
             onLogout={onLogout}
+            onAuth={onAuth}
             onNavigate={onNavigate}
           />
         );
