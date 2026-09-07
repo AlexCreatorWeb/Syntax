@@ -26,7 +26,9 @@ const CLIENTS = [
     name: "web",
     key: "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
     body: {
-      context: { client: { clientName: "WEB", clientVersion: "2.20240701.00.00" } },
+      context: {
+        client: { clientName: "WEB", clientVersion: "2.20240701.00.00" },
+      },
       playerParams: "CgIIABAB",
     },
   },
@@ -34,7 +36,9 @@ const CLIENTS = [
     name: "mweb",
     key: "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
     body: {
-      context: { client: { clientName: "MWEB", clientVersion: "2.20240101.00.00" } },
+      context: {
+        client: { clientName: "MWEB", clientVersion: "2.20240101.00.00" },
+      },
       playerParams: "CgIIABAB",
     },
   },
@@ -43,7 +47,13 @@ const CLIENTS = [
     key: "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w",
     body: {
       context: {
-        client: { clientName: "ANDROID", clientVersion: "20.10.38", androidSdkVersion: 33, deviceBrand: "google", deviceModel: "Pixel 7" },
+        client: {
+          clientName: "ANDROID",
+          clientVersion: "20.10.38",
+          androidSdkVersion: 33,
+          deviceBrand: "google",
+          deviceModel: "Pixel 7",
+        },
         thirdParty: { integrationId: "web" },
       },
       playerParams: "CgIIABAB",
@@ -75,22 +85,26 @@ const STREAM_HOSTS = ["googlevideo.com", "youtube.com", "ytimg.com"];
 async function playerManifest(videoId: string) {
   const hit = manifestCache.get(videoId);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit;
-  let lastReason = "no-client-answered";
+  const reasons = [];
   for (const c of CLIENTS) {
     try {
-      const r = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${c.key}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...c.body, videoId }),
-      });
+      const r = await fetch(
+        `https://www.youtube.com/youtubei/v1/player?key=${c.key}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ...c.body, videoId }),
+        },
+      );
       if (!r.ok) {
-        lastReason = `player-api-${r.status}@${c.name}`;
+        const errBody = (await r.text()).slice(0, 80).replace(/\s+/g, " ");
+        reasons.push(`api${r.status}(${errBody})@${c.name}`);
         continue;
       }
       const j = await r.json();
       const status = j?.playabilityStatus?.status;
       if (status !== "OK") {
-        lastReason = `playability-${status}@${c.name}`;
+        reasons.push(`${status}@${c.name}`);
         continue;
       }
       const formats: any[] = j?.streamingData?.formats || [];
@@ -98,7 +112,7 @@ async function playerManifest(videoId: string) {
         formats.find((f) => Number(f.itag) === 22) ||
         formats.find((f) => Number(f.itag) === 18);
       if (!entry) {
-        lastReason = `no-progressive@${c.name}`;
+        reasons.push(`no-prog@${c.name}`);
         continue;
       }
       const rec = {
@@ -111,10 +125,10 @@ async function playerManifest(videoId: string) {
       manifestCache.set(videoId, rec);
       return { ok: true, ...rec };
     } catch (e) {
-      lastReason = `fetch-${String((e && e.message) || e).slice(0, 30)}@${c.name}`;
+      reasons.push(`err@${c.name}`);
     }
   }
-  return { ok: false, reason: lastReason };
+  return { ok: false, reason: reasons.join("|") || "no-client-answered" };
 }
 
 Deno.serve(async (req: Request) => {
