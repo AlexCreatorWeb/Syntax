@@ -176,7 +176,7 @@ function StatusWidget({ t }) {
           className="sidebar-status__ekg-pulse"
           d="M0 12 H20 L24 9 L27 2 L31 21 L34 12 H64"
           pathLength={100}
-          strokeWidth="2.4"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
