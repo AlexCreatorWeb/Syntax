@@ -3,7 +3,6 @@ import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
 import { ClaudeLogo, CursorLogo, CopilotLogo } from "../TechLogos";
 import TechCardsGrid from "../TechCardsGrid";
-import ContinueLearning from "../ContinueLearning";
 import DailyChallenge from "../DailyChallenge";
 import PromoCard from "../PromoCard";
 
@@ -563,12 +562,6 @@ function MainView({
           (фидбек 2026-09: правая колонка на мобильном уезжала вниз страницы, после футера);
           сама rail на home скрыта этим же брейкпоинтом */}
       <div className="home__mobile-rail">
-        <ContinueLearning
-          techId={activeTech}
-          dbLessons={dbLessons}
-          onContinue={() => onNavigate("courses")}
-          onNavigate={onNavigate}
-        />
         <DailyChallenge
           dbLessons={dbLessons}
           isAuthed={isAuthed}

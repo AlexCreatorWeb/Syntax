@@ -122,17 +122,38 @@ function SettingsDropdown({ t, theme, onToggleTheme, onSelectTab, activeTab }) {
 }
 
 // 2026-09-08: виджет-индикатор «Система онлайн» (дизайн: Stitch, Protocol Neo;
-// референс SyntaxAddDesign/индикатор.png). Пульс — отдельный path
-// (sidebar-status__ekg-pulse), будет анимирован позже (stroke-dash / бегущая волна).
+// референс SyntaxAddDesign/индикатор.png). Анимация: «голова» ЭКГ бежит по линии +
+// точка «бьётся» (двойной удар). Без интернета — offline-режим: серые точка/линия,
+// анимация остановлена, подписи — статус офлайна.
 function StatusWidget({ t }) {
+  const [online, setOnline] = useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine,
+  );
+
+  useEffect(() => {
+    const goOnline = () => setOnline(true);
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+
   return (
-    <div className="sidebar-status nav--bottom" role="status">
+    <div
+      className={`sidebar-status nav--bottom ${online ? "" : "is-offline"}`}
+      role="status"
+    >
       <div className="sidebar-status__text">
         <span className="sidebar-status__title">
           <span className="sidebar-status__dot" aria-hidden="true" />
-          {t("sidebar.statusOnline")}
+          {t(online ? "sidebar.statusOnline" : "sidebar.statusOffline")}
         </span>
-        <span className="sidebar-status__sub">{t("sidebar.statusSub")}</span>
+        <span className="sidebar-status__sub">
+          {t(online ? "sidebar.statusSub" : "sidebar.statusOfflineSub")}
+        </span>
       </div>
       <svg
         className="sidebar-status__ekg"
@@ -149,13 +170,13 @@ function StatusWidget({ t }) {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        {/* Анимация: «голова» монитора ЭКГ — короткая яркая дуга бежит по всей
-            линии (stroke-dash), база под ней остаётся статичной как на референсе */}
+        {/* «Голова» монитора ЭКГ: яркая дуга всегда на линии (период = pathLength=100,
+            бесшовный цикл без тёмных фаз); цвет задаёт CSS */}
         <path
           className="sidebar-status__ekg-pulse"
           d="M0 12 H20 L24 9 L27 2 L31 21 L34 12 H64"
-          stroke="var(--primary-hover)"
-          strokeWidth="2"
+          pathLength={100}
+          strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

@@ -983,9 +983,9 @@ function DocsView({
                       }
                       onClick={() => onDocsRoute({ track: tc.id, page: null })}
                     >
-                      <span className="tech-switch__icon-glyph">
-                        <Logo />
-                      </span>
+                      {/* Лого без обёртки-glyph — как в roadmap-переключателе (TechSwitch):
+                          обёртка-грид 16px сжимала/сдвигала иконки (фидбек раунд 5) */}
+                      <Logo />
                       <span className="tech-switch__name">{t(tc.label)}</span>
                       {!has && (
                         <span className="tech-switch__soon-badge">Soon</span>

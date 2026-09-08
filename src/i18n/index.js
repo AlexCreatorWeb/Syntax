@@ -18,6 +18,8 @@ export const LOCALES = {
       settings: "Настройки",
       statusOnline: "Система онлайн",
       statusSub: "Все сервисы работают",
+      statusOffline: "Система офлайн",
+      statusOfflineSub: "Нет соединения с интернетом",
       support: "Поддержка",
       complete: "Курс пройден",
       streak: "Серия: 12 дней",

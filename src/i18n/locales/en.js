@@ -11,6 +11,8 @@ export default {
     settings: "Settings",
     statusOnline: "System online",
     statusSub: "All services operational",
+    statusOffline: "Offline",
+    statusOfflineSub: "No internet connection",
     support: "Support",
     complete: "Course complete",
     streak: "12 Day Streak",

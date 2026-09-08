@@ -47,16 +47,16 @@ function WidgetPanel({
         />
       ) : (
         <>
-          {/* Аудит навигации 2026-09 (P0): «Continue
-                        learning» — daily-действие в rail (видна только при
-                        начатом активном курсе; CTA ведёт в раздел Courses,
-                        где Continue-зона открывает урок в один клик) */}
-          <ContinueLearning
-            techId={activeTech}
-            dbLessons={dbLessons}
-            onContinue={() => onNavigate("courses")}
-            onNavigate={onNavigate}
-          />
+          {/* «Continue learning» — НЕ на главной (фидбек 2026-09: сдвигал вниз
+              более главные блоки); в остальных rail'ах — daily-действие */}
+          {activeTab !== "home" && (
+            <ContinueLearning
+              techId={activeTech}
+              dbLessons={dbLessons}
+              onContinue={() => onNavigate("courses")}
+              onNavigate={onNavigate}
+            />
+          )}
 
           {/* Daily challenge: только по трекам с реальными уроками в БД, новое каждый день */}
           <DailyChallenge

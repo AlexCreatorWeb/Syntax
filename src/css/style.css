@@ -4190,7 +4190,9 @@ code {
   min-height: 38px;
   flex: none;
   white-space: nowrap; /* иконка + текст — одна строка, не переламывается */
-  gap: 10px; /* отступ между иконкой и текстом */
+  display: inline-flex;
+  align-items: center; /* фидбек раунд 5: иконка строго по центру строки */
+  column-gap: 5px; /* фидбек раунд 5: заданный пользователем отступ */
 }
 /* Фидбек раунд 4: иконки «сильно ужал» (18px) — как в других пилюлях:
    без док-переопределений размеров, базовые правила (svg 16px, img 30px) */
@@ -4840,10 +4842,6 @@ code {
   }
   .docs-for .tech-switch__name {
     display: none;
-  }
-  .docs-for .tech-switch__item .tech-switch__icon-glyph {
-    width: 18px;
-    height: 18px;
   }
 }
 
@@ -12221,14 +12219,15 @@ code {
 
 /* ===== 2026-09-08: виджет-индикатор системы внизу сайдбара =====
    Дизайн: Stitch (Protocol Neo), референс SyntaxAddDesign/индикатор.png.
-   Пульс (ekg-pulse) — отдельный path, позже анимируется. */
+   Анимация: яркая «голова» ЭКГ бежит по линии (stroke-dash) + точка «бьётся».
+   Offline (класс .is-offline на корне): серые точка/линия, анимации выключены. */
 .sidebar-status {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px;
+  padding: 14px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background: var(--surface);
 }
 .sidebar-status__text {
@@ -12236,71 +12235,87 @@ code {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 .sidebar-status__title {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
 }
 .sidebar-status__dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   flex: none;
   border-radius: 50%;
   background: var(--primary-hover);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--primary-hover) 70%, transparent);
-  /* дыхание в такт бегущей волне (2.6s) */
-  animation: sidebar-ekg-breathe 2.6s ease-in-out infinite;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--primary-hover) 80%, transparent);
+  /* «удар сердца» в такт бегущей волне (2.2s) */
+  animation: sidebar-ekg-beat 2.2s ease-in-out infinite;
 }
 .sidebar-status__sub {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .sidebar-status__ekg {
-  width: 48px;
-  height: 22px;
+  width: 62px;
+  height: 28px;
   flex: none;
   color: var(--ring-fill);
 }
-/* Пульс — тот же цвет, что линия (референс: единая зелёная волна);
-   base-rule выше оставлен для совместимости, opacity снят */
 .sidebar-status__ekg-base {
   opacity: 1;
 }
-/* «Бегущая голова» ЭКГ: короткий яркий сегмент (14 ед.) с длительной паузой
-   (120 ед. > длины пути ~92) курсирует по линии; период 134 = dash+gap — бесшовный цикл */
+/* «Бегущая голова» ЭКГ: период = pathLength (100) — голова ВСЕГДА на линии
+   (выходит справа — сразу входит слева, классический монитор), без тёмных фаз.
+   Цвет — бледно-мятный с белым (ярче базовой линии), читается даже на скрине */
 .sidebar-status__ekg-pulse {
-  stroke-dasharray: 14 120;
+  stroke-dasharray: 28 72;
   stroke-dashoffset: 0;
+  stroke: color-mix(in srgb, var(--primary-hover) 35%, #ffffff);
   filter: drop-shadow(
-    0 0 3px color-mix(in srgb, var(--primary-hover) 75%, transparent)
-  );
-  animation: sidebar-ekg-run 2.6s linear infinite;
+      0 0 3px color-mix(in srgb, var(--primary-hover) 95%, transparent)
+    )
+    drop-shadow(
+      0 0 8px color-mix(in srgb, var(--primary-hover) 70%, transparent)
+    );
+  animation: sidebar-ekg-run 2.2s linear infinite;
 }
 @keyframes sidebar-ekg-run {
   from {
     stroke-dashoffset: 0;
   }
   to {
-    stroke-dashoffset: -134;
+    stroke-dashoffset: -100;
   }
 }
-@keyframes sidebar-ekg-breathe {
+/* Точка не увеличивается — просто моргает (opacity) в такт бегущей волне */
+@keyframes sidebar-ekg-beat {
   0%,
   100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.45;
+    opacity: 0.3;
   }
+}
+/* OFFLINE: нет интернета — серые точка и линия, анимации остановлены */
+.sidebar-status.is-offline .sidebar-status__dot {
+  background: var(--muted);
+  box-shadow: none;
+  animation: none;
+}
+.sidebar-status.is-offline .sidebar-status__ekg {
+  color: var(--muted);
+}
+.sidebar-status.is-offline .sidebar-status__ekg-pulse {
+  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .sidebar-status__ekg-pulse,
