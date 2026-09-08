@@ -4190,24 +4190,10 @@ code {
   min-height: 38px;
   flex: none;
   white-space: nowrap; /* иконка + текст — одна строка, не переламывается */
-  gap: 10px; /* отступ между иконкой и текстом (раунд 2: 8→10, заметнее) */
+  gap: 10px; /* отступ между иконкой и текстом */
 }
-.docs-for .tech-switch__item .tech-switch__icon-glyph {
-  width: 18px;
-  height: 18px;
-}
-.docs-for .tech-switch__item .tech-switch__icon-glyph svg {
-  width: 18px;
-  height: 18px;
-}
-/* Ловушка: лого Claude/Copilot — <img class="tech-logo">, а правило
-   `.tech-switch__item img.tech-logo { 30px }` раздувало иконку в доках —
-   пилюля «плывёт», иконка и текст выглядят разнесёнными (фидбек раунд 3) */
-.docs-for .tech-switch__item img.tech-logo,
-.docs-for .tech-switch__item .tech-logo--cursor {
-  width: 18px;
-  height: 18px;
-}
+/* Фидбек раунд 4: иконки «сильно ужал» (18px) — как в других пилюлях:
+   без док-переопределений размеров, базовые правила (svg 16px, img 30px) */
 .tech-switch__name {
   white-space: nowrap;
 }
@@ -11642,9 +11628,9 @@ code {
   line-height: 1.2;
 }
 .ai-tool__meta {
-  /* Фидбек 2026-09 (раунд 3): зелёный сабтайтл — как на других карточках */
+  /* Фидбек раунд 4: перепутали — сабтайтл СЕРЫЙ, как на других карточках */
   font-size: 11.5px;
-  color: var(--primary);
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
   min-width: 0;
   overflow: hidden;
@@ -11667,9 +11653,10 @@ code {
   gap: 8px;
   min-width: 0;
 }
+/* Низ: зелёная точка (референс) + текст первого урока (зелёный — фидбек раунд 4) */
 .ai-tool__first-text {
   font-size: 12.5px;
-  color: var(--muted);
+  color: var(--primary);
   min-width: 0;
   /* Аудит H3: без «…», если строка длиннее колонки — 2 строки */
   display: -webkit-box;
@@ -11679,16 +11666,15 @@ code {
   overflow: hidden;
   line-height: 1.4;
 }
-/* Бейдж «Новое»: приглушённая зелёная пилюля В РЯДУ с сабтайтлом (референс,
-   фидбек 2026-09 раунд 3: из угла карточки — в низнюю строку) */
+/* Бейдж «Новое» (фидбек раунд 4): красный, прежний размер; в ряду с текстом урока */
 .ai-tool__badge {
   flex: none;
   margin-left: auto;
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  background: var(--danger-strong);
+  color: #fff;
+  border: none;
   border-radius: 8px;
-  color: var(--primary);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -12294,16 +12280,27 @@ code {
 .sidebar-status__ekg-pulse {
   stroke-dasharray: 14 120;
   stroke-dashoffset: 0;
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--primary-hover) 75%, transparent));
+  filter: drop-shadow(
+    0 0 3px color-mix(in srgb, var(--primary-hover) 75%, transparent)
+  );
   animation: sidebar-ekg-run 2.6s linear infinite;
 }
 @keyframes sidebar-ekg-run {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -134; }
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -134;
+  }
 }
 @keyframes sidebar-ekg-breathe {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .sidebar-status__ekg-pulse,
