@@ -11512,18 +11512,14 @@ code {
 .home__aitools {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  /* Фидбек 2026-09: II-инструменты сливались с остальными треками —
-     отдельная панель + акцентные полосы и NEW-бейджи на карточках */
-  background: color-mix(in srgb, var(--primary) 4%, var(--surface-1));
-  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
-  border-radius: 18px;
-  padding: 24px;
+  gap: 12px;
+  /* Фидбек 2026-09-08: без подложки-панели — карточки стоят сами,
+     как основные технологии; секция плотнее, чтобы не растягивать главную */
+  margin: -18px 0;
 }
 .home__aitools-grid {
   /* Аудит H3 + аудит нав-2026-09: три колонки обязаны влезать в 1440
-     (панель-обёртка с padding 24 оставляет гриду 732px: 250px-минимум давал
-     2 колонки + сироту — 220px: три колонки по 234px, мета не обрывается) */
+     (без панели-обёртки грид получает всю колонку контента) */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
@@ -11532,12 +11528,13 @@ code {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  /* Фидбек 2026-09 (раунд 2): карточки ВЫШЕ основных — не одинаковые с треками */
-  padding: 30px 12px;
-  border-radius: 14px;
+  gap: 12px;
+  /* Фидбек 2026-09-08: как основные технологии — тот же ритм, что у tech-card */
+  min-height: 96px;
+  padding: 18px 20px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--surface-1);
+  background: var(--surface);
   text-align: left;
   cursor: pointer;
   color: inherit;
@@ -12279,12 +12276,17 @@ code {
 }
 /* «Бегущая голова» ЭКГ: период = pathLength (100) — голова ВСЕГДА на линии
    (выходит справа — сразу входит слева, классический монитор), без тёмных фаз.
-   Плоская, без свечения: бледно-мятный с белым (ярче базовой линии) */
+   Толщина = как у основной линии (2), длина дуги ~6px (10/100 при 62px);
+   белая, без свечения; в светлой теме — тёмная */
 .sidebar-status__ekg-pulse {
-  stroke-dasharray: 28 72;
+  stroke-dasharray: 10 90;
   stroke-dashoffset: 0;
-  stroke: color-mix(in srgb, var(--primary-hover) 25%, #ffffff);
+  /* Белый бегунок (фидбек 2026-09); в светлой теме — тёмный, иначе не виден */
+  stroke: #ffffff;
   animation: sidebar-ekg-run 2.2s linear infinite;
+}
+:root[data-theme="light"] .sidebar-status__ekg-pulse {
+  stroke: #0d1c2d;
 }
 @keyframes sidebar-ekg-run {
   from {
@@ -12323,6 +12325,46 @@ code {
   }
   /* без анимации «голова» не видна — прячем оверлей, остаётся статичная линия */
   .sidebar-status__ekg-pulse {
+    display: none;
+  }
+}
+
+/* ===== 2026-09-08: QR «открыть на телефоне» (rail главной, вариант A) ===== */
+.rail-qr {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rail-qr__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.rail-qr__code {
+  flex: none;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.rail-qr__text {
+  min-width: 0;
+}
+.rail-qr__text h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.rail-qr__text p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.45;
+}
+@media (max-width: 640px) {
+  /* на телефоне QR бессмыслен — карточка скрыта */
+  .rail-qr {
     display: none;
   }
 }

@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.112.4",
     "emmet-monaco-es": "^5.7.0",
     "flag-icons": "^7.5.0",
+    "qrcode-generator": "^2.0.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

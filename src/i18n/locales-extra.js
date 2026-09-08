@@ -569,6 +569,10 @@ export const LOCALES_EXTRA = {
         title: "До першого рядка коду — дві хвилини",
         trust: "Безкоштовно назавжди · Без карти",
       },
+      qrCard: {
+        title: "Відкрити на телефоні",
+        sub: "Наведіть камеру — вчіться в браузері без встановлення",
+      },
       communityPreview: {
         title: "Живе ком'юніті",
         body: "84,5 тис. учасників задають питання щодня — середня відповідь приходить за 10 хвилин.",
@@ -1355,6 +1359,10 @@ export const LOCALES_EXTRA = {
       final: {
         title: "Tu primera línea de código está a dos minutos",
         trust: "Gratis para siempre · Sin tarjeta",
+      },
+      qrCard: {
+        title: "Abrir en tu teléfono",
+        sub: "Apunta la cámara y sigue aprendiendo en el navegador",
       },
       communityPreview: {
         title: "Comunidad activa",
@@ -2148,6 +2156,10 @@ export const LOCALES_EXTRA = {
       final: {
         title: "Deine erste Zeile Code ist zwei Minuten entfernt",
         trust: "Für immer kostenlos · Ohne Kreditkarte",
+      },
+      qrCard: {
+        title: "Auf dem Handy öffnen",
+        sub: "Kamera ausrichten — direkt im Browser weiterlernen",
       },
       communityPreview: {
         title: "Lebende Community",

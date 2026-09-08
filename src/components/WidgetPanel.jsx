@@ -6,82 +6,92 @@ import TechAside from "./panels/TechAside";
 import PromoCard from "./PromoCard";
 import DailyChallenge from "./DailyChallenge";
 import ContinueLearning from "./ContinueLearning";
+import QrCode from "./QrCode";
+import { useT } from "../i18n/useT";
 
 // Вкладки, у которых в дизайне есть собственный правый сайдбар:
 // он монтируется во внешнюю rail вместо дефолтных виджетов.
 const TAB_ASIDES = {
-        rankings: RankingsAside,
-        community: CommunityAside,
-        documentation: DocsAside,
-        tasks: TasksAside,
-        technology: TechAside,
-        // Урок — тот же функциональный rail, что и страница технологии (Resources + AI Assistant);
-        // techId для AI берётся из job (урок привязан к треку)
-        lesson: TechAside,
+  rankings: RankingsAside,
+  community: CommunityAside,
+  documentation: DocsAside,
+  tasks: TasksAside,
+  technology: TechAside,
+  // Урок — тот же функциональный rail, что и страница технологии (Resources + AI Assistant);
+  // techId для AI берётся из job (урок привязан к треку)
+  lesson: TechAside,
 };
 
 function WidgetPanel({
-        activeTab,
-        onNavigate,
-        onAuth,
-        job,
-        activeTech,
-        isAuthed,
-        userName,
-        dbLessons,
-        docsRoute,
+  activeTab,
+  onNavigate,
+  onAuth,
+  job,
+  activeTech,
+  isAuthed,
+  userName,
+  dbLessons,
+  docsRoute,
 }) {
-        const Aside = TAB_ASIDES[activeTab];
+  const Aside = TAB_ASIDES[activeTab];
+  const t = useT();
 
-        return (
-                <aside className="rail">
-                        {Aside ? (
-                                <Aside
-                                        onNavigate={onNavigate}
-                                        techId={
-                                                (job && job.techId) ||
-                                                activeTech
-                                        }
-                                        isAuthed={isAuthed}
-                                        userName={userName}
-                                        dbLessons={dbLessons}
-                                        onAuth={onAuth}
-                                        docsRoute={docsRoute}
-                                />
-                        ) : (
-                                <>
-                                        {/* «Continue learning» — НЕ на главной (фидбек 2026-09: сдвигал вниз
+  return (
+    <aside className="rail">
+      {Aside ? (
+        <Aside
+          onNavigate={onNavigate}
+          techId={(job && job.techId) || activeTech}
+          isAuthed={isAuthed}
+          userName={userName}
+          dbLessons={dbLessons}
+          onAuth={onAuth}
+          docsRoute={docsRoute}
+        />
+      ) : (
+        <>
+          {/* «Continue learning» — НЕ на главной (фидбек 2026-09: сдвигал вниз
               более главные блоки); в остальных rail'ах — daily-действие */}
-                                        {activeTab !== "home" && (
-                                                <ContinueLearning
-                                                        techId={activeTech}
-                                                        dbLessons={dbLessons}
-                                                        onContinue={() =>
-                                                                onNavigate(
-                                                                        "courses",
-                                                                )
-                                                        }
-                                                        onNavigate={onNavigate}
-                                                />
-                                        )}
+          {activeTab !== "home" && (
+            <ContinueLearning
+              techId={activeTech}
+              dbLessons={dbLessons}
+              onContinue={() => onNavigate("courses")}
+              onNavigate={onNavigate}
+            />
+          )}
 
-                                        {/* Daily challenge: только по трекам с реальными уроками в БД, новое каждый день */}
-                                        <DailyChallenge
-                                                dbLessons={dbLessons}
-                                                isAuthed={isAuthed}
-                                                onAuth={onAuth}
-                                                onNavigate={onNavigate}
-                                                backTab="home"
-                                        />
+          {/* Daily challenge: только по трекам с реальными уроками в БД, новое каждый день */}
+          <DailyChallenge
+            dbLessons={dbLessons}
+            isAuthed={isAuthed}
+            onAuth={onAuth}
+            onNavigate={onNavigate}
+            backTab="home"
+          />
 
-                                        {/* Реклама: книга (вместо AI-ментора; остальные виджеты — позже) */}
-                                        <PromoCard id="book" />
-                                        {/* «Живое комьюнити» здесь было — убрано по фидбеку 2026-09:
+          {/* QR «открыть на телефоне» — только на главной (вариант A);
+          на мобилке карточка скрыта (на телефоне QR бессмыслен) */}
+          {activeTab === "home" && (
+            <div className="rail-qr card">
+              <div className="rail-qr__row">
+                <QrCode className="rail-qr__code" size={64} />
+                <div className="rail-qr__text">
+                  <h4>{t("home.qrCard.title")}</h4>
+                  <p>{t("home.qrCard.sub")}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Фотокнига вернулась по фидбеку 2026-09-08 (после QR-карточки) */}
+          <PromoCard id="book" />
+          {/* «Живое комьюнити» здесь было — убрано по фидбеку 2026-09:
               пряталось за фолдом и не было видно без скролла */}
-                                </>
-                        )}
-                </aside>
-        );
+        </>
+      )}
+    </aside>
+  );
 }
 
 export default WidgetPanel;

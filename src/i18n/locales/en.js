@@ -1079,6 +1079,10 @@ export default {
       title: "Your first line of code is two minutes away",
       trust: "Free forever · No credit card",
     },
+    qrCard: {
+      title: "Open on your phone",
+      sub: "Scan with your camera to keep learning in the browser",
+    },
     communityPreview: {
       title: "Live community",
       body: "84.5k members ask questions every day — the average answer arrives in 10 minutes.",
