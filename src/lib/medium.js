@@ -41,6 +41,21 @@ const TECH_MEDIUM = {
   mongo: { tag: "mongodb", keywords: /\bmongo(db)?\b|\bbson\b/i },
   python: { tag: "python", keywords: /\bpython\b/i },
   postgres: { tag: "postgres", keywords: /postgres|psql|\bpg\b/i },
+  // AI-инструменты платформы (фидбек 2026-09-08: добавить в выдачу новостей)
+  claude: {
+    tag: "claude-ai",
+    keywords: /\bclaude\b|anthropic/i,
+  },
+  cursor: {
+    // тег Medium «cursor» широкий (текстовый курсор) — фильтруем по AI-контексту
+    tag: "cursor",
+    keywords:
+      /cursor\s*(ide|ai|editor|coding|composer|agent)?[\s.,:;]|\bcursor\b\s+(ai|ide)|cursor\.com/i,
+  },
+  copilot: {
+    tag: "copilot",
+    keywords: /\bgithub copilot\b|\bcopilot\b/i,
+  },
 };
 
 // Активные фиды = только те, чья технология есть на платформе (TECHS).
@@ -103,6 +118,14 @@ function cleanLink(link) {
   return (link || "").split("?")[0];
 }
 
+// Обложка из RSS-описания (hero-картинка статьи): <img src="https://cdn-images-1.medium.com/…">.
+// Фолбэк на клиенте — старый прод-прокси не возвращал image, а description у него есть.
+function firstImgFromDescription(html) {
+  if (!html) return null;
+  const m = String(html).match(/<img[^>]*\b(?:src|data-src)="(https?:[^"]+)"/i);
+  return m ? m[1] : null;
+}
+
 function normalizeItem(raw, feed) {
   const link = cleanLink(raw.link);
   if (!link || !raw.title) return null;
@@ -113,6 +136,9 @@ function normalizeItem(raw, feed) {
     link,
     title: raw.title.trim(),
     summary,
+    // Обложка из RSS-описания (hero-картинка статьи) — показывается в шапке
+    // модалки: страница Medium под CF-челленджем, inline-картинки недоступны.
+    image: raw.image || firstImgFromDescription(raw.description),
     author: raw.author || "Medium",
     pubDate: raw.pubDate || "",
     techId: feed.techId,
@@ -539,8 +565,81 @@ async function fetchArticleViaJina(link, signal) {
   return value;
 }
 
+// Фидбек 2026-09: «тянет много мусора в виде ссылок внизу основного текста».
+// markdown.new/Jina-дампы подхватывают хвост Medium: «Written by …», «0
+// followers», футерные ссылки ([Help][Status][Careers][Privacy]…), био-плашка
+// автора. Чистим на клиенте (работает и с прокси, и с Jina-fallback).
+const JUNK_TAIL_LINE = /^\[?<?h[1-6]>?written by /i; // «Written by John Elia» (и Jina-вариант с <h2>)
+const JUNK_FOOTER_LINK =
+  /^\[(?:Help|Status|About|Careers|Press|Blog|Store|Privacy|Rules|Terms|Text to speech|Share|Respond)\]\(https?:\/\/[^)]*(medium\.com|policy\.medium\.com|speechify\.com)[^)]*\)$/i;
+const JUNK_FOLLOWERS =
+  /^(?:·\s*)?(?:\d+\s+followers?|\[\d+\s+following\]\([^)]*\))\s*$/i;
+// publication-навигация Medium («Skill Stuff» и т.п.): ссылкой с HTML-тегом в строке
+const JUNK_PUB_NAV = /^\[<h[1-6]>[\s\S]*<\/h[1-6]>\]\(/;
+// строки-плашки в начале/конце статьи
+const JUNK_PLAQUE =
+  /^(?:member-only story|top stories|related stories|more on medium|subscribe to)$/i;
+const JUNK_PUB_PROMO = /is your go-to hub for/i;
+
+function stripArticleJunk(md, title) {
+  let lines = String(md || "").split("\n");
+  // 1) хвост: всё с «Written by …» — вырезаем (после этого строки только чистим)
+  const cut = lines.findIndex((l) => JUNK_TAIL_LINE.test(l.trim()));
+  if (cut !== -1) lines = lines.slice(0, cut);
+  // 2) био-плашка в НАЧАЛЕ: «## Имя» + строка-био (✍️ / «Writing about») +
+  //    дубль заголовка статьи (заголовок уже в шапке модалки)
+  const first = lines.findIndex((l) => l.trim());
+  if (first !== -1) {
+    let j = first + 1;
+    while (j < lines.length && !lines[j].trim()) j += 1;
+    const heading = lines[first].trim();
+    const next = lines[j] ? lines[j].trim() : "";
+    const isBio =
+      /^#{1,2}\s/.test(heading) &&
+      (/^✍/.test(next) || /writing about/i.test(next));
+    if (isBio) {
+      lines[first] = "";
+      if (j < lines.length) lines[j] = "";
+      // после био может идти сам заголовок статьи — дубль шапки, выкинуть
+      let k = j + 1;
+      while (k < lines.length && !lines[k].trim()) k += 1;
+      if (
+        k < lines.length &&
+        title &&
+        lines[k]
+          .trim()
+          .replace(/^#+\s*/, "")
+          .toLowerCase() === String(title).trim().toLowerCase()
+      ) {
+        lines[k] = "";
+      }
+    }
+  }
+  // 3) одиночные мусорные строки (футер-ссылки Medium, «followers», ✍️-строки,
+  //    publication-nav/плашки — «Skill Stuff is your go-to hub…», «Member-only story»)
+  lines = lines.map((l) => {
+    const s = l.trim();
+    if (!s) return l;
+    if (JUNK_TAIL_LINE.test(s) || JUNK_FOOTER_LINK.test(s)) return "";
+    if (JUNK_FOLLOWERS.test(s)) return "";
+    if (JUNK_PUB_NAV.test(s)) return "";
+    if (JUNK_PLAQUE.test(s)) return "";
+    if (JUNK_PUB_PROMO.test(s)) return "";
+    if (/^✍/.test(s)) return "";
+    return l;
+  });
+  return lines
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 /** Полный текст статьи Medium как markdown-lite (+ аватар/автор). Сбой → null (модалка покажет анонс). */
-export async function fetchMediumArticle(link, timeoutMs = 45000) {
+export async function fetchMediumArticle(
+  link,
+  title = null,
+  timeoutMs = 45000,
+) {
   if (articleCache.has(link)) return articleCache.get(link);
   for (const fetcher of [fetchArticleViaProxy, fetchArticleViaJina]) {
     const ctrl = new AbortController();
@@ -548,8 +647,11 @@ export async function fetchMediumArticle(link, timeoutMs = 45000) {
     try {
       const value = await fetcher(link, ctrl.signal);
       if (value && value.md) {
-        articleCache.set(link, value);
-        return value;
+        value.md = stripArticleJunk(value.md, title);
+        if (value.md) {
+          articleCache.set(link, value);
+          return value;
+        }
       }
     } catch {
       /* дальше по цепочке */

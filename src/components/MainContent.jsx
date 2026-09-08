@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import CodeEditor from "./CodeEditor";
 import LessonView from "./views/LessonView";
 import MainView from "./views/MainView";
+import CoursesView from "./views/CoursesView";
 import RoadmapView from "./views/RoadmapView";
 import TechnologyView from "./views/TechnologyView";
 import TasksView from "./views/TasksView";
@@ -288,6 +289,18 @@ function MainContent({
             onAuth={onAuth}
           />
         );
+      case "courses":
+        // Аудит навигации 2026-09: постоянный дом каталога курсов (P0)
+        return (
+          <CoursesView
+            activeTech={activeTech}
+            onSelectTech={onSelectTech}
+            dbLessons={dbLessons}
+            onResume={(id) => openLesson(id)}
+            onNavigate={onNavigate}
+            progressTick={progressTick}
+          />
+        );
       case "roadmap":
         return (
           <RoadmapView
@@ -407,6 +420,7 @@ function MainContent({
             onNavigate={onNavigate}
             onLogout={onLogout}
             dbLessons={dbLessonsArr}
+            onContinue={() => openLesson(activeTech)}
           />
         );
       default:

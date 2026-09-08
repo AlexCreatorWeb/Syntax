@@ -46,7 +46,7 @@ export function fileToAvatarDataUrl(file, size = 256) {
       reject(new Error("not-image"));
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
+    if (file.size > 25 * 1024 * 1024) {
       reject(new Error("too-big"));
       return;
     }

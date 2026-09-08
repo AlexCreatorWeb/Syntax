@@ -3,7 +3,7 @@
 // Смысловые группы навигации (UX-аудит Р1–Р4): учусь → общаюсь → справочники.
 // Порядок внутри Learn: Roadmap (с чего начать) → Tasks (действие) → Editor (инструмент).
 export const NAV_GROUPS = [
-  { id: "learn", items: ["roadmap", "tasks", "editor"] },
+  { id: "learn", items: ["roadmap", "courses", "tasks", "editor"] },
   { id: "community", items: ["rankings", "community"] },
   { id: "resources", items: ["documentation"] },
 ];
@@ -21,6 +21,13 @@ export const NAV_ICONS = {
   editor: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16" />
+    </svg>
+  ),
+  courses: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+      <path d="M9 7h6" />
     </svg>
   ),
   tasks: (

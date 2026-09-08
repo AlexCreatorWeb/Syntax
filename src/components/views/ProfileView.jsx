@@ -38,6 +38,7 @@ function ProfileView({
   onNavigate,
   onLogout,
   dbLessons,
+  onContinue,
 }) {
   const t = useT();
   const { langCode } = useLanguage();
@@ -152,7 +153,7 @@ function ProfileView({
           <div className="profile__avatar-actions">
             <button
               type="button"
-              className="btn btn--ghost btn--sm"
+              className="btn btn--ghost btn--sm profile__avatar-btn"
               onClick={() => fileRef.current && fileRef.current.click()}
             >
               {avatarUrl ? t("profile.avatarChange") : t("profile.avatarAdd")}
@@ -160,7 +161,7 @@ function ProfileView({
             {avatarUrl && (
               <button
                 type="button"
-                className="btn btn--ghost btn--sm"
+                className="btn btn--ghost btn--sm profile__avatar-btn"
                 onClick={() => {
                   setAvatar(null);
                   setAvatarState(null);
@@ -194,6 +195,80 @@ function ProfileView({
                 {t("profile.memberSince", { date: memberSince })}
               </p>
             )}
+            {/* Фидбек 2026-09: инфо + курсы — в ОДНОМ фрейме (было две карточки) */}
+            <div className="profile__inline-progress">
+              <header className="profile__progress-head">
+                <h2>{t("profile.progress")}</h2>
+                <span className="profile__progress-total">
+                  {t("profile.totalDone", { n: totalDone })}
+                  {totalTasks > 0
+                    ? ` · ${t("profile.tasksDone", { n: totalTasks })}`
+                    : ""}{" "}
+                  · {t("profile.xp", { n: totalXp() })}
+                </span>
+              </header>
+              {rows.length ? (
+                <div className="profile__rows">
+                  {rows.map(({ id, Logo, done, total, tasks }) => (
+                    <div className="profile__row" key={id}>
+                      <span
+                        className="profile__row-logo"
+                        onClick={() => onNavigate("technology", { techId: id })}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" &&
+                          onNavigate("technology", { techId: id })
+                        }
+                      >
+                        <Logo />
+                      </span>
+                      <div className="profile__row-body">
+                        <span className="profile__row-name">
+                          {t(`home.tech.${id}`)}
+                          {tasks > 0 && (
+                            <span className="profile__row-tasks">
+                              {t("profile.rowTasks", { n: tasks })}
+                            </span>
+                          )}
+                        </span>
+                        <span className="profile__bar" aria-hidden="true">
+                          <span
+                            className="profile__bar-fill"
+                            style={{
+                              width: `${Math.round((done / total) * 100)}%`,
+                            }}
+                          />
+                        </span>
+                      </div>
+                      <span className="profile__row-count">
+                        {t("profile.doneOf", { a: done, b: total })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="profile__empty">{t("profile.progressEmpty")}</p>
+              )}
+              <div className="profile__actions">
+                {/* Фидбек 2026-09: «Дорожная карта» → «Продолжить обучение»
+                    (первый невыполненный урок, а не просто переход на карту) */}
+                <button
+                  type="button"
+                  className="btn btn--primary profile__open"
+                  onClick={onContinue}
+                >
+                  {t("home.lesson.continue")}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm profile__logout"
+                  onClick={onLogout}
+                >
+                  {t("account.logout")}
+                </button>
+              </div>
+            </div>
           </>
         ) : (
           <>
@@ -240,80 +315,6 @@ function ProfileView({
           </>
         )}
       </section>
-
-      {isAuthed && (
-        <section className="card profile__progress">
-          <header className="profile__progress-head">
-            <h2>{t("profile.progress")}</h2>
-            <span className="profile__progress-total">
-              {t("profile.totalDone", { n: totalDone })}
-              {totalTasks > 0
-                ? ` · ${t("profile.tasksDone", { n: totalTasks })}`
-                : ""}{" "}
-              · {t("profile.xp", { n: totalXp() })}
-            </span>
-          </header>
-          {rows.length ? (
-            <div className="profile__rows">
-              {rows.map(({ id, Logo, done, total, tasks }) => (
-                <div className="profile__row" key={id}>
-                  <span
-                    className="profile__row-logo"
-                    onClick={() => onNavigate("technology", { techId: id })}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" &&
-                      onNavigate("technology", { techId: id })
-                    }
-                  >
-                    <Logo />
-                  </span>
-                  <div className="profile__row-body">
-                    <span className="profile__row-name">
-                      {t(`home.tech.${id}`)}
-                      {tasks > 0 && (
-                        <span className="profile__row-tasks">
-                          {t("profile.rowTasks", { n: tasks })}
-                        </span>
-                      )}
-                    </span>
-                    <span className="profile__bar" aria-hidden="true">
-                      <span
-                        className="profile__bar-fill"
-                        style={{
-                          width: `${Math.round((done / total) * 100)}%`,
-                        }}
-                      />
-                    </span>
-                  </div>
-                  <span className="profile__row-count">
-                    {t("profile.doneOf", { a: done, b: total })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="profile__empty">{t("profile.progressEmpty")}</p>
-          )}
-          <div className="profile__actions">
-            <button
-              type="button"
-              className="btn btn--ghost profile__open"
-              onClick={() => onNavigate("roadmap")}
-            >
-              {t("profile.openRoadmap")}
-            </button>
-            <button
-              type="button"
-              className="btn btn--ghost btn--sm profile__logout"
-              onClick={onLogout}
-            >
-              {t("account.logout")}
-            </button>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

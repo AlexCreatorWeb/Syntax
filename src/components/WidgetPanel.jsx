@@ -5,6 +5,7 @@ import TasksAside from "./panels/TasksAside";
 import TechAside from "./panels/TechAside";
 import PromoCard from "./PromoCard";
 import DailyChallenge from "./DailyChallenge";
+import ContinueLearning from "./ContinueLearning";
 
 // Вкладки, у которых в дизайне есть собственный правый сайдбар:
 // он монтируется во внешнюю rail вместо дефолтных виджетов.
@@ -49,6 +50,19 @@ function WidgetPanel({
                                 />
                         ) : (
                                 <>
+                                        {/* Аудит навигации 2026-09 (P0): «Continue
+                        learning» — daily-действие в rail (видна только при
+                        начатом активном курсе; CTA ведёт в раздел Courses,
+                        где Continue-зона открывает урок в один клик) */}
+                                        <ContinueLearning
+                                                techId={activeTech}
+                                                dbLessons={dbLessons}
+                                                onContinue={() =>
+                                                        onNavigate("courses")
+                                                }
+                                                onNavigate={onNavigate}
+                                        />
+
                                         {/* Daily challenge: только по трекам с реальными уроками в БД, новое каждый день */}
                                         <DailyChallenge
                                                 dbLessons={dbLessons}
@@ -60,6 +74,8 @@ function WidgetPanel({
 
                                         {/* Реклама: книга (вместо AI-ментора; остальные виджеты — позже) */}
                                         <PromoCard id="book" />
+                                        {/* «Живое комьюнити» здесь было — убрано по фидбеку 2026-09:
+              пряталось за фолдом и не было видно без скролла */}
                                 </>
                         )}
                 </aside>

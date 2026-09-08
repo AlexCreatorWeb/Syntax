@@ -3,11 +3,13 @@ import { useT } from "../i18n/useT";
 
 // UX-аудит V4: мобильный bottom tab bar — главный цикл платформы (5 вкл. Home)
 // в один тап вместо «burger → пункт» (2 тапа). Остальное (Docs/Settings/Profile) — в burger.
+// Аудит нав-2026-09: Editor (песочница-утилита) заменён на Courses — ежедневная
+// секция «продолжить учить» важнее в bottom bar; редактор доступен через burger.
 const TABS = [
     { id: "home", icon: NAV_ICONS.home || null, labelKey: "home" },
     { id: "roadmap", icon: NAV_ICONS.roadmap, labelKey: "roadmap" },
+    { id: "courses", icon: NAV_ICONS.courses, labelKey: "courses" },
     { id: "tasks", icon: NAV_ICONS.tasks, labelKey: "tasks" },
-    { id: "editor", icon: NAV_ICONS.editor, labelKey: "editor" },
     { id: "community", icon: NAV_ICONS.community, labelKey: "community" },
     { id: "rankings", icon: NAV_ICONS.rankings, labelKey: "rankings" },
 ];
@@ -34,7 +36,9 @@ export default function MobileTabBar({ activeTab, onNavigate }) {
             {TABS.map((tab) => {
                 const active =
                     activeTab === tab.id ||
-                    (tab.id === "roadmap" && activeTab === "technology");
+                    (tab.id === "roadmap" && activeTab === "technology") ||
+                    // Страница курса — часть раздела «Courses» (подсветка на tech-странице)
+                    (tab.id === "courses" && activeTab === "technology");
                 return (
                     <button
                         key={tab.id}

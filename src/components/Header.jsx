@@ -4,6 +4,32 @@ import { UI_LANGUAGES } from "../context/uiLanguages";
 import { useT } from "../i18n/useT";
 import { NAV_GROUPS, NAV_BOTTOM, NAV_ICONS } from "./nav-data";
 import { useAvatar } from "../lib/avatar";
+import { getCompleted } from "../lib/progress";
+import { translateText } from "../lib/translate";
+
+// Заголовок новости в дропдауне: перевод на язык платформы (фидбек 2026-09:
+// «не понимаю что за новость» — RSS-заголовки EN). Цепочка translate.js с
+// кэшем на сессию; сбой/EN — оригинал (тихий фолбэк, UI никогда не ломается).
+function NewsTitle({ title }) {
+  const { langCode } = useLanguage();
+  // {title, lang, value} — перевод валиден только для той пары title+lang,
+  // на которую он запрашивался (иначе старый перевод «плывёт» за другим
+  // заголовком). Без sync-setState в effect (react-compiler).
+  const [translated, setTranslated] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    if (!title || langCode === "en") return undefined;
+    translateText(title, langCode).then((v) => {
+      if (alive && v) setTranslated({ title, lang: langCode, value: v });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [title, langCode]);
+  const ok =
+    translated && translated.title === title && translated.lang === langCode;
+  return <>{ok ? translated.value : title}</>;
+}
 
 // Универсальный хедер: логотип (→ главная) + язык / тема / уведомления / аккаунт.
 // Лого всегда оригинальный Syntax (тех-лого живёт на странице технологии — UX-фидбек);
@@ -22,6 +48,8 @@ function Header({
   activeTab = null,
   guest = false,
   onExitGuest,
+  dbLessons = null,
+  activeTech = null,
 }) {
   const { lang, selectLanguage } = useLanguage();
   const t = useT();
@@ -41,6 +69,17 @@ function Header({
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
     return h;
   }, [user]);
+
+  // Кольцо прогресса вокруг аватарки (паттерн Udemy, фидбек 2026-09): процент
+  // выполненных уроков АКТИВНОГО трека. Нет трека/уроков — кольцо не рендерится.
+  const ring = (() => {
+    if (!user && !guest) return null;
+    if (!dbLessons || !dbLessons.length || !activeTech) return null;
+    const total = dbLessons.filter((l) => l.tech === activeTech).length;
+    if (!total) return null;
+    const done = Math.min(total, getCompleted(activeTech).length);
+    return { pct: Math.round((done / total) * 100), done, total };
+  })();
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
@@ -291,8 +330,21 @@ function Header({
                       className={`tb-menu__notif-dot ${seenNewsLinks && !seenNewsLinks.has(item.link) ? "is-important" : ""}`}
                       aria-hidden="true"
                     />
+                    {item.image && (
+                      <img
+                        className="tb-menu__news-img"
+                        src={item.image}
+                        alt=""
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    )}
                     <span className="tb-menu__news-body">
-                      <span className="tb-menu__news-title">{item.title}</span>
+                      <span className="tb-menu__news-title">
+                        <NewsTitle title={item.title} />
+                      </span>
                       {item.summary && (
                         <span className="tb-menu__news-summary">
                           {item.summary}
@@ -320,18 +372,49 @@ function Header({
                 onClick={() =>
                   setOpenMenu((m) => (m === "account" ? null : "account"))
                 }
+                title={
+                  ring
+                    ? t("sidebar.progressCount", {
+                        n: ring.done,
+                        m: ring.total,
+                      })
+                    : undefined
+                }
               >
-                <span
-                  className={`avatar-dot avatar-dot--sm${avatarUrl ? " avatar-dot--img" : ""}`}
-                  style={
-                    avatarUrl
-                      ? { backgroundImage: `url(${avatarUrl})` }
-                      : {
-                          background: `linear-gradient(135deg, hsl(${nameHue} 45% 32%), hsl(${nameHue} 55% 18%))`,
-                        }
-                  }
-                >
-                  {!avatarUrl && user.charAt(0).toUpperCase()}
+                <span className={`avatar-progress${ring ? " is-on" : ""}`}>
+                  <span
+                    className={`avatar-dot avatar-dot--sm${avatarUrl ? " avatar-dot--img" : ""}`}
+                    style={
+                      avatarUrl
+                        ? { backgroundImage: `url(${avatarUrl})` }
+                        : {
+                            background: `linear-gradient(135deg, hsl(${nameHue} 45% 32%), hsl(${nameHue} 55% 18%))`,
+                          }
+                    }
+                  >
+                    {!avatarUrl && user.charAt(0).toUpperCase()}
+                  </span>
+                  {ring && (
+                    <svg
+                      className="avatar-progress__ring"
+                      viewBox="0 0 100 100"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        className="avatar-progress__bg"
+                        cx="50"
+                        cy="50"
+                        r="50"
+                      />
+                      <circle
+                        className="avatar-progress__fg"
+                        cx="50"
+                        cy="50"
+                        r="50"
+                        strokeDasharray={`${(ring.pct / 100) * 314.16} 314.16`}
+                      />
+                    </svg>
+                  )}
                 </span>
               </button>
               <div
@@ -430,7 +513,13 @@ function Header({
                 className="btn btn--primary auth__signup"
                 onClick={() => onAuth("signup")}
               >
-                {t("header.signup")}
+                {/* Аудит C3 (≤480): «Sign up free» не влезает — короткий вариант */}
+                <span className="auth__signup-label auth__signup-label--full">
+                  {t("header.signup")}
+                </span>
+                <span className="auth__signup-label auth__signup-label--short">
+                  {t("header.signupShort")}
+                </span>
               </button>
             </div>
           )}

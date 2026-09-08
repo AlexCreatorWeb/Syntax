@@ -61,6 +61,15 @@ function stripTags(s) {
 
 // ------------------- RSS (без изменений) -------------------
 
+// Первое <img> в RSS-описании = обложка статьи (Medium кладёт hero-картинку в
+// description). Страница статьи под CF-челленджем → inline-картинки недоступны,
+// обложка из RSS — стабильный источник «как задумано» (картинка в шапке модалки).
+function firstImgUrl(html) {
+  if (!html) return null;
+  const m = String(html).match(/<img[^>]*\b(?:src|data-src)="(https?:[^"]+)"/i);
+  return m ? m[1] : null;
+}
+
 function parseRss(xml) {
   const items = [];
   for (const m of xml.matchAll(/<item>[\s\S]*?<\/item>/g)) {
@@ -72,11 +81,13 @@ function parseRss(xml) {
     const title = tag(/<title>([\s\S]*?)<\/title>/);
     const link = tag(/<link>([\s\S]*?)<\/link>/);
     if (!link || !title) continue;
+    const description = tag(/<description>([\s\S]*?)<\/description>/);
     items.push({
       title,
       link,
       pubDate: tag(/<pubDate>([\s\S]*?)<\/pubDate>/),
-      description: tag(/<description>([\s\S]*?)<\/description>/),
+      description,
+      image: firstImgUrl(description),
       author:
         tag(/<dc:creator>([\s\S]*?)<\/dc:creator>/) ||
         tag(/<author>([\s\S]*?)<\/author>/),
@@ -313,14 +324,35 @@ function markdownNewToMd(src) {
     : src;
   // YAML-фронтматтер сразу после маркера
   body = body.replace(/^\s*---[\s\S]*?\n---\s*\n?/, "");
+  // Хвост: авторская карточка «Written by …» + футер Medium (Help/Status/About…) —
+  // всё после маркера выкидываем целиком (Medium всегда заканчивает пост авторской карточкой)
+  const lines = body.split("\n");
+  let tail = lines.length;
+  for (let i = 0; i < lines.length; i++) {
+    if (/written by/i.test(lines[i])) {
+      tail = i;
+      break;
+    }
+  }
+  lines.length = tail;
   const out = [];
+  let started = false; // до H1-тайтла — шапка Medium (навигация, TOC, автор-сайдбар с био и тегами)
   let first = true; // первый заголовок уровня 1 = дубль тайтла статьи (у модалки свой заголовок)
-  for (const raw of body.split("\n")) {
+  for (const raw of lines) {
     let line = raw.trim();
     if (!line) {
-      if (out[out.length - 1] !== "") out.push("");
+      if (started && out[out.length - 1] !== "") out.push("");
       continue;
     }
+    // H1 — начало реального контента; сам тайтл пропускаем (у модалки свой)
+    if (/^#(?!#)\s/.test(line)) {
+      started = true;
+      if (first)
+        first = false; // дубль тайтла — пропуск
+      else out.push(line);
+      continue;
+    }
+    if (!started) continue; // мусор шапки (автор-сайдбар, тег-чипы, TOC…)
     if (MNEW_JUNK.some((re) => re.test(line))) continue;
     // TOC Medium: нумерованный список ссылок на якоря post_page (до первого заголовка)
     if (/^\d+\.\s+\[[^\]]*\]\([^)]*post_page[^)]*\)/.test(line)) continue;
@@ -332,12 +364,10 @@ function markdownNewToMd(src) {
     if (/^·$/.test(line)) continue;
     if (/^\[[^\]]*\]\([^)]*post_page---byline--/.test(line)) continue;
     if (/^\[Listen\]\(/.test(line)) continue;
-    if (first && /^#(?!#)\s/.test(line)) {
-      first = false;
-      continue;
-    }
     out.push(line);
   }
+  // byline-блок сразу ПОСЛЕ тайтла: [автор](…byline…), «N min read», «·», время, «--», Listen, Share
+  // (MNEW_JUNK ловит большинство, но «N followers»/«·» в постранных вариантах — режем до первого ##)
   const md = out
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
@@ -345,6 +375,43 @@ function markdownNewToMd(src) {
   // 404-страница Medium («PAGE NOT FOUND») — не статья; пусть клиент покажет анонс
   if (/^PAGE NOT FOUND\b/i.test(md) && md.length < 1200) return "";
   return md;
+}
+
+// Серверный перевод (для ?tr=): MyMemory (IP Vercel, de= — ~50K зн./день) →
+// Google gtx → null (клиент вернёт оригинал). Тихий фолбэк, таймаут 8с.
+async function translateOnServer(text, lang) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const mm = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${lang}&de=frontend@syntax.dev`;
+    const res = await fetch(mm, { signal: ctrl.signal });
+    const json = await res.json().catch(() => null);
+    const raw =
+      json && json.responseStatus === 200 && json.responseData
+        ? json.responseData.translatedText
+        : null;
+    if (raw && !/INVALID|MYMEMORY WARNING/i.test(raw) && raw.trim() !== text)
+      return raw.trim();
+    if (raw && raw.trim() === text && text.length < 80) return null; // «перевод» = исходник — не уверен, оставим оригинал
+    const gtx = `https://translate.google.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(text)}`;
+    const res2 = await fetch(gtx, {
+      signal: ctrl.signal,
+      headers: { "User-Agent": BROWSER_UA },
+    });
+    if (res2.ok) {
+      const data = await res2.json().catch(() => null);
+      const segs =
+        Array.isArray(data) && Array.isArray(data[0])
+          ? data[0].map((s) => (s && s[0]) || "").join("")
+          : null;
+      if (segs) return segs.trim();
+    }
+    return null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ------------------- handler -------------------
@@ -409,6 +476,22 @@ export default async function handler(req, res) {
   }
   if (req.method !== "GET") {
     res.status(405).json({ error: "GET only" });
+    return;
+  }
+
+  // --- translate: серверный перевод (IP Vercel — отдельная квота MyMemory,
+  // не зависит от исчерпанной квоты IP зрителя). ?tr=ru&q=… → { ok, text }
+  const q = String((req.query && req.query.q) || "");
+  const tr = String((req.query && req.query.tr) || "")
+    .toLowerCase()
+    .replace(/[^a-z-]/g, "");
+  if (q) {
+    if (!tr || tr === "en") {
+      res.status(200).json({ ok: true, text: q });
+      return;
+    }
+    const text = await translateOnServer(q.slice(0, 480), tr);
+    res.status(200).json({ ok: true, text: text || q });
     return;
   }
 

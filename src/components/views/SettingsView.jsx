@@ -1,6 +1,7 @@
 import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
 import { totalXp, levelInfo } from "../../lib/xp";
+import { useAvatar } from "../../lib/avatar";
 
 // UX-аудит V9: Settings = реальная страница (аккаунт, внешний вид, язык,
 // редактор, уведомления) вместо плейсхолдера. Support убран из навигации
@@ -45,6 +46,7 @@ export default function SettingsView({
 }) {
   const t = useT();
   const { langCode, selectLanguage } = useLanguage();
+  const [avatarUrl] = useAvatar(); // фото из профиля — там же, где монограмма (фидбек 2026-09-08)
   void onNavigate;
   const email = session && session.user ? session.user.email : null;
   const memberSince =
@@ -68,8 +70,17 @@ export default function SettingsView({
         {session ? (
           <>
             <div className="settings-account">
-              <span className="settings-account__avatar" aria-hidden="true">
-                {(userName || email || "?").slice(0, 1).toUpperCase()}
+              <span
+                className={`settings-account__avatar${avatarUrl ? " settings-account__avatar--img" : ""}`}
+                aria-hidden="true"
+                style={
+                  avatarUrl
+                    ? { backgroundImage: `url(${avatarUrl})` }
+                    : undefined
+                }
+              >
+                {!avatarUrl &&
+                  (userName || email || "?").slice(0, 1).toUpperCase()}
               </span>
               <div className="settings-account__text">
                 <strong>{userName || t("settings.unknownUser")}</strong>

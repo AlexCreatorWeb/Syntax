@@ -278,6 +278,8 @@ function TasksView({ activeTech, onSelectTech, onSolve }) {
     onSelectTech(id); // глобальный выбор трека (persistence, deep-link-совместимый)
     setTechFilter(id);
     setCategory("all"); // категории другого трека
+    // Навигация: после смены трека список всегда виден с верха (фидбек 2026-09)
+    window.scrollTo({ top: 0 });
   };
 
   const clearFilters = () => {

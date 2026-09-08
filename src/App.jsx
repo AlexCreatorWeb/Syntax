@@ -479,6 +479,8 @@ function App() {
         activeTab={activeTab}
         guest={guestMode && !userName}
         onExitGuest={() => setGuestMode(false)}
+        dbLessons={dbLessons}
+        activeTech={activeTech}
       />
       <div className="shell" data-tab={activeTab}>
         <Sidebar

@@ -1,28 +1,37 @@
 import { useT } from "../i18n/useT";
 import TECHS from "../lib/techs";
-const AI_TOOL_IDS = new Set(["claude", "cursor", "copilot"]);
+import { getCompleted, prefixOfCompleted } from "../lib/progress";
 import { localizedLessonTitle } from "../lib/lessonTitles";
 import { useLanguage } from "../context/useLanguage";
 
-// Единая сетка карточек треков (главная + Roadmap-селектор).
-// Клик = выбор трека + переход на страницу технологии (UX-аудит К1/К5).
-function TechCardsGrid({ activeTech, onOpenTech, dbLessons }) {
+// AI-инструменты живут своей секцией на главной (home__aitools, «карточки нейронок»)
+// — из core-грида исключены, как и было.
+const AI_TOOL_IDS = new Set(["claude", "cursor", "copilot"]);
+
+// Единая сетка карточек курсов (главная + страница Courses + «My courses»).
+// Клик = выбор трека + переход на страницу технологии. Карточка начатого курса
+// несёт реальный прогресс (Udemy-префикс) вместо «Lesson 1».
+function TechCardsGrid({ activeTech, onOpenTech, dbLessons, techs, coreOnly }) {
   const t = useT();
   const { langCode } = useLanguage();
-  // UX-аудит: «Lesson 1: {title}» вместо абстрактного «16 lessons» — что внутри трека
-  const firstTitle = (tech) => {
-    const lesson = (dbLessons || []).find((l) => l.tech === tech.id);
-    return lesson
-      ? localizedLessonTitle(tech.id, 1, lesson.title, langCode)
-      : null;
-  };
+  // coreOnly (главная): AI-инструменты живут своей секцией (home__aitools);
+  // страница Courses: полный список (все 12) или явный techs («My courses»)
+  const list = (techs || TECHS).filter(
+    (tech) => !coreOnly || !AI_TOOL_IDS.has(tech.id),
+  );
+  const rows = dbLessons || [];
   return (
     <div className="tech-row">
-      {/* Core-треки: II-инструменты (claude/cursor/copilot) живут в своей секции home__aitools,
-          чтобы заголовок «9 tracks» оставался честным */}
-      {TECHS.filter((t) => !AI_TOOL_IDS.has(t.id)).map((tech) => {
+      {list.map((tech) => {
         const Logo = tech.Logo;
-        const lesson1 = firstTitle(tech);
+        const techLessons = rows.filter((l) => l.tech === tech.id);
+        const done = techLessons.length
+          ? prefixOfCompleted(techLessons, getCompleted(tech.id)).length
+          : 0;
+        const started = done > 0;
+        const first = techLessons.length
+          ? localizedLessonTitle(tech.id, 1, techLessons[0].title, langCode)
+          : null;
         return (
           <button
             key={tech.id}
@@ -32,16 +41,55 @@ function TechCardsGrid({ activeTech, onOpenTech, dbLessons }) {
           >
             <Logo />
             <span className="tech-card__body">
-              <span className="tech-card__name">{t(tech.label)}</span>
+              <span className="tech-card__name">
+                {t(tech.label)}
+                {AI_TOOL_IDS.has(tech.id) && (
+                  <span className="chip chip--new tech-card__new">
+                    {t("home.aiTools.new")}
+                  </span>
+                )}
+              </span>
               <span className="tech-card__meta">
                 {t("home.lessons", { n: tech.lessons })}
               </span>
-              {lesson1 && (
-                <span className="tech-card__first">
-                  {t("home.lesson1", { title: lesson1 })}
+              {started && (
+                <span className="tech-card__progress" aria-hidden="true">
+                  <span
+                    className="tech-card__progress-fill"
+                    style={{
+                      width: `${Math.round((done / techLessons.length) * 100)}%`,
+                    }}
+                  />
                 </span>
               )}
+              {started ? (
+                <span className="tech-card__first tech-card__first--progress">
+                  {t("techPage.lessonOf", {
+                    n: done + 1,
+                    m: techLessons.length,
+                  })}
+                </span>
+              ) : (
+                first && (
+                  <span className="tech-card__first">
+                    {t("home.lesson1", { title: first })}
+                  </span>
+                )
+              )}
             </span>
+            {/* Аудит H2: стрелка выезжает на hover (ховер-семейство M6) */}
+            <svg
+              className="tech-card__arrow"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
           </button>
         );
       })}

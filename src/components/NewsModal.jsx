@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useT } from "../i18n/useT";
 import { useLanguage } from "../context/useLanguage";
-import { translateText, translateArticleBlocks, translatableIndexes } from "../lib/translate";
+import {
+  translateText,
+  translateArticleBlocks,
+  translatableIndexes,
+} from "../lib/translate";
 import { fetchMediumArticle } from "../lib/medium";
 import { parseMdBlocks } from "../lib/markdown";
 import { MdContent } from "../lib/markdown-view";
@@ -29,7 +33,9 @@ function NewsModal({ item, onClose }) {
 
   // Esc + body-scroll-lock (паттерн SignupModal)
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
@@ -48,18 +54,23 @@ function NewsModal({ item, onClose }) {
     translateText(item.title, langCode).then((title) => {
       if (alive && title) setTranslatedTitle(title);
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [item, langCode]);
 
-  // Загрузка полной статьи (+ аватар автора)
+  // Загрузка полной статьи (+ аватар автора); заголовок — чтобы чистка
+  // выбросила дубль названия из дампа (он уже в шапке модалки)
   useEffect(() => {
     let alive = true;
-    fetchMediumArticle(item.link).then((a) => {
+    fetchMediumArticle(item.link, item.title).then((a) => {
       if (!alive) return;
       if (a) setArticle(a);
       else setArticleFailed(true);
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [item.link]);
 
   // Перевод статьи по блокам (картинки/код не трогаем). ПРОГРЕССИВНО: готовые
@@ -67,11 +78,11 @@ function NewsModal({ item, onClose }) {
   // приоритетом, остальная статья — фоном. Оригинал виден сразу.
   const articleBlocks = useMemo(
     () => (article ? parseMdBlocks(article.md) : null),
-    [article]
+    [article],
   );
   const totalBlocks = useMemo(
     () => (articleBlocks ? translatableIndexes(articleBlocks).length : 0),
-    [articleBlocks]
+    [articleBlocks],
   );
   // Блоки видного превью (первые ~PREVIEW_LIMIT знаков) — переводим первыми
   const priorityIdx = useMemo(() => {
@@ -80,7 +91,14 @@ function NewsModal({ item, onClose }) {
     let len = 0;
     articleBlocks.forEach((b, i) => {
       len += (b.text || b.code || b.src || "").length;
-      if ((b.type === "p" || b.type === "h2" || b.type === "h3" || b.type === "callout") && len <= PREVIEW_LIMIT) out.push(i);
+      if (
+        (b.type === "p" ||
+          b.type === "h2" ||
+          b.type === "h3" ||
+          b.type === "callout") &&
+        len <= PREVIEW_LIMIT
+      )
+        out.push(i);
       if (len > PREVIEW_LIMIT) return; // break
     });
     return out;
@@ -93,10 +111,15 @@ function NewsModal({ item, onClose }) {
       onBatch: (updates, done) => {
         if (!alive) return;
         // setState только в async-колбэке (react-hooks/set-state-in-effect)
-        setProgress((p) => ({ done, texts: { ...(p ? p.texts : {}), ...updates } }));
+        setProgress((p) => ({
+          done,
+          texts: { ...(p ? p.texts : {}), ...updates },
+        }));
       },
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [articleBlocks, langCode, priorityIdx]);
 
   const isEn = langCode === "en";
@@ -106,7 +129,7 @@ function NewsModal({ item, onClose }) {
     if (!articleBlocks) return null;
     if (isEn || !progress) return articleBlocks;
     return articleBlocks.map((b, i) =>
-      progress.texts[i] !== undefined ? { ...b, text: progress.texts[i] } : b
+      progress.texts[i] !== undefined ? { ...b, text: progress.texts[i] } : b,
     );
   }, [articleBlocks, progress, isEn]);
   const translating = !isEn && !!progress && progress.done < totalBlocks;
@@ -114,10 +137,18 @@ function NewsModal({ item, onClose }) {
   // M1-аудит: провайдер перевода лёг посреди статьи → тихий микс RU/EN.
   // После завершения перевода честно показываем, сколько блоков остались на оригинале.
   const untranslatedCount = useMemo(() => {
-    if (!articleBlocks || isEn || !progress || progress.done < totalBlocks) return 0;
+    if (!articleBlocks || isEn || !progress || progress.done < totalBlocks)
+      return 0;
     let n = 0;
     articleBlocks.forEach((b, i) => {
-      if ((b.type === "p" || b.type === "h2" || b.type === "h3" || b.type === "callout") && progress.texts[i] === undefined) n += 1;
+      if (
+        (b.type === "p" ||
+          b.type === "h2" ||
+          b.type === "h3" ||
+          b.type === "callout") &&
+        progress.texts[i] === undefined
+      )
+        n += 1;
     });
     return n;
   }, [articleBlocks, progress, totalBlocks, isEn]);
@@ -125,9 +156,21 @@ function NewsModal({ item, onClose }) {
   // «Learn more» показываем, только если статья реально длиннее превью
   const totalLen = useMemo(() => {
     if (!shownBlocks) return 0;
-    return shownBlocks.reduce((sum, b) => sum + (b.text || b.code || b.src || "").length, 0);
+    return shownBlocks.reduce(
+      (sum, b) => sum + (b.text || b.code || b.src || "").length,
+      0,
+    );
   }, [shownBlocks]);
   const hasMore = totalLen > PREVIEW_LIMIT;
+
+  // Обложка (hero-картинка из RSS): страница Medium под CF-челленджем → inline-
+  // картинки в markdown.new пустые (![]()) — без обложки статья была «слепой»
+  // (фидбек 2026-09-08 «не подгружает изображения»). Показываем, только если в
+  // статье нет своих image-блоков (прямой парсинг Medium отдаёт inline-картинки).
+  const hasArticleImages = useMemo(
+    () => (shownBlocks || []).some((b) => b.type === "image"),
+    [shownBlocks],
+  );
 
   const date = new Date(item.pubDate);
   const dateStr = isNaN(date)
@@ -139,7 +182,7 @@ function NewsModal({ item, onClose }) {
       });
   const authorHue = useMemo(
     () => [...item.author].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 360,
-    [item.author]
+    [item.author],
   );
 
   return (
@@ -148,22 +191,43 @@ function NewsModal({ item, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-label={item.title}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="news-modal__panel">
         {/* sticky: кнопка закрытия доступна и в конце длинной статьи */}
-        <button type="button" className="news-modal__close" onClick={onClose} aria-label={t("news.close")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <button
+          type="button"
+          className="news-modal__close"
+          onClick={onClose}
+          aria-label={t("news.close")}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
 
         <div className="news-modal__inner">
           <div className="news-modal__meta">
-            <span className="chip chip--medium">{t("news.source", { feed: t(`home.tech.${item.techId}`) })}</span>
+            <span className="chip chip--medium">
+              {t("news.source", { feed: t(`home.tech.${item.techId}`) })}
+            </span>
             <span className="news-modal__byline">
               {article && article.avatar ? (
-                <img className="news-modal__avatar" src={article.avatar} alt="" loading="lazy" />
+                <img
+                  className="news-modal__avatar"
+                  src={article.avatar}
+                  alt=""
+                  loading="lazy"
+                />
               ) : (
                 <Avatar name={item.author} hue={authorHue} size="xs" />
               )}
@@ -193,19 +257,38 @@ function NewsModal({ item, onClose }) {
                 </p>
               </>
             ) : articleFailed ? (
-              <p className="news-modal__summary">{item.summary || item.title}</p>
+              <p className="news-modal__summary">
+                {item.summary || item.title}
+              </p>
             ) : (
               <>
+                {!hasArticleImages && item.image && (
+                  <img
+                    className="news-modal__hero"
+                    src={item.image}
+                    alt=""
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                )}
                 {translating && (
                   <div className="news-modal__progress-wrap" role="status">
                     <div className="news-modal__progress">
                       <div
                         className="news-modal__progress-fill"
-                        style={{ width: `${Math.max(4, Math.round((progress.done / Math.max(totalBlocks, 1)) * 100))}%` }}
+                        style={{
+                          width: `${Math.max(4, Math.round((progress.done / Math.max(totalBlocks, 1)) * 100))}%`,
+                        }}
                       />
                     </div>
                     <span className="news-modal__progress-label">
-                      🌐 {t("news.translatingProgress", { done: progress.done, total: totalBlocks })}
+                      🌐{" "}
+                      {t("news.translatingProgress", {
+                        done: progress.done,
+                        total: totalBlocks,
+                      })}
                     </span>
                   </div>
                 )}
@@ -214,7 +297,11 @@ function NewsModal({ item, onClose }) {
                     {t("news.originalNote", { n: untranslatedCount })}
                   </div>
                 )}
-                <MdContent blocks={shownBlocks} t={t} limit={expanded ? undefined : PREVIEW_LIMIT} />
+                <MdContent
+                  blocks={shownBlocks}
+                  t={t}
+                  limit={expanded ? undefined : PREVIEW_LIMIT}
+                />
                 {hasMore && (
                   <button
                     type="button"

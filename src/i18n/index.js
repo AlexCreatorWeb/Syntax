@@ -9,6 +9,7 @@ export const LOCALES = {
     sidebar: {
       home: "Главная",
       roadmap: "Дорожная карта",
+      courses: "Курсы",
       editor: "Редактор",
       tasks: "Задания",
       rankings: "Рейтинг",
@@ -30,10 +31,27 @@ export const LOCALES = {
       xpNeed: "{n} XP до следующего уровня",
       streakDays: "серия {n} дн.",
       meGuest: "Зарегистрируйтесь, чтобы сохранить прогресс",
+      guestPromo: {
+        title: "Это только начало",
+        body: "Создайте бесплатный аккаунт — прогресс, XP и стрик сохранятся в облаке.",
+      },
     },
     toast: {
       levelUp: "Уровень {n}!",
       levelUpSub: "Продолжайте — следующий уровень уже ближе.",
+    },
+    // Аудит навигации 2026-09: раздел «Курсы» + карточка «Продолжить обучение»
+    courses: {
+      title: "Курсы",
+      sub: "Все курсы в одном месте — выбирай и продолжай с того места, где остановился.",
+      my: "Твои курсы",
+      all: "Все курсы",
+    },
+    continueLearning: {
+      title: "Продолжить обучение",
+      progress: "Урок {n} из {m}",
+      next: "Дальше: {title}",
+      button: "Продолжить",
     },
     courseDone: {
       title: "Курс пройден: {name}",
@@ -591,6 +609,7 @@ export const LOCALES = {
     header: {
       login: "Войти",
       signup: "Регистрация",
+      signupShort: "Регистрация",
       home: "На главную",
       searchDocs: "Поиск по документации...",
       changeLanguage: "Сменить язык",
@@ -783,6 +802,12 @@ export const LOCALES = {
           "CRUD, операторы выборки, моделирование данных, индексы, агрегация и Mongoose — полный NoSQL-справочник: от первой коллекции до продакшн-API.",
         postgres:
           "Типы, DDL, JOIN, оконные функции, транзакции, индексы и PL/pgSQL — полный справочник PostgreSQL: от psql до e-commerce-схемы.",
+        claude:
+          "Claude Code — терминальный AI-агент Anthropic: как он работает, первые команды и официальные материалы. Полный курс пишется.",
+        cursor:
+          "Cursor — AI-редактор на базе VS Code: Tab, Chat и агент Composer, правила проекта и официальная документация.",
+        copilot:
+          "GitHub Copilot: инлайн-подсказки, Copilot Chat в редакторе и на github.com, агентский режим и официальная документация.",
       },
       emptyTitle: "Документация по {tech} — в разработке",
       emptyBody: "База знаний по {tech} пишется. Вот где мы:",
@@ -917,7 +942,7 @@ export const LOCALES = {
       avatarAdd: "Добавить фото",
       avatarChange: "Сменить фото",
       avatarRemove: "Удалить",
-      avatarErr: "Выберите картинку (до 8 МБ).",
+      avatarErr: "Выберите картинку (до 25 МБ).",
       rowTasks: "задач: {n}",
     },
     settings: {
@@ -1009,7 +1034,7 @@ export const LOCALES = {
       },
       aiTools: {
         title: "ИИ-инструменты",
-        sub: "Claude · Cursor · GitHub Copilot",
+        sub: "Инструменты, которые меняют разработку",
         new: "Новое",
         lessons: "{n} уроков · от новичка до Про",
         claude: {
@@ -1046,7 +1071,7 @@ export const LOCALES = {
       },
       preview: "Живое превью — так выглядит ваш дашборд после регистрации",
       proof: "К нам присоединились 50 000+ разработчиков",
-      lessons: "{n} уроков · от новичка до Pro",
+      lessons: "{n} уроков · с нуля",
       lesson1: "Урок 1: {title}",
       quote: {
         name: "Мая К.",
@@ -1059,7 +1084,15 @@ export const LOCALES = {
       projects: "Опубликовано проектов",
       projectsValue: "12 400+",
       projectsDelta: "Сделано студентами за год",
-      final: { title: "До первой строки кода — две минуты" },
+      final: {
+        title: "До первой строки кода — две минуты",
+        trust: "Бесплатно навсегда · Без карты",
+      },
+      communityPreview: {
+        title: "Живое комьюнити",
+        body: "84,5 тыс. участников задают вопросы каждый день — средний ответ приходит за 10 минут.",
+        cta: "Открыть комьюнити",
+      },
       forYou: "Для вас",
       lessonTitle: "Асинхронные циклы в JavaScript",
       lessonProgress: "45%",

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useT } from "../../i18n/useT";
 import Avatar from "../Avatar";
+import { useAvatar } from "../../lib/avatar";
 import { leaderboard } from "../../lib/rank";
 
 // UX-аудит 2026-09: одна картина данных (lib/rank) для подиума, таблицы и
@@ -70,6 +71,9 @@ function LeaderProfile({ user, t, onClose }) {
 
 function RankingsView({ isAuthed = false, onAuth = null, userName = "" }) {
   const t = useT();
+  // Фидбек 2026-09: в строке «вы» показываем загруженное фото (как в хедере/профиле),
+  // а не монограмму.
+  const [youAvatar] = useAvatar();
   const [query, setQuery] = useState("");
   const [howOpen, setHowOpen] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -234,12 +238,22 @@ function RankingsView({ isAuthed = false, onAuth = null, userName = "" }) {
                   <td className="rk-center rankings__rank">#{row.rank}</td>
                   <td>
                     <div className="rankings__user">
-                      <Avatar
-                        name={row.you ? youName : row.name}
-                        hue={row.hue}
-                        size="sm"
-                        ring={row.you}
-                      />
+                      {row.you && youAvatar ? (
+                        <span
+                          className="avatar-dot avatar-dot--sm avatar-dot--ring avatar-dot--img"
+                          style={{
+                            backgroundImage: `url(${youAvatar})`,
+                          }}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Avatar
+                          name={row.you ? youName : row.name}
+                          hue={row.hue}
+                          size="sm"
+                          ring={row.you}
+                        />
+                      )}
                       <div className="rankings__user-info">
                         <div className="rankings__name-row">
                           <button

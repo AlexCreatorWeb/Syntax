@@ -297,6 +297,30 @@ export const LESSON_VIDEO_IDS = {
     17: "dX8hdDDoht8", // sozdavai — БЕЗЛИМИТНЫЙ CURSOR НАВСЕГДА! Полный гайд (6:09, 57.1K)
     18: "i8UDWmT6wa4", // Vibecoder School — Сайт за 15 минут НЕЙРОСЕТЬЮ БЕЗ КОДА (16:17, 15.1K)
   },
+  // Курс GitHub Copilot (18 уроков, список 2026-09-16; все id проверены yt-dlp:
+  // заголовки/просмотры/длительности совпадают с таблицей). RU-дабы (L4–L13,
+  // офиц. GitHub/VS Code): у L5/L9/L12 — реальные RU-аудиодорожки (yt-dlp: ru),
+  // у L4/L6/L7/L8/L10/L11/L13 — RU-дабтреки в плеере (auto-dub); остальные 8 — RU-нативные.
+  copilot: {
+    1: "cGJ14OkwE2M", // Иван Пономарев — Программируем с ИИ в VS Code — БЕСПЛАТНО! Сможет каждый! (9:49, 66,4K)
+    2: "fqd-jFwh9EE", // VoltBOTS — GitHub Copilot в VS Code: установка и настройка (6:43, 23,4K)
+    3: "7NDI7rZxQpA", // Artcher — Генерация кода нейросетью в PyCharm/VS Code — доступ в России (4:56, 31,9K)
+    4: "3Yz48eenPEE", // Visual Studio Code — GitHub Copilot's @Workspace — Deep Dive (офиц. RU-даб) (8:38, 33,8K)
+    5: "vQ9C-9iv3Zs", // GitHub — Advancing code completion with GPT-4o (офиц. RU-даб, RU-аудио) (9:55, 27,2K)
+    6: "zwIlqbTHjac", // Visual Studio Code — Smaller prompts, better answers — Custom Instructions (офиц. RU-даб) (7:09, 78,8K)
+    7: "1GVBRhDI5No", // GitHub — How the GitHub Copilot coding agent works (офиц. RU-даб) (6:58, 69,0K)
+    8: "a1BR6K3E4zs", // GitHub — When to use coding agent versus agent mode (офиц. RU-даб) (3:06, 60,9K)
+    9: "-yKALFS5ewY", // GitHub — How to use agents, skills and instructions in Copilot CLI (офиц. RU-даб, RU-аудио) (6:21, 92,0K)
+    10: "vUQfqW5GKAQ", // Visual Studio Code — MCP Servers in VS Code and GitHub Copilot (офиц. RU-даб) (9:06, 99,7K)
+    11: "arn6hqERKn4", // GitHub — Test-driven development with GitHub Copilot (офиц. RU-даб) (9:12, 35,9K)
+    12: "bsfE9c2pRD0", // GitHub — How to use Copilot Workspace — Full Demo (офиц. RU-даб, RU-аудио) (16:36, 37,5K)
+    13: "ikIosF_iiz4", // GitHub — What's new with GitHub Copilot code review (CodeQL, agents & more) (офиц. RU-даб) (2:14, 18,1K)
+    14: "S10RPU_pg10", // Anton Kulakov — AI делает мою работу за меня: GitHub Copilot + Actions (7:24, 2,1K)
+    15: "Cdt50c9tQ3o", // Небинарная логика — 7 дней использую GitHub Copilot на практике (16:18, 18,8K)
+    16: "YhsmicS1VAQ", // ART FROST — Бесплатный вайбкодинг для студентов в 2026. GitHub Copilot Pro (4:41, 7,4K)
+    17: "B228zuHPgsk", // Техноманьяк — Почему Github Copilot Вам Не Нужен? Использование в России! (11:14, 9,6K)
+    18: "rj4fQcUf6E0", // Миша Ларченко — Как запустить бесплатный аналог Github Copilot (11:01, 28,0K)
+  },
 };
 export const TECHS_WITH_VIDEO = [
   "html",
@@ -310,6 +334,7 @@ export const TECHS_WITH_VIDEO = [
   "react",
   "vue",
   "cursor",
+  "copilot",
 ];
 
 // Обложка постера генерируется как SVG (data-URI): современная «сочная»

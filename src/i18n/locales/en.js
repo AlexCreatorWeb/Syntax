@@ -2,6 +2,7 @@ export default {
   sidebar: {
     home: "Home",
     roadmap: "Roadmap",
+    courses: "Courses",
     editor: "Editor",
     tasks: "Tasks",
     rankings: "Rankings",
@@ -23,6 +24,10 @@ export default {
     xpNeed: "{n} XP to next level",
     streakDays: "{n}-day streak",
     meGuest: "Sign up to save progress",
+    guestPromo: {
+      title: "This is only the beginning",
+      body: "Create a free account — your progress, XP and streak will be saved to the cloud.",
+    },
   },
   toast: {
     levelUp: "Level {n}!",
@@ -34,6 +39,19 @@ export default {
     certLine: "Course completed",
     viewRank: "View your rank",
     close: "Keep learning",
+  },
+  // Аудит навигации 2026-09: раздел «Courses» — постоянный дом каталога курсов
+  courses: {
+    title: "Courses",
+    sub: "All courses in one place — pick one and continue where you left off.",
+    my: "Your courses",
+    all: "All courses",
+  },
+  continueLearning: {
+    title: "Continue learning",
+    progress: "Lesson {n} of {m}",
+    next: "Up next: {title}",
+    button: "Continue",
   },
   guestAsk: {
     title: "Save your progress",
@@ -539,7 +557,7 @@ export default {
     errModel: "Model is warming up — try again in a few seconds",
   },
   techPage: {
-    live: "Open track",
+    live: "Live",
     progress: "Course Progress",
     course: "Course",
     start: "Start Learning",
@@ -576,6 +594,7 @@ export default {
   header: {
     login: "Log in",
     signup: "Sign up free",
+    signupShort: "Sign up",
     home: "Go to home",
     searchDocs: "Search documentation...",
     changeLanguage: "Change language",
@@ -768,6 +787,12 @@ export default {
         "CRUD, query operators, data modeling, indexes, aggregation and Mongoose — the complete NoSQL reference, from the first collection to a production API.",
       postgres:
         "Types, DDL, joins, window functions, transactions, indexes and PL/pgSQL — the full PostgreSQL reference, from psql to an e-commerce schema.",
+      claude:
+        "Claude Code, Anthropic's terminal AI agent: how it works, first commands and the official resources. The full course is being written.",
+      cursor:
+        "Cursor — the AI code editor on top of VS Code: Tab, Chat and the Composer agent, project rules and the official docs.",
+      copilot:
+        "GitHub Copilot: inline completions, Copilot Chat in the editor and on github.com, agent mode and the official documentation.",
     },
     emptyTitle: "Docs for {tech} — in development",
     emptyBody:
@@ -903,7 +928,7 @@ export default {
     avatarAdd: "Add a photo",
     avatarChange: "Change photo",
     avatarRemove: "Remove",
-    avatarErr: "Please choose an image (up to 8 MB).",
+    avatarErr: "Please choose an image (up to 25 MB).",
     rowTasks: "{n} tasks",
   },
   settings: {
@@ -995,7 +1020,7 @@ export default {
     },
     aiTools: {
       title: "AI tools",
-      sub: "Claude · Cursor · GitHub Copilot",
+      sub: "Tools that change development",
       new: "New",
       lessons: "{n} lessons · Beginner to Pro",
       claude: {
@@ -1033,7 +1058,7 @@ export default {
     preview:
       "Live preview — this is what your dashboard looks like after you sign up",
     proof: "Joined by 50,000+ developers",
-    lessons: "{n} lessons · Beginner → Pro",
+    lessons: "{n} lessons · Beginner+",
     lesson1: "Lesson 1: {title}",
     quote: {
       name: "Maya K.",
@@ -1046,7 +1071,15 @@ export default {
     projects: "Projects shipped",
     projectsValue: "12,400+",
     projectsDelta: "Built by learners this year",
-    final: { title: "Your first line of code is two minutes away" },
+    final: {
+      title: "Your first line of code is two minutes away",
+      trust: "Free forever · No credit card",
+    },
+    communityPreview: {
+      title: "Live community",
+      body: "84.5k members ask questions every day — the average answer arrives in 10 minutes.",
+      cta: "Open the community",
+    },
     forYou: "For you",
     lessonTitle: "Async Loops in JavaScript",
     lessonProgress: "45%",

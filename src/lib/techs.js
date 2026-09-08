@@ -37,7 +37,7 @@ const TECHS = [
   // работают как обычные треки (tech-страница, «Start» → первый урок); курсы в разработке
   { id: "claude", label: "home.tech.claude", lessons: 18, Logo: ClaudeLogo },
   { id: "cursor", label: "home.tech.cursor", lessons: 18, Logo: CursorLogo },
-  { id: "copilot", label: "home.tech.copilot", lessons: 16, Logo: CopilotLogo },
+  { id: "copilot", label: "home.tech.copilot", lessons: 18, Logo: CopilotLogo },
 ];
 
 export const getTech = (id) => TECHS.find((tech) => tech.id === id);

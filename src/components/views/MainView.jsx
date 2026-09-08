@@ -3,6 +3,7 @@ import { useT } from "../../i18n/useT";
 import { getTech } from "../../lib/techs";
 import { ClaudeLogo, CursorLogo, CopilotLogo } from "../TechLogos";
 import TechCardsGrid from "../TechCardsGrid";
+import ContinueLearning from "../ContinueLearning";
 import DailyChallenge from "../DailyChallenge";
 import PromoCard from "../PromoCard";
 
@@ -61,6 +62,26 @@ const CODE_LINES = [
     ),
   },
   { ch: 1, node: <span className="tk-p">{"}"}</span> },
+  // Аудит 2026-09: окно редактора заполнено — пустая зона под 3 строками
+  // читалась как недоработка; 9 строк закрывают высоту карточки
+  {
+    ch: 28,
+    node: (
+      <>
+        <span className="tk-f">fetchStatus</span>().then((code) =&gt;)
+      </>
+    ),
+  },
+  {
+    ch: 18,
+    node: (
+      <>
+        {"  "}
+        <span className="tk-f">setStatus</span>(code);
+      </>
+    ),
+  },
+  { ch: 1, node: <span className="tk-p">);</span> },
 ];
 
 // Тайминг «печати»: ~0.05с на символ, пауза 0.1с между строками → весь блок ~10.4с
@@ -162,6 +183,55 @@ function HeroDemo({ t }) {
 
 const PROOF_HUES = [152, 200, 262, 330, 42];
 
+// Лёгкая community-карточка в rail (аудит H5: пустой rail во второй половине
+// страницы) — демо-данные + честный SAMPLE-чип. Топ-уровень (react-compiler).
+const COMMUNITY_HUES = [152, 200, 262, 330, 42];
+function CommunityPreview({ onNavigate }) {
+  const t = useT();
+  return (
+    <div className="card community-preview">
+      <div className="community-preview__head">
+        <span className="label-caps community-preview__title">
+          {t("home.communityPreview.title")}
+        </span>
+        <span className="chip chip--sample">{t("tasks.sample")}</span>
+      </div>
+      <div className="community-preview__avatars" aria-hidden="true">
+        {COMMUNITY_HUES.map((hue, i) => (
+          <span
+            key={i}
+            className="avatar-dot avatar-dot--sm community-preview__avatar"
+            style={{
+              background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 18%))`,
+            }}
+          />
+        ))}
+      </div>
+      <p className="community-preview__text">
+        {t("home.communityPreview.body")}
+      </p>
+      <button
+        type="button"
+        className="community-preview__cta"
+        onClick={() => onNavigate("community")}
+      >
+        {t("home.communityPreview.cta")}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 // How it works: лого треков — static-мапа (react-compiler: никаких getTech().Logo в рендере)
 const HOW_LOGOS = {
   html: getTech("html").Logo,
@@ -225,67 +295,36 @@ function MainView({
             </span>
             <h1 className="home__hero-title">{t("home.offer.title")}</h1>
             <p className="home__hero-desc">{t("home.offer.desc")}</p>
-            {/* Авторизованному «Начать бесплатно» = анти-CТА (он уже зарегистрирован):
-              primary = «Продолжить обучение» (первый невыполненный урок),
-              secondary = дорожная карта. Гостю — конверсионная пара. */}
+            {/* Фидбек 2026-09: в hero всегда одна пара — «Начать бесплатно» +
+              «Попробовать демо-урок». Гость → регистрация; авторизованный →
+              «Начать бесплатно» ведёт на продолжение обучения (первый
+              невыполненный урок), демо-урок открывается напрямую. */}
             <div className="home__hero-cta">
-              {isAuthed ? (
-                <>
-                  <button
-                    type="button"
-                    className="btn btn--primary home__hero-btn"
-                    onClick={onDemo}
-                  >
-                    {t("home.lesson.continue")}
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--secondary home__hero-btn"
-                    onClick={() => onNavigate("roadmap")}
-                  >
-                    {t("home.lesson.viewRoadmap")}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className="btn btn--primary home__hero-btn"
-                    onClick={onSignup}
-                  >
-                    {t("home.offer.start")}
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--secondary home__hero-btn"
-                    onClick={onDemo}
-                  >
-                    {t("home.offer.demo")}
-                  </button>
-                </>
-              )}
+              <button
+                type="button"
+                className="btn btn--primary home__hero-btn"
+                onClick={isAuthed ? onDemo : onSignup}
+              >
+                {t("home.offer.start")}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="btn btn--secondary home__hero-btn"
+                onClick={onDemo}
+              >
+                {t("home.offer.demo")}
+              </button>
             </div>
             <div className="home__proof">
               <span className="home__proof-avatars" aria-hidden="true">
@@ -302,6 +341,11 @@ function MainView({
               <span className="home__proof-text">
                 {t("home.proof")} ·{" "}
                 <span className="home__proof-rating">★ 4.8</span>
+              </span>
+              {/* Аудит 2026-09: демо-цифры — одно правило честности: SAMPLE везде
+                  (в strip ниже те же числа с SAMPLE-чипом — дублировать без метки нельзя) */}
+              <span className="chip chip--sample home__proof-sample">
+                {t("tasks.sample")}
               </span>
             </div>
           </div>
@@ -328,9 +372,6 @@ function MainView({
                   onNavigate("technology", { techId: item.id });
                 }}
               >
-                {/* Референс «Новый стиль карточек нейронок»: верх — лого +
-                    название/«N уроков», низ (на всю ширину) — точка + первый
-                    урок + пилюля «Новое» справа */}
                 <span className="ai-tool__head">
                   <span className="ai-tool__logo">
                     <L />
@@ -345,7 +386,6 @@ function MainView({
                   </span>
                 </span>
                 <span className="ai-tool__foot">
-                  <span className="ai-tool__dot" aria-hidden="true" />
                   <span className="ai-tool__first-text">
                     {t(`home.aiTools.${item.id}.first`)}
                   </span>
@@ -359,11 +399,12 @@ function MainView({
         </div>
       </section>
 
-      {/* 2. Программа: каталог треков — что учить (UX-аудит Р8: поднято на 2-е место) */}
+      {/* 2. Программа: каталог core-треков — что учить (II-инструменты — секцией выше) */}
       <section className="home__techs">
         <h3 className="home__section-title">{t("home.section.program")}</h3>
         <p className="home__section-sub">{t("home.section.programDesc")}</p>
         <TechCardsGrid
+          coreOnly
           activeTech={activeTech}
           dbLessons={dbLessons}
           onOpenTech={(id) => {
@@ -415,6 +456,9 @@ function MainView({
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="m8 6 8 6-8 6V6Z" />
                 </svg>
+                {/* Аудит 2026-09: прогресс-бар — мок читается как плеер урока,
+                    а не как сломанный пустой прямоугольник */}
+                <i className="mock-video__progress" style={{ width: "42%" }} />
               </div>
               <div className="mock-lines">
                 <i style={{ width: "92%" }} />
@@ -486,33 +530,49 @@ function MainView({
       {/* (Live-preview дашборд с заголовком урока убран, 2026-09 — фидбек: плашка не нужна;
           конверсионную зону закрывает final CTA ниже) */}
 
-      {/* 6. Final CTA */}
+      {/* 6. Final CTA (аудит P1: muted-строка доверия + secondary «Try a demo lesson») */}
       <section className="card card--feature home__final spotlight">
         <h2 className="home__final-title">{t("home.final.title")}</h2>
-        <button
-          type="button"
-          className="btn btn--primary home__hero-btn"
-          onClick={isAuthed ? onDemo : onSignup}
-        >
-          {t(isAuthed ? "home.lesson.continue" : "header.signup")}
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        <span className="home__final-trust">{t("home.final.trust")}</span>
+        <div className="home__final-actions">
+          <button
+            type="button"
+            className="btn btn--primary home__hero-btn"
+            onClick={isAuthed ? onDemo : onSignup}
           >
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </button>
+            {t(isAuthed ? "home.lesson.continue" : "header.signup")}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="btn btn--secondary home__hero-btn"
+            onClick={onDemo}
+          >
+            {t("home.offer.demo")}
+          </button>
+        </div>
       </section>
 
       {/* Мобайл (≤640px): rail-виджеты (Daily Challenge + книга) — ДО футера, а не после
           (фидбек 2026-09: правая колонка на мобильном уезжала вниз страницы, после футера);
           сама rail на home скрыта этим же брейкпоинтом */}
       <div className="home__mobile-rail">
+        <ContinueLearning
+          techId={activeTech}
+          dbLessons={dbLessons}
+          onContinue={() => onNavigate("courses")}
+          onNavigate={onNavigate}
+        />
         <DailyChallenge
           dbLessons={dbLessons}
           isAuthed={isAuthed}
@@ -521,28 +581,32 @@ function MainView({
           backTab="home"
         />
         <PromoCard id="book" />
+        <CommunityPreview onNavigate={onNavigate} />
       </div>
 
-      {/* 7. Футер */}
+      {/* 7. Футер (аудит P2: нижняя строка — copyright + соцссылки) */}
       <footer className="home__footer">
         <div className="home__footer-brand">
-          <svg
-            className="brand__mark"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="m8 8-4.5 4L8 16" />
-            <path d="m16 8 4.5 4L16 16" />
-            <path d="M13.5 5.5 10.5 18.5" />
-          </svg>
-          <span className="brand__word">
-            Syn<span className="brand__accent">tax</span>
-          </span>
+          {/* Лого одной строкой: иконка + слово (nowrap, по центру) */}
+          <div className="home__footer-logo">
+            <svg
+              className="brand__mark"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m8 8-4.5 4L8 16" />
+              <path d="m16 8 4.5 4L16 16" />
+              <path d="M13.5 5.5 10.5 18.5" />
+            </svg>
+            <span className="brand__word">
+              Syn<span className="brand__accent">tax</span>
+            </span>
+          </div>
           <p className="home__footer-tagline">{t("footer.tagline")}</p>
         </div>
         <div className="home__footer-cols">
@@ -551,6 +615,9 @@ function MainView({
             {/* Порядок синхронен сайдбару (UX-аудит Р17) */}
             <button type="button" onClick={() => onNavigate("roadmap")}>
               {t("sidebar.roadmap")}
+            </button>
+            <button type="button" onClick={() => onNavigate("courses")}>
+              {t("sidebar.courses")}
             </button>
             <button type="button" onClick={() => onNavigate("tasks")}>
               {t("sidebar.tasks")}
@@ -580,9 +647,46 @@ function MainView({
             <button type="button">{t("footer.terms")}</button>
           </div>
         </div>
+        <div className="home__footer-bottom">
+          <span className="home__footer-copy">© 2026 Syntax</span>
+          <div className="home__footer-social">
+            <a
+              href="https://x.com/syntax"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Syntax on X"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+            <a
+              href="https://github.com/syntax"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Syntax on GitHub"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11.04 11.04 0 0 1 5.78 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.58.24 2.75.12 3.04.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z" />
+              </svg>
+            </a>
+            <a
+              href="https://discord.gg/syntax"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Syntax on Discord"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28c-1.71.29-3.37.8-4.93 1.51A20.26 20.26 0 0 0 .1 18.06a19.9 19.9 0 0 0 6.04 3.03c.49-.66.92-1.37 1.29-2.1a12.9 12.9 0 0 1-2.03-.98c.17-.12.34-.25.5-.38a14.2 14.2 0 0 0 12.2 0c.16.13.33.26.5.38-.65.38-1.33.71-2.04.98.37.73.8 1.44 1.29 2.1a19.84 19.84 0 0 0 6.05-3.03 20.2 20.2 0 0 0-3.63-13.69zM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.95-2.42 2.16-2.42 1.21 0 2.18 1.09 2.16 2.42 0 1.34-.95 2.42-2.16 2.42zm7.96 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.09 2.16 2.42 0 1.34-.94 2.42-2.16 2.42z" />
+              </svg>
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   );
 }
 
 export default MainView;
+// Экспорт для WidgetPanel (rail главной, аудит H5) — тот же компонент, что в моб. rail
+export { CommunityPreview };

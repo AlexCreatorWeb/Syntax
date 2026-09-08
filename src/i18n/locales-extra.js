@@ -6,6 +6,7 @@ export const LOCALES_EXTRA = {
     sidebar: {
       home: "Головна",
       roadmap: "Дорожня карта",
+      courses: "Курси",
       editor: "Редактор",
       tasks: "Завдання",
       rankings: "Рейтинг",
@@ -27,10 +28,27 @@ export const LOCALES_EXTRA = {
       xpNeed: "{n} XP до наступного рівня",
       streakDays: "серія {n} дн.",
       meGuest: "Зареєструйтеся, щоб зберегти прогрес",
+      guestPromo: {
+        title: "Це лише початок",
+        body: "Створіть безкоштовний акаунт — прогрес, XP і стрик збережуться в хмарі.",
+      },
     },
     toast: {
       levelUp: "Рівень {n}!",
       levelUpSub: "Продовжуйте — наступний рівень вже ближче.",
+    },
+    // Аудит навігації 2026-09: розділ «Курси» + картка «Продовжити навчання»
+    courses: {
+      title: "Курси",
+      sub: "Усі курси в одному місці — обирай і продовжуй з того місця, де зупинився.",
+      my: "Твої курси",
+      all: "Усі курси",
+    },
+    continueLearning: {
+      title: "Продовжити навчання",
+      progress: "Урок {n} із {m}",
+      next: "Далі: {title}",
+      button: "Продовжити",
     },
     courseDone: {
       title: "Курс пройдено: {name}",
@@ -135,6 +153,7 @@ export const LOCALES_EXTRA = {
       home: "На головну",
       login: "Увійти",
       signup: "Реєстрація",
+      signupShort: "Реєстрація",
       searchDocs: "Пошук по документації...",
       changeLanguage: "Змінити мову",
       theme: "Перемкнути тему",
@@ -396,7 +415,7 @@ export const LOCALES_EXTRA = {
       avatarAdd: "Додати фото",
       avatarChange: "Змінити фото",
       avatarRemove: "Видалити",
-      avatarErr: "Оберіть зображення (до 8 МБ).",
+      avatarErr: "Оберіть зображення (до 25 МБ).",
       rowTasks: "завдань: {n}",
     },
     settings: {
@@ -488,7 +507,7 @@ export const LOCALES_EXTRA = {
       },
       aiTools: {
         title: "ШІ-інструменти",
-        sub: "Claude, Cursor, GitHub Copilot — інструменти, які вже змінюють розробку",
+        sub: "Інструменти, які змінюють розробку",
         new: "Нове",
         lessons: "{n} уроків · від новачка до Про",
         first: "Перший урок: {lesson}",
@@ -529,7 +548,7 @@ export const LOCALES_EXTRA = {
       },
       preview: "Живе прев'ю — так виглядає ваш дашборд після реєстрації",
       proof: "Приєдналися 50 000+ розробників",
-      lessons: "{n} уроків · від новачка до Pro",
+      lessons: "{n} уроків · з нуля",
       lesson1: "Урок 1: {title}",
       quote: {
         name: "Мая К.",
@@ -542,7 +561,15 @@ export const LOCALES_EXTRA = {
       projects: "Опубліковано проєктів",
       projectsValue: "12 400+",
       projectsDelta: "Зробано студентами за рік",
-      final: { title: "До першого рядка коду — дві хвилини" },
+      final: {
+        title: "До першого рядка коду — дві хвилини",
+        trust: "Безкоштовно назавжди · Без карти",
+      },
+      communityPreview: {
+        title: "Живе ком'юніті",
+        body: "84,5 тис. учасників задають питання щодня — середня відповідь приходить за 10 хвилин.",
+        cta: "Відкрити ком'юніті",
+      },
       forYou: "Для вас",
       lessonTitle: "Асинхронні цикли в JavaScript",
       lessonProgress: "45%",
@@ -757,6 +784,7 @@ export const LOCALES_EXTRA = {
     sidebar: {
       home: "Inicio",
       roadmap: "Hoja de ruta",
+      courses: "Cursos",
       editor: "Editor",
       tasks: "Tareas",
       rankings: "Clasificaciones",
@@ -778,10 +806,27 @@ export const LOCALES_EXTRA = {
       xpNeed: "{n} XP para el siguiente nivel",
       streakDays: "racha de {n} días",
       meGuest: "Regístrate para guardar tu progreso",
+      guestPromo: {
+        title: "Esto es solo el principio",
+        body: "Crea una cuenta gratuita: tu progreso, XP y racha se guardarán en la nube.",
+      },
     },
     toast: {
       levelUp: "¡Nivel {n}!",
       levelUpSub: "Sigue así — tu próximo nivel está más cerca.",
+    },
+    // Аудит навигации 2026-09: раздел «Cursos» + карточка «Continuar aprendiendo»
+    courses: {
+      title: "Cursos",
+      sub: "Todos los cursos en un solo lugar — elige y continúa donde lo dejaste.",
+      my: "Tus cursos",
+      all: "Todos los cursos",
+    },
+    continueLearning: {
+      title: "Continuar aprendiendo",
+      progress: "Lección {n} de {m}",
+      next: "Siguiente: {title}",
+      button: "Continuar",
     },
     courseDone: {
       title: "Curso completado: {name}",
@@ -888,6 +933,7 @@ export const LOCALES_EXTRA = {
     header: {
       login: "Iniciar sesión",
       signup: "Registro gratis",
+      signupShort: "Regístrate",
       home: "Ir a inicio",
       searchDocs: "Buscar en la documentación...",
       changeLanguage: "Cambiar idioma",
@@ -1152,7 +1198,7 @@ export const LOCALES_EXTRA = {
       avatarAdd: "Añadir una foto",
       avatarChange: "Cambiar foto",
       avatarRemove: "Quitar",
-      avatarErr: "Elige una imagen (hasta 8 MB).",
+      avatarErr: "Elige una imagen (hasta 25 MB).",
       rowTasks: "tareas: {n}",
     },
     settings: {
@@ -1244,7 +1290,7 @@ export const LOCALES_EXTRA = {
       },
       aiTools: {
         title: "Herramientas de IA",
-        sub: "Claude, Cursor, GitHub Copilot — herramientas que ya están cambiando la programación",
+        sub: "Herramientas que cambian la programación",
         new: "Nuevo",
         lessons: "{n} lecciones · De principiante a Pro",
         first: "Primera lección: {lesson}",
@@ -1285,7 +1331,7 @@ export const LOCALES_EXTRA = {
       },
       preview: "Vista previa en vivo — así se verá tu panel tras registrarte",
       proof: "Se han unido más de 50 000 desarrolladores",
-      lessons: "{n} lecciones · de principiante a Pro",
+      lessons: "{n} lecciones · desde cero",
       lesson1: "Lección 1: {title}",
       quote: {
         name: "Maya K.",
@@ -1298,7 +1344,15 @@ export const LOCALES_EXTRA = {
       projects: "Proyectos publicados",
       projectsValue: "12.400+",
       projectsDelta: "Creados por estudiantes este año",
-      final: { title: "Tu primera línea de código está a dos minutos" },
+      final: {
+        title: "Tu primera línea de código está a dos minutos",
+        trust: "Gratis para siempre · Sin tarjeta",
+      },
+      communityPreview: {
+        title: "Comunidad activa",
+        body: "84,5 mil miembros hacen preguntas cada día — la respuesta media llega en 10 minutos.",
+        cta: "Abrir la comunidad",
+      },
       forYou: "Para ti",
       lessonTitle: "Bucles asíncronas en JavaScript",
       lessonProgress: "45%",
@@ -1515,6 +1569,7 @@ export const LOCALES_EXTRA = {
     sidebar: {
       home: "Start",
       roadmap: "Roadmap",
+      courses: "Kurse",
       editor: "Editor",
       tasks: "Aufgaben",
       rankings: "Bestenlisten",
@@ -1536,10 +1591,27 @@ export const LOCALES_EXTRA = {
       xpNeed: "{n} XP bis zum nächsten Level",
       streakDays: "{n}-Tage-Serie",
       meGuest: "Registriere dich, um Fortschritt zu speichern",
+      guestPromo: {
+        title: "Das ist erst der Anfang",
+        body: "Erstelle ein kostenloses Konto — dein Fortschritt, XP und Serie werden in der Cloud gespeichert.",
+      },
     },
     toast: {
       levelUp: "Level {n}!",
       levelUpSub: "Weiter so — dein nächstes Level ist näher.",
+    },
+    // Аудит навигации 2026-09: раздел «Kurse» + карточка «Weiterlernen»
+    courses: {
+      title: "Kurse",
+      sub: "Alle Kurse an einem Ort – wähle einen und setze dort fort, wo du aufgehört hast.",
+      my: "Deine Kurse",
+      all: "Alle Kurse",
+    },
+    continueLearning: {
+      title: "Weiterlernen",
+      progress: "Lektion {n} von {m}",
+      next: "Als Nächstes: {title}",
+      button: "Weiter",
     },
     courseDone: {
       title: "Kurs abgeschlossen: {name}",
@@ -1647,6 +1719,7 @@ export const LOCALES_EXTRA = {
     header: {
       login: "Anmelden",
       signup: "Gratis registrieren",
+      signupShort: "Registrieren",
       home: "Zur Startseite",
       searchDocs: "Dokumentation durchsuchen...",
       changeLanguage: "Sprache ändern",
@@ -1913,7 +1986,7 @@ export const LOCALES_EXTRA = {
       avatarAdd: "Foto hinzufügen",
       avatarChange: "Foto ändern",
       avatarRemove: "Entfernen",
-      avatarErr: "Bitte ein Bild auswählen (max. 8 MB).",
+      avatarErr: "Bitte ein Bild auswählen (max. 25 MB).",
       rowTasks: "Aufgaben: {n}",
     },
     settings: {
@@ -2005,7 +2078,7 @@ export const LOCALES_EXTRA = {
       },
       aiTools: {
         title: "KI-Tools",
-        sub: "Claude, Cursor, GitHub Copilot — Tools, die die Entwicklung bereits verändern",
+        sub: "Werkzeuge, die die Entwicklung verändern",
         new: "Neu",
         lessons: "{n} Lektionen · Vom Einsteiger bis Pro",
         first: "Erste Lektion: {lesson}",
@@ -2047,7 +2120,7 @@ export const LOCALES_EXTRA = {
       preview:
         "Live-Vorschau — so sieht dein Dashboard nach der Registrierung aus",
       proof: "Über 50 000 Entwickler sind dabei",
-      lessons: "{n} Lektionen · von Anfänger bis Pro",
+      lessons: "{n} Lektionen · für Anfänger",
       lesson1: "Lektion 1: {title}",
       quote: {
         name: "Maya K.",
@@ -2060,7 +2133,15 @@ export const LOCALES_EXTRA = {
       projects: "Abgeschlossene Projekte",
       projectsValue: "12.400+",
       projectsDelta: "Von Lernenden in diesem Jahr",
-      final: { title: "Deine erste Zeile Code ist zwei Minuten entfernt" },
+      final: {
+        title: "Deine erste Zeile Code ist zwei Minuten entfernt",
+        trust: "Für immer kostenlos · Ohne Kreditkarte",
+      },
+      communityPreview: {
+        title: "Lebende Community",
+        body: "84,5 Tsd. Mitglieder stellen jeden Tag Fragen — die Antwort dauert im Schnitt 10 Minuten.",
+        cta: "Community öffnen",
+      },
       forYou: "Für dich",
       lessonTitle: "Asynchrone Schleifen in JavaScript",
       lessonProgress: "45%",

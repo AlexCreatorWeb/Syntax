@@ -52,11 +52,17 @@ export const DOC_VERSIONS = [
   "mongo 8",
   "postgres 17",
   "python 3.9+",
+  "claude 2.x",
+  "cursor 2.x",
+  "copilot 1.12",
 ];
 
 const stripQuotes = (v) => {
   const s = String(v).trim();
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+  if (
+    (s.startsWith('"') && s.endsWith('"')) ||
+    (s.startsWith("'") && s.endsWith("'"))
+  ) {
     return s.slice(1, -1);
   }
   return s;
@@ -198,7 +204,10 @@ export function parseDocFile(raw, expectedFileId) {
   const errors = [];
   const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!m) {
-    return { page: null, errors: ["missing or malformed frontmatter (--- block at top)"] };
+    return {
+      page: null,
+      errors: ["missing or malformed frontmatter (--- block at top)"],
+    };
   }
   const fm = parseFrontmatter(m[1]);
   const body = m[2];
@@ -209,8 +218,19 @@ export function parseDocFile(raw, expectedFileId) {
   const enBody = ruPos >= 0 ? body.slice(0, ruPos) : body;
   const ruBody = ruPos >= 0 ? body.slice(ruPos + ruMarker.length) : "";
 
-  for (const f of ["id", "track", "type", "section", "order", "title", "excerpt", "version", "updated"]) {
-    if (fm[f] === undefined || fm[f] === "") errors.push(`frontmatter: missing "${f}"`);
+  for (const f of [
+    "id",
+    "track",
+    "type",
+    "section",
+    "order",
+    "title",
+    "excerpt",
+    "version",
+    "updated",
+  ]) {
+    if (fm[f] === undefined || fm[f] === "")
+      errors.push(`frontmatter: missing "${f}"`);
   }
   if (fm.id && expectedFileId && fm.id !== expectedFileId) {
     errors.push(`id "${fm.id}" != file name "${expectedFileId}.md"`);
@@ -219,13 +239,19 @@ export function parseDocFile(raw, expectedFileId) {
     errors.push(`type must be guide|reference, got "${fm.type}"`);
   }
   for (const loc of ["en", "ru"]) {
-    const t = fm.title && typeof fm.title === "object" ? fm.title[loc] : undefined;
-    const e = fm.excerpt && typeof fm.excerpt === "object" ? fm.excerpt[loc] : undefined;
+    const t =
+      fm.title && typeof fm.title === "object" ? fm.title[loc] : undefined;
+    const e =
+      fm.excerpt && typeof fm.excerpt === "object"
+        ? fm.excerpt[loc]
+        : undefined;
     if (!t) errors.push(`title.${loc} missing`);
     if (!e) errors.push(`excerpt.${loc} missing`);
   }
   if (fm.version && !DOC_VERSIONS.includes(fm.version)) {
-    errors.push(`version "${fm.version}" not in allowed list: ${DOC_VERSIONS.join(", ")}`);
+    errors.push(
+      `version "${fm.version}" not in allowed list: ${DOC_VERSIONS.join(", ")}`,
+    );
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fm.updated || ""))) {
     errors.push(`updated must be YYYY-MM-DD, got "${fm.updated}"`);
@@ -233,7 +259,10 @@ export function parseDocFile(raw, expectedFileId) {
 
   const bodyEn = parseDocBody(enBody);
   const bodyRu = ruPos >= 0 ? parseDocBody(ruBody) : [];
-  if (ruPos < 0) errors.push('missing RU section: add "<!-- RU -->" line with the Russian body');
+  if (ruPos < 0)
+    errors.push(
+      'missing RU section: add "<!-- RU -->" line with the Russian body',
+    );
   if (ruPos >= 0 && bodyRu.filter((b) => b.type !== "code").length < 3) {
     errors.push("RU section looks empty (fewer than 3 non-code blocks)");
   }
@@ -242,7 +271,9 @@ export function parseDocFile(raw, expectedFileId) {
   const words = bodyEn
     .filter((b) => b.type === "p" || b.type === "h2" || b.type === "h3")
     .reduce((n, b) => n + String(b.text || "").split(/\s+/).length, 0);
-  const minutes = fm.minutes ? Number(fm.minutes) : Math.max(3, Math.round(words / 180));
+  const minutes = fm.minutes
+    ? Number(fm.minutes)
+    : Math.max(3, Math.round(words / 180));
 
   const page = {
     id: fm.id || expectedFileId || "unknown",

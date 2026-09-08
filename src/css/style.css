@@ -230,8 +230,9 @@ code {
 }
 /* Иконка-логотип «</>» (референс): акцентный teal, чуть меньше слова */
 .brand__mark {
-  width: 26px;
-  height: 26px;
+  /* Фидбек 2026-09-08: иконка логотипа крупнее (выравнивание — .brand уже align-items: center) */
+  width: 32px;
+  height: 32px;
   flex: none;
   color: var(--primary);
 }
@@ -1947,6 +1948,10 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  /* Фидбек 2026-09: пилюля — ОДНА строка, иконка не переносится
+     (на доках пилюли «сплющивало»: текст ломался по буквам) */
+  flex-wrap: nowrap;
+  white-space: nowrap;
   padding: 7px 13px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
@@ -3433,6 +3438,13 @@ code {
   gap: 10px;
   flex-wrap: wrap;
 }
+/* Селект-контролы задач — В РЯД (фидбек 2026-09: были в столбец) */
+.tasks-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
 /* Селект-контрол задач: кастомный дропдаун под дизайн-систему (высота = поиску) */
 .filter-select {
   position: relative;
@@ -4163,12 +4175,30 @@ code {
   width: 100%;
   margin-top: 18px;
 }
+/* Фидбек 2026-09: пилюли доков — ОДНА строка (со скроллом, не переносом) +
+   нормальные отступы внутри (были «сплющены», иконка прижата к краю) */
 .docs-for .tech-switch {
   margin-bottom: 0;
+  /* Фидбек 2026-09: пилюли ДОЛЖНЫ переноситься (скролл-одной-строкой было не то);
+     внутри пилюли иконка и текст — всегда в одну линию */
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 .docs-for .tech-switch__item {
-  padding: 5px 11px 5px 7px;
-  font-size: 12px;
+  padding: 8px 14px 8px 10px;
+  font-size: 12.5px;
+  min-height: 38px;
+  flex: none;
+  white-space: nowrap; /* иконка + текст — одна строка, не переламывается */
+  gap: 10px; /* отступ между иконкой и текстом (раунд 2: 8→10, заметнее) */
+}
+.docs-for .tech-switch__item .tech-switch__icon-glyph {
+  width: 18px;
+  height: 18px;
+}
+.docs-for .tech-switch__item .tech-switch__icon-glyph svg {
+  width: 18px;
+  height: 18px;
 }
 .tech-switch__name {
   white-space: nowrap;
@@ -4377,6 +4407,16 @@ code {
 }
 .docs-article .code-block {
   margin: 16px 0 20px;
+}
+/* Inline-ссылки в абзацах (офиц. доки Claude/Cursor/Copilot, фидбек 2026-09) */
+.docs-article__link {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  word-break: break-all;
+}
+.docs-article__link:hover {
+  color: var(--primary-hover);
 }
 .docs-article .callout {
   margin: 0 0 20px;
@@ -4924,7 +4964,8 @@ code {
 .home {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  /* Аудит H1: сжатый вертикальный ритм → 80px воздуха между секциями (мобилка — 56) */
+  gap: 80px;
 }
 
 /* Entrance-хореография: stagger-появление секций при загрузке */
@@ -5018,8 +5059,8 @@ code {
   align-items: stretch;
   gap: 12px;
   /* Референс «Новый стиль карточек нейронок»: заголовок — левая половина,
-     mock — правая, оба по верхней линии */
-  padding: 26px 36px;
+     mock — правая, оба по верхней линии; аудит M2: воздух 40–48px */
+  padding: 44px 48px;
   border-radius: var(--radius);
   position: relative;
   overflow: hidden;
@@ -5030,10 +5071,12 @@ code {
 }
 .home__hero-row {
   display: flex;
-  /* Референс: mock-редактор по верхней линии hero (одна «основная линия» с H1),
-     левая колонка — заголовок/текст/CTA */
-  align-items: flex-start;
-  gap: 32px;
+  /* Фидбек 2026-09-08: стопка — текстовая колонка (≤600px) сверху, mock-редактор
+     ниже по центру (margin: 0 auto) — в ряд 600px-текст + 420px-редактор
+     не влезали, и колонка заголовка сжималась, а H1 разваливался на строки */
+  flex-direction: column;
+  align-items: stretch;
+  gap: 28px;
 }
 .home__hero::before {
   content: "";
@@ -5053,7 +5096,8 @@ code {
   z-index: 1;
   flex: 1;
   min-width: 0;
-  max-width: 560px;
+  /* Фидбек 2026-09-08: колонка заголовка шире — H1 ровно в 2 строки */
+  max-width: 600px;
 }
 .home__eyebrow {
   display: inline-block;
@@ -5062,13 +5106,12 @@ code {
 }
 .home__hero-title {
   font-family: var(--font-display);
-  /* H1 — в левой половине hero: размер подогнан, чтобы якорная строка
-     влезала в колонку (EN/RU), держим 2 строки */
+  /* Фидбек 2026-09: основной заголовок — компактный (2 строки, ≤34px) */
   font-size: clamp(28px, 1.4vw + 20px, 34px);
   line-height: 1.12;
   font-weight: 700;
   letter-spacing: -0.03em;
-  margin: 0 0 14px;
+  margin: 0 0 18px;
   /* Референс «Новый стиль карточек нейронок»: строка 1 — акцентная (teal),
      строка 2 — белая → вертикальный градиент сверху вниз */
   background: linear-gradient(
@@ -5086,7 +5129,7 @@ code {
   line-height: 26px;
   max-width: 48ch;
   color: var(--text-variant);
-  margin: 0 0 26px;
+  margin: 0 0 30px;
 }
 .home__hero-cta {
   display: flex;
@@ -5094,17 +5137,20 @@ code {
   flex-wrap: wrap;
   margin-bottom: 12px;
 }
+/* Аудит H4: hero-CTA — доминанта первого экрана (48px / 15px) */
 .home__hero-btn {
-  font-size: 14px;
-  padding: 9px 14px;
+  /* Фидбек 2026-09 (раунд 2): поменьше и покороче */
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 8px 12px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex: none;
 }
 .home__hero-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   transition: transform 0.2s ease;
 }
 .home__hero-btn:hover svg {
@@ -5137,7 +5183,7 @@ code {
   margin-left: 0;
 }
 .home__proof-text {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-variant);
 }
 .home__proof-rating {
@@ -5151,7 +5197,10 @@ code {
   position: relative;
   z-index: 1;
   flex: none;
-  width: 340px;
+  /* Аудит M2: mock выше — заполняет правую половину hero */
+  width: 420px;
+  /* Фидбек 2026-09-08: центрировать, не прилипать к заголовку */
+  margin: 0 auto;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   border: 1px solid var(--border-strong);
   border-radius: 12px;
@@ -5192,9 +5241,9 @@ code {
 .hero-demo__code {
   margin: 0;
   /* Референс: hero компактнее — строки плотнее; редактор шире (правая половина) */
-  padding: 14px 0;
-  font-size: 12.5px;
-  line-height: 20px;
+  padding: 18px 0;
+  font-size: 13px;
+  line-height: 22px;
   overflow: hidden;
 }
 .hero-demo__line {
@@ -5368,21 +5417,23 @@ code {
   flex-direction: column;
   gap: 12px;
 }
+/* Аудит C2: типографская доминанта секций — 27px/700 в --text (было 15px серым) */
 .home__section-title {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-variant);
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 .home__section-sub {
-  margin: 0 0 14px;
-  font-size: 13px;
+  margin: 0 0 18px;
+  font-size: 15px;
   color: var(--muted);
 }
 .tech-card:focus-visible {
   outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline-offset: 3px; /* P5: 2px сливались с hover-бордером */
 }
 
 /* Плитка без скролла: 3 колонки на десктопе (9 треков = 3×3) */
@@ -5398,11 +5449,11 @@ code {
 }
 .tech-card {
   position: relative;
-  min-height: 84px;
+  min-height: 96px;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 0 20px;
+  padding: 18px 20px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -5413,12 +5464,21 @@ code {
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
-    background 0.2s ease;
+    background 0.2s ease,
+    transform 0.2s ease;
 }
-/* Зелёный бордер — только по ховеру */
-.tech-card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 0 16px rgba(48, 224, 161, 0.18);
+/* Зелёный бордер — только по ховеру; M6: ховер-семейство — подъём + тень */
+@media (hover: hover) {
+  .tech-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow:
+      0 12px 24px -14px rgba(0, 0, 0, 0.5),
+      0 0 16px rgba(48, 224, 161, 0.18);
+  }
+}
+.tech-card:active {
+  transform: translateY(0);
 }
 /* Активный трек — soft-фон + приглушённый бордер */
 .tech-card--active {
@@ -5443,12 +5503,14 @@ code {
   color: var(--text);
 }
 .tech-card__meta {
-  /* мета читается целиком: перенос, а не обрезка (UX-аудит Р10) */
+  /* Аудит H2: 12px одной строкой (без переноса; ellipsis — только на узких) */
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   display: block;
-  white-space: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   line-height: 1.4;
 }
 @keyframes pulse-dot {
@@ -5463,8 +5525,8 @@ code {
 
 /* Оригинальные логотипы технологий (simple-icons / Wikimedia) */
 .tech-logo {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: block;
   flex: none;
   transition: transform 0.2s ease;
@@ -5472,6 +5534,25 @@ code {
 }
 .tech-card:hover .tech-logo {
   transform: scale(1.08);
+}
+/* Аудит H2: стрелка выезжает на hover (часть ховер-семейства M6) */
+.tech-card__arrow {
+  margin-left: auto;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--primary);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+@media (hover: hover) {
+  .tech-card:hover .tech-card__arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* --- Bento-статистика: размер = значимость --- */
@@ -5719,8 +5800,8 @@ code {
   margin: 0;
   max-width: 26ch;
   font-family: var(--font-display);
-  font-size: 34px;
-  line-height: 42px;
+  font-size: 36px;
+  line-height: 44px;
   font-weight: 700;
   letter-spacing: -0.02em;
   background: linear-gradient(
@@ -5741,6 +5822,22 @@ code {
   position: relative;
   z-index: 1;
 }
+/* Аудит P1: строка доверия + две кнопки (primary + secondary) */
+.home__final-trust {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.home__final-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
 
 /* --- Футер --- */
 .home__footer {
@@ -5750,17 +5847,24 @@ code {
   padding: 32px 24px 8px;
   margin-top: 8px;
   border-top: 1px solid var(--border);
+  position: relative;
 }
 .home__footer-brand {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
+/* Фидбек 2026-09-08: лого футера — иконка и слово ОДНОЙ строкой, без переноса */
+.home__footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
 .home__footer-brand .brand__mark {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   color: var(--primary);
-  margin-bottom: 6px;
 }
 .home__footer-brand .brand__word {
   font-size: 24px;
@@ -5774,7 +5878,8 @@ code {
 }
 .home__footer-cols {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* minmax(0, 1fr): auto-минимум трека по длинному слову давал оверфлоу на 375 */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 .home__footer-col {
@@ -5804,6 +5909,43 @@ code {
 }
 .home__footer-col button:hover {
   color: var(--primary-hover);
+}
+/* Аудит P2: нижняя строка — copyright + соцссылки */
+.home__footer-bottom {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 16px 0 4px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+}
+.home__footer-social {
+  display: flex;
+  gap: 10px;
+}
+.home__footer-social a {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-variant);
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.home__footer-social a:hover {
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.home__footer-social svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Подзаголовок в rail: «For you» */
@@ -6049,9 +6191,50 @@ code {
   height: 100%;
   font-size: 13px;
 }
+/* Кольцо прогресса вокруг аватарки (паттерн Udemy, фидбек 2026-09): SVG-дуга
+   ИМЕННО по окружности авы (r = радиус авы), толщина ≥3px — видимость.
+   non-scaling-stroke: толщина всегда в экранных px, не масштабируется viewBox */
+.avatar-progress {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Ловушка: display:grid на этой обёртке сизирует колонку по intrinsic-размеру
+   SVG (18px) — кольцо выходило меньше авы. block + absolute inset:0 = ровно 32px (размер авы) */
+.avatar-progress .avatar-progress__ring {
+  position: absolute;
+  /* кольцо БОЛЬШЕ авы: охватывает её снаружи (вписывается в кнопку 38px) */
+  inset: -3px;
+  /* двойной класс: перебить .avatar svg { width: 18px } (специфичность) */
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  overflow: visible;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.avatar-progress__bg {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.6;
+}
+.avatar-progress__fg {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
 
 /* --- Мобильная главная (после базовых правил, чтобы переопределяли) --- */
 @media (max-width: 640px) {
+  /* Аудит H1: ритм секций на мобилке — 56px (десктоп 80) */
+  .home {
+    gap: 56px;
+  }
   .sidebar .streak {
     display: none;
   }
@@ -6165,8 +6348,8 @@ code {
     align-items: flex-start;
   }
   .home__hero-title {
-    font-size: 32px;
-    line-height: 40px;
+    font-size: clamp(28px, 1.4vw + 20px, 34px);
+    line-height: 1.15;
   }
   .home__hero-desc {
     font-size: 14.5px;
@@ -6193,6 +6376,14 @@ code {
   .home__footer {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+  /* min-width:0 — grid-item (min-width:auto) распухал до min-content колонок и давал
+     11px оверфлоу на 375 (фидбек-сессия 2026-09-08) */
+  .home__footer-cols button {
+    overflow-wrap: anywhere;
+  }
+  .home__footer > * {
+    min-width: 0;
   }
   .roadmap {
     padding-left: 44px;
@@ -8581,8 +8772,10 @@ code {
 .tb-menu--notif {
   min-width: min(340px, calc(100vw - 24px));
   max-width: min(92vw, 400px);
-  max-height: min(72vh, 600px);
+  /* Аудит P6: ниж режется на 900px-экране — выше потолок + contain скролла */
+  max-height: min(72vh, 640px);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Мобилка: дропдаун новостей был «отправляется влево за экран» (right:0 от
@@ -8602,6 +8795,16 @@ code {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+}
+/* Обложка статьи (из RSS/OG) — как карточка на Medium. Сбой → скрыта (onError) */
+.tb-menu__news-img {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
 }
 .tb-menu__news-body {
   display: flex;
@@ -8755,6 +8958,17 @@ code {
 }
 .news-modal__body {
   min-height: 72px;
+}
+/* Обложка статьи (hero-картинка из RSS) — шапка модалки; прячется onError,
+   если CDN-ссылка умерла (фидбек 2026-09-08: «не подгружает изображения») */
+.news-modal__hero {
+  width: 100%;
+  max-height: 340px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  display: block;
+  background: var(--bg-soft);
 }
 .news-modal__summary {
   font-size: 14.5px;
@@ -9134,6 +9348,20 @@ code {
 }
 .profile__progress {
   padding: 24px;
+}
+/* Фидбек 2026-09: прогресс/курсы — ВНУТРИ карточки профиля (один фрейм),
+   отделены линией от инфо-блока */
+.profile__inline-progress {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+/* Кнопки управления аватаркой — компактнее (фидбек 2026-09) */
+.profile__avatar-btn {
+  padding: 4px 10px;
+  font-size: 11.5px;
+  min-height: 0;
+  border-radius: 8px;
 }
 .profile__progress-head {
   display: flex;
@@ -10279,15 +10507,18 @@ code {
 }
 
 /* Карточки треков: «Урок 1: {название}» вместо абстрактного числа */
+/* Аудит H2: название первого урока — 12.5px, до 2 строк (line-clamp),
+   а не одна строка с «…» в каждой карточке */
 .tech-card__first {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: var(--text-variant);
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
 }
 
 /* Docs: 9 пилюль треков — горизонтальный скролл вместо переноса (≤1280).
@@ -10767,8 +10998,9 @@ code {
     background: none;
     border: 0;
     color: var(--muted);
-    font-size: 10px;
-    font-weight: 600;
+    /* Аудит P7: подписи 10–11px → 11px/500 */
+    font-size: 11px;
+    font-weight: 500;
     cursor: pointer;
     transition: color 0.15s ease;
   }
@@ -10858,16 +11090,17 @@ code {
   line-height: 1.55;
   color: var(--text-variant);
 }
-/* Мини-моки продукта: CSS-only, aria-hidden (декоративные) */
+/* Мини-моки продукта: CSS-only, aria-hidden (декоративные);
+   аудит M4: +20–30% — моки с пустотой */
 .home__how-mock {
   margin-top: auto;
-  padding: 14px;
+  padding: 18px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--panel-2, rgba(255, 255, 255, 0.02));
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .home__how-mock--tracks {
   flex-direction: row;
@@ -10879,10 +11112,10 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .track-chip em {
   font-style: normal;
@@ -10891,12 +11124,12 @@ code {
 .track-chip__logo {
   display: grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 .track-chip__logo svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 .track-chip--more {
   color: var(--muted);
@@ -10905,7 +11138,7 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 64px;
+  height: 80px;
   border-radius: 8px;
   background: linear-gradient(
     135deg,
@@ -10916,8 +11149,8 @@ code {
   color: var(--primary);
 }
 .mock-video svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
 }
 .mock-lines {
   display: flex;
@@ -10925,7 +11158,7 @@ code {
   gap: 6px;
 }
 .mock-lines i {
-  height: 7px;
+  height: 9px;
   border-radius: 4px;
   background: var(--border);
   display: block;
@@ -10945,13 +11178,13 @@ code {
   letter-spacing: 0.05em;
 }
 .mock-callout i {
-  height: 6px;
+  height: 8px;
   border-radius: 3px;
   background: color-mix(in srgb, var(--primary) 30%, var(--border));
 }
 .mock-code {
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.7;
   color: var(--text-variant);
   white-space: nowrap;
@@ -10966,11 +11199,11 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
   background: color-mix(in srgb, var(--primary) 8%, transparent);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--primary);
 }
 .mock-test svg {
@@ -10986,15 +11219,15 @@ code {
   background: color-mix(in srgb, #f59e0b 10%, transparent);
   color: #f59e0b;
 }
-/* Демо-цифры — одна компактная строка + SAMPLE */
+/* Демо-цифры — одна компактная строка + SAMPLE (аудит M7: 14px, читабельно) */
 .home__strip {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 14px;
+  color: var(--text-variant);
 }
 .home__strip-dot {
   color: var(--muted);
@@ -11089,6 +11322,11 @@ code {
   color: var(--text-variant);
   font-size: 12px;
   font-weight: 600;
+  /* Фидбек 2026-09-08: мягкий ховер без «моргания» */
+  transition:
+    border-color 0.3s ease,
+    color 0.3s ease,
+    background 0.3s ease;
 }
 .promo--book__cta:hover,
 .promo__cta--book:hover {
@@ -11101,7 +11339,9 @@ code {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 720px;
+  /* Фидбек 2026-09-08: «сделай на всю ширину» (было max-width 720px = ~55%
+     ширины контента на широких экранах) */
+  width: 100%;
 }
 .settings-card {
   padding: 20px 24px;
@@ -11162,6 +11402,13 @@ code {
     color-mix(in srgb, var(--primary) 55%, #7c3aed)
   );
   flex: none;
+}
+/* Фото из профиля — вместо градиента-монограммы (фидбек 2026-09-08:
+   аватар должен применяться в настройках, а не только в профиле) */
+.settings-account__avatar--img {
+  background-size: cover;
+  background-position: center;
+  background-color: var(--bg-soft);
 }
 .settings-account__text {
   display: flex;
@@ -11272,10 +11519,19 @@ code {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* Фидбек 2026-09: II-инструменты сливались с остальными треками —
+     отдельная панель + акцентные полосы и NEW-бейджи на карточках */
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+  border-radius: 18px;
+  padding: 24px;
 }
 .home__aitools-grid {
+  /* Аудит H3 + аудит нав-2026-09: три колонки обязаны влезать в 1440
+     (панель-обёртка с padding 24 оставляет гриду 732px: 250px-минимум давал
+     2 колонки + сироту — 220px: три колонки по 234px, мета не обрывается) */
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
 }
 .ai-tool {
@@ -11283,7 +11539,8 @@ code {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 14px 12px;
+  /* Фидбек 2026-09 (раунд 2): карточки ВЫШЕ основных — не одинаковые с треками */
+  padding: 30px 12px;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--surface-1);
@@ -11296,6 +11553,25 @@ code {
     border-color 0.18s ease-out,
     box-shadow 0.18s ease-out,
     background-color 0.18s ease-out;
+}
+/* Акцентная полоса сверху (цвет инструмента) — «новое» заметно с первого взгляда */
+.ai-tool::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px; /* фидбек: 2px */
+  background: var(--ai-accent, var(--primary));
+}
+.ai-tool--claude {
+  --ai-accent: #e8804c;
+}
+.ai-tool--cursor {
+  --ai-accent: #65e4db;
+}
+.ai-tool--copilot {
+  --ai-accent: #4cc2ff;
 }
 @media (hover: hover) {
   .ai-tool:hover {
@@ -11314,34 +11590,36 @@ code {
   min-width: 0;
 }
 /* Лого без плашки — как в референсе (у Cursor плашка-гекс в самом SVG) */
+/* Фидбек 2026-09-08: II-иконки — БОЛЬШЕ, чем у основных технологий (40px):
+   первые и новые инструменты должны выделяться */
 .ai-tool__logo {
-  width: 46px;
-  height: 46px;
+  width: 56px;
+  height: 56px;
   flex: none;
   display: grid;
   place-items: center;
 }
 .ai-tool__logo svg,
 .ai-tool__logo img {
-  width: 46px;
-  height: 46px;
+  width: 56px;
+  height: 56px;
 }
-/* Все знаки одинакового ВИЗУАЛЬНОГО размера (~40px): рамки разные, т.к. у
+/* Все знаки одинакового ВИЗУАЛЬНОГО размера (~50px): рамки разные, т.к. у
    каждого ассета свой зазор между знаком и краем файла — сверено по пикселям */
 .ai-tool--claude .ai-tool__logo svg,
 .ai-tool--claude .ai-tool__logo img {
-  width: 55px;
-  height: 55px;
+  width: 64px;
+  height: 64px;
 }
 .ai-tool--cursor .ai-tool__logo svg,
 .ai-tool--cursor .ai-tool__logo img {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
 }
 .ai-tool--copilot .ai-tool__logo svg,
 .ai-tool--copilot .ai-tool__logo img {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
 }
 .ai-tool__info {
   flex: 1;
@@ -11356,75 +11634,588 @@ code {
   line-height: 1.2;
 }
 .ai-tool__meta {
+  /* Аудит H3: без ellipsis (колонка ≥280px — строка влезает) */
   font-size: 11.5px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Низ на всю ширину карточки: зелёная точка + первый урок (акцентный) + пилюля справа */
+/* Низ на всю ширину карточки: первый урок (акцентный) + пилюля справа.
+   (Аудит P3: зелёная точка дублировала бейдж «Новое» — убрана) */
 .ai-tool__foot {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
-.ai-tool__dot {
-  width: 7px;
-  height: 7px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--primary);
-}
 .ai-tool__first-text {
   font-size: 12.5px;
   color: var(--muted);
   min-width: 0;
+  /* Аудит H3: без «…», если строка длиннее колонки — 2 строки */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.4;
 }
-/* Бейдж «Новое»: прозрачная пилюля с акцентной обводкой (референс) */
+/* Бейдж «Новое» (фидбек 2026-09: красный акцент, раунд 2: меньше) */
 .ai-tool__badge {
-  flex: none;
-  margin-left: auto;
-  background: transparent;
-  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  position: absolute;
+  /* в запасе padding-top: 30px — бейдж не перекрывает текст карточки */
+  top: 8px;
+  right: 12px;
+  background: var(--danger-strong);
+  color: #fff;
+  border: none;
   border-radius: 8px;
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0;
-  text-transform: none;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
 }
 @media (max-width: 900px) {
-  .home__aitools-grid {
-    grid-template-columns: 1fr;
-  }
   .ai-tool__logo {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
   }
   .ai-tool__logo svg,
   .ai-tool__logo img {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
   }
   .ai-tool--claude .ai-tool__logo svg,
   .ai-tool--claude .ai-tool__logo img {
-    width: 42px;
-    height: 42px;
+    width: 50px;
+    height: 50px;
   }
   .ai-tool--cursor .ai-tool__logo svg,
   .ai-tool--cursor .ai-tool__logo img {
-    width: 35px;
-    height: 35px;
+    width: 42px;
+    height: 42px;
   }
   .ai-tool--copilot .ai-tool__logo svg,
   .ai-tool--copilot .ai-tool__logo img {
-    width: 39px;
-    height: 39px;
+    width: 46px;
+    height: 46px;
   }
+}
+
+/* ============================================================
+   Home Premium Design Review (UX-audit 2026-09-07):
+   C1 / C3 / M1 / M3 / M5 / H4 / H5 / P5 / P8
+   ============================================================ */
+
+/* C1: ≤1280 hero — текст сверху, mock снизу на всю ширину (1280 — массовая
+   ширина ноутбуков: раньше текстовая колонка сжималась до ~176px) */
+@media (max-width: 1280px) {
+  .home__hero-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 28px;
+  }
+  .home__hero-text {
+    max-width: 100%;
+  }
+  .hero-demo {
+    width: 100%;
+    max-width: 560px;
+  }
+}
+
+/* P5: eyebrow не лопается в 2 строки на десктопе */
+@media (min-width: 1024px) {
+  .home__eyebrow {
+    white-space: nowrap;
+  }
+}
+
+/* Короткий лейбл «Sign up» скрыт по умолчанию (десктоп);
+   важно: ДО media-блока ≤480 — иначе переопределит его (равная специфичность) */
+.auth__signup-label--short {
+  display: none;
+}
+
+/* C3: ≤480 хедер — лого + флаг (24) + тема + «Sign up» + бургер.
+   Колокольчик — в burger-меню («Notifications», со счётчиком); правый
+   кластер не уходит за правый край вьюпорта */
+@media (max-width: 480px) {
+  .tb-menu-wrap--notif {
+    display: none;
+  }
+  .topbar {
+    padding: 0 10px;
+  }
+  .topbar__right {
+    gap: 6px;
+    min-width: 0;
+  }
+  .auth {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .icon-btn--flag {
+    width: 28px;
+    height: 28px;
+  }
+  .auth__signup-label--full {
+    display: none;
+  }
+  .auth__signup-label--short {
+    display: inline;
+  }
+  /* Крупная 32px-иконка на узком хедере не нужна */
+  .brand__mark {
+    width: 26px;
+    height: 26px;
+  }
+}
+/* ≤400: у этого блока приоритет выше (конец файла) — не даем 28px-флагу
+   перебить touch-таргет 44px */
+@media (max-width: 400px) {
+  .icon-btn--flag {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* M1: hero-редактор — в обеих темах фиксированно тёмное «окно IDE»
+   (в light-теме код на светлой панели имел низкоконтрастные токены) */
+:root[data-theme="light"] .hero-demo {
+  background: #0b1522;
+  border-color: rgba(148, 163, 184, 0.25);
+}
+:root[data-theme="light"] .hero-demo__bar,
+:root[data-theme="light"] .hero-demo__foot {
+  background: #101d2e;
+  border-color: rgba(148, 163, 184, 0.15);
+}
+:root[data-theme="light"] .hero-demo__file {
+  color: #94a3b8;
+}
+:root[data-theme="light"] .tk-p {
+  color: #cbd5e1;
+}
+
+/* H1/P9: ambient-акценты — primary-свечение за «Choose your track»,
+   холодный градиент на «How it works» (фон не плоский) */
+.home__techs,
+.home__how {
+  position: relative;
+}
+.home__techs::before {
+  content: "";
+  position: absolute;
+  top: -48px;
+  /* left: 0, а не -80px: вылет за край давал горизонтальный оверфлоу на мобилке;
+     width min(…,100%): фиксированные 560px на 390 давали оверфлоу вправо */
+  left: 0;
+  width: min(560px, 100%);
+  height: 420px;
+  background: radial-gradient(
+    60% 60% at 20% 30%,
+    color-mix(in srgb, var(--primary) 10%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+.home__how::before {
+  content: "";
+  position: absolute;
+  top: -48px;
+  /* right: 0, а не -80px: вылет за край давал горизонтальный оверфлоу */
+  right: 0;
+  width: min(560px, 100%);
+  height: 420px;
+  background: radial-gradient(
+    60% 60% at 80% 30%,
+    color-mix(in srgb, var(--accent-2) 9%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* P8: низ страницы — мягкое свечение под final CTA / футером */
+.home__footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 220px;
+  background: radial-gradient(
+    55% 100% at 50% 100%,
+    color-mix(in srgb, var(--primary) 12%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* H4: «Accept Challenge» — ghost (не конкурировать с hero-primary;
+   primary появляется на hover) */
+.daily-challenge .btn--ghost {
+  border-color: var(--border-strong);
+  color: var(--text-variant);
+}
+.daily-challenge .btn--ghost:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border-strong));
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* H5: community-превью в rail (демо-данные + честный SAMPLE-чип) —
+   rail больше не обрывается на книге */
+.community-preview {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+}
+.community-preview__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.community-preview__head .label-caps {
+  margin-bottom: 0;
+}
+.community-preview__avatars {
+  display: flex;
+}
+.community-preview__avatar {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  margin-left: -8px;
+}
+.community-preview__avatar:first-child {
+  margin-left: 0;
+}
+.community-preview__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-variant);
+}
+.community-preview__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primary);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.community-preview__cta svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.2s ease;
+}
+.community-preview__cta:hover svg {
+  transform: translateX(3px);
+}
+
+/* M5: сайдбар на главной разрежен — гостю внизу лёгкая промо-карточка
+   (margin-top:auto прижимает к низу sticky-контейнера) */
+.sidebar-guest-promo {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+.sidebar-guest-promo h5 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.sidebar-guest-promo p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.sidebar-guest-promo button {
+  margin-top: 4px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-variant);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.sidebar-guest-promo button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* M3/P10: книга — CSS-обложка в стиле платформы (чёрная + жёлтый
+   «JavaScript», как в референсе O'Reilly), hover — лёгкий 3D-tilt */
+.promo--book__cover {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.promo--book__page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 132px;
+  padding: 14px 14px 22px;
+  border-radius: 4px;
+  background: linear-gradient(160deg, #14161c, #05070a);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.5),
+    0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  transform: rotate(8deg);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+/* Жёлтая планка снизу (O'Reilly-стиль) */
+.promo--book__page::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: #f5a623;
+}
+.promo--book:hover .promo--book__page {
+  transform: rotate(3deg) translateY(-3px) scale(1.03);
+}
+.promo--book__imprint {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: #8b93a1;
+}
+.promo--book__js {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: #f5a623;
+}
+.promo--book__sub {
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #e5e9f0;
+}
+.promo--book__author {
+  margin-top: auto;
+  font-size: 9.5px;
+  color: #8b93a1;
+}
+
+/* ============================================================
+   Фидбек 2026-09-08 (раунд 2): мини-редактор В ОДНУ ЛИНИЮ с
+   заголовком/кнопками в hero (была стопка с центрированным mock'ом).
+   ≥1440: карточка hero (~770px, внутри ~674) вмещает РЯД:
+   текстовая колонка (до 600px) + mock 280px, оба по верхней линии.
+   <1440 — остаётся стопка (базовое правило): там текстовая колонка
+   сжималась бы ниже 300px, и H1 рвался на 5+ строк.
+   H1: на 1440 — 40px (в 370px-колонке при 48px это 5 строк),
+   ≥1700 — колонка 560+ → возврат к 48px (ровно 2 строки).
+   ============================================================ */
+@media (min-width: 1440px) {
+  .home__hero-row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .hero-demo {
+    width: 280px;
+    /* Фидбек р3: по центру между текстовой колонкой и правым краем hero —
+       авто-отступы делят свободное место поровну (на 1440 его нет — ряд
+       заполнен, mock к правому краю; с 1700+ появляется зазор) */
+    margin: 0 auto;
+  }
+  .home__hero-cta {
+    flex-wrap: wrap;
+  }
+  .home__hero-btn {
+    flex: 1 1 auto;
+  }
+}
+
+@media (min-width: 1700px) {
+  /* широкая карточка — mock может быть больше; центровка между текстом и
+     правым краем — через margin: 0 auto (из блока ≥1440) */
+  .hero-demo {
+    width: 340px;
+  }
+}
+
+/* Фидбек 2026-09-08: в переключателе технологий (над списком уроков)
+   II-инструменты были разного размера: Copilot/Claude (img) — 40px,
+   Cursor (svg) — 16px. Унифицируем: img 30px, Cursor 28px. */
+.tech-switch__item img.tech-logo {
+  width: 30px;
+  height: 30px;
+}
+.tech-switch__item .tech-logo--cursor {
+  width: 28px;
+  height: 28px;
+}
+
+/* ===== Аудит навигации 2026-09: раздел «Courses», Continue-learning, прогресс в карточках ===== */
+
+/* Страница Courses: Continue → My courses → All courses */
+.courses-view {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.courses-view__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+}
+.courses-view__sub {
+  margin: 6px 0 0;
+  max-width: 560px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.courses-view__section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.courses-view__section-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Карточка «Continue learning» (rail главной + верх страницы Courses) */
+.continue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+}
+.continue-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.continue-card__pct {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+}
+.continue-card__track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.continue-card__logo {
+  display: inline-flex;
+  flex: none;
+}
+.continue-card__logo .tech-logo {
+  width: 34px;
+  height: 34px;
+}
+.continue-card__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.continue-card__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.continue-card__lesson {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.continue-card__next {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-variant);
+}
+.continue-card__cta {
+  width: 100%;
+}
+
+/* Карточки курсов: реальный прогресс начатого трека (вместо «Lesson 1») */
+.tech-card__progress {
+  display: block;
+  height: 4px;
+  margin-top: 2px;
+  border-radius: var(--radius-full);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.tech-card__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+.tech-card__first--progress {
+  color: var(--primary);
+  -webkit-line-clamp: 1;
+}
+/* «New»-тег у AI-курсов (в каталоге Courses) */
+.tech-card__new {
+  flex: none;
+  margin-left: 8px;
+}
+
+/* SAMPLE-чип в hero-proof: демо-цифры — одно правило честности (аудит P1) */
+.chip--sample,
+.home__proof-sample {
+  flex: none;
+}
+
+/* «How it works»: прогресс-бар в видео-моке — читается как плеер урока,
+   а не как пустой тёмный прямоугольник (аудит P2) */
+.mock-video {
+  position: relative;
+  overflow: hidden;
+}
+.mock-video__progress {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
 }

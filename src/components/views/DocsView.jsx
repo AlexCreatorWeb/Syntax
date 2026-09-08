@@ -253,6 +253,28 @@ function sectionForQuery(article, q) {
 // Поиск → «скролл к секции»:-article монтируется после перехода, секцию забирает её effect
 let pendingSectionId = null;
 
+/* ————— Inline-ссылки в абзацах доков: [текст](url) → <a target=_blank> ————— */
+function renderInlineLinks(text) {
+  const parts = String(text).split(/(\[[^\]]+\]\([^)\s]+\))/g);
+  return parts.map((part, i) => {
+    const m = part.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
+    if (m) {
+      return (
+        <a
+          key={i}
+          className="docs-article__link"
+          href={m[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {m[1]}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 /* ————— Детальная страница статьи ————— */
 function ArticleView({
   article,
@@ -419,7 +441,7 @@ function ArticleView({
               </div>
             );
           }
-          return <p key={i}>{block.text}</p>;
+          return <p key={i}>{renderInlineLinks(block.text)}</p>;
         })}
       </div>
 

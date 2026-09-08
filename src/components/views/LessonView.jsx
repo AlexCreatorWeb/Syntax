@@ -640,14 +640,6 @@ function LessonView({
 
       <div className="lesson-view__head">
         <h1 className="lesson-view__title">{job.title}</h1>
-        {/* UX-аудит 2026-09 (2.7): UI на EN, а материал курса RU — язык контента
-            помечен явно (chip + тултип с пояснением) */}
-        <span
-          className="chip lesson-view__lang"
-          title={t("lessonView.courseLangNote")}
-        >
-          {t("lessonView.courseLang")}
-        </span>
         {/* UX-аудит H2: позиция в курсе + статус «пройден» */}
         {lessonCtx && (
           <span

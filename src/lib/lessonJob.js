@@ -20,6 +20,7 @@ export const TASK_FILE = {
   mongo: "models.js",
   claude: "CLAUDE.md",
   cursor: ".cursorrules",
+  copilot: "copilot-instructions.md",
 };
 
 /**

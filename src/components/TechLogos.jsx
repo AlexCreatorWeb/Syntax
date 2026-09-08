@@ -175,7 +175,7 @@ function CursorLogo() {
   // бирюзовый wireframe-куб = правильный шестиугольник; R куба / R плашки = 0.55
   return (
     <svg
-      className="tech-logo"
+      className="tech-logo tech-logo--cursor"
       viewBox="0 0 24 24"
       role="img"
       aria-label="Cursor"

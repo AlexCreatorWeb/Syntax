@@ -19,7 +19,15 @@ const GOOGLE_MAX_FAILS = 3;
 let googleBlocked = false;
 // Кто из провайдеров реально работает — он первым в цепочке следующих запросов
 // (иначе каждый блок зря тратит время на обход мёртвых).
-let lastGood = null; // 'mymemory' | 'google' | 'jina'
+let lastGood = null; // 'mymemory' | 'google' | 'proxy' | 'jina'
+
+// Прокси-база (Vercel): /api/medium?tr= — серверный перевод (IP Vercel — отдельная
+// квота MyMemory; работает, даже когда квота IP зрителя сгорела — фидбек 2026-09-08
+// «текст не переводится»: статья ~60K зн. сжигала дневную 50K-квоту за 1–2 прочтения).
+const PROXY_BASE = (import.meta.env.VITE_AI_PROXY_URL || "").replace(
+  /\/+$/,
+  "",
+);
 
 /**
  * Переводит текст с английского в targetLang ("ru" | "uk" | "es" | "de" | …).
@@ -33,17 +41,15 @@ export async function translateText(text, targetLang, timeoutMs = 9000) {
   if (cache.has(key)) return cache.get(key);
   if (pending.has(key)) return pending.get(key);
   const job = (async () => {
-    // Цепочка: MyMemory (де= ~50K зн./день) → Google gtx → MyMemory через Jina Reader
-    // (Jina ходит на API со своего IP — живёт, даже когда наша IP-квота «лежит»)
-    // → null (оригинал). Рабочий провайдер (lastGood) — первым: без обхода мёртвых.
+    // Цепочка: MyMemory (IP зрителя) → Google gtx (IP зрителя) → Vercel-прокси
+    // (серверный MyMemory+Google, отдельная квота) → Jina-обход → null (оригинал).
     const providers = [
       { id: "mymemory", run: myMemory, ok: () => !quotaExhausted },
       { id: "google", run: googleGtx, ok: () => !googleBlocked },
+      { id: "proxy", run: proxyTranslate, ok: () => true },
       { id: "jina", run: myMemoryViaJina, ok: () => true },
     ];
-    const order = providers
-      .slice()
-      .sort((a) => (a.id === lastGood ? -1 : 0)); // стабильная сортировка
+    const order = providers.slice().sort((a) => (a.id === lastGood ? -1 : 0)); // стабильная сортировка
     for (const p of order) {
       if (!p.ok()) continue;
       const value = await p.run(text, lang, timeoutMs);
@@ -69,15 +75,19 @@ async function myMemory(text, lang, timeoutMs) {
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
-      text.slice(0, 480)
+      text.slice(0, 480),
     )}&langpair=en|${lang}&de=frontend@syntax.dev`;
     const res = await fetch(url, { signal: ctrl.signal });
     // Тело парсим ДО проверки status: при 429 (квота) ответ JSON с WARNING.
     const json = await res.json().catch(() => null);
     // Квота/ошибка: WARNING приходит в responseDetails или translatedText
     // (при responseStatus 429, а не 200!) — флаг ставим в обоих случаях.
-    const blob = [json && json.responseDetails, json && json.responseData && json.responseData.translatedText]
-      .filter(Boolean).join(" ");
+    const blob = [
+      json && json.responseDetails,
+      json && json.responseData && json.responseData.translatedText,
+    ]
+      .filter(Boolean)
+      .join(" ");
     if (/MYMEMORY WARNING/i.test(blob)) quotaExhausted = true;
     if (!res.ok) throw new Error(`http ${res.status}`);
     const raw =
@@ -101,7 +111,7 @@ async function googleGtx(text, lang, timeoutMs) {
   const timer = setTimeout(() => ctrl.abort(), Math.min(timeoutMs, 6000));
   try {
     const url = `https://translate.google.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(
-      text.slice(0, 480)
+      text.slice(0, 480),
     )}`;
     const res = await fetch(url, { signal: ctrl.signal });
     if (res.status === 429) googleFails += 1;
@@ -122,6 +132,28 @@ async function googleGtx(text, lang, timeoutMs) {
   }
 }
 
+// Серверный перевод через Vercel-прокси (api/medium?tr=): IP Vercel ходит на
+// MyMemory/Google со СВОЕЙ квотой — не зависит от исчерпанной квоты IP зрителя.
+async function proxyTranslate(text, lang, timeoutMs) {
+  if (!PROXY_BASE) return null; // dev без прокси-базы — только локальные провайдеры…
+  // …но dev тоже может ходить на same-origin /api/medium (Vercel-деплой) — базовый
+  // кейс: PROXY_BASE пуст, но dev-сервер может иметь мидлвар. Не поддерживаем — null.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), Math.min(timeoutMs, 10000));
+  try {
+    const url = `${PROXY_BASE}/api/medium?tr=${lang}&q=${encodeURIComponent(text.slice(0, 480))}`;
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (!res.ok) return null;
+    const j = await res.json();
+    // text === исходнику = «не уверено» — считаем провалом (дальше по цепочке)
+    return j && j.ok && j.text && j.text !== text ? j.text : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // MyMemory через Jina Reader: Jina ходит на API со СВОЕГО IP, поэтому переводит,
 // даже когда наша IP-квота исчерпана (MyMemory считает квоты по IP вызывающего).
 // Jina оборачивает тело: «Markdown Content:\n{json…}» — парсим JSON от первой «{».
@@ -131,14 +163,19 @@ async function myMemoryViaJina(text, lang, timeoutMs) {
   const timer = setTimeout(() => ctrl.abort(), Math.min(timeoutMs, 15000));
   const attempt = async () => {
     const api = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
-      text.slice(0, 480)
+      text.slice(0, 480),
     )}&langpair=en|${lang}&de=frontend@syntax.dev`;
     const res = await fetch(`${JINA_READER}${api}`, { signal: ctrl.signal });
     if (!res.ok) throw new Error(`http ${res.status}`);
     const md = await res.text();
     const start = md.indexOf("{");
     if (start === -1) throw new Error("no json in jina body");
-    const json = JSON.parse(md.slice(start));
+    let json;
+    try {
+      json = JSON.parse(md.slice(start));
+    } catch {
+      throw new Error("bad json in jina body");
+    }
     const raw =
       json && json.responseStatus === 200 && json.responseData
         ? json.responseData.translatedText
@@ -185,7 +222,9 @@ export async function translateArticleBlocks(blocks, targetLang, opts = {}) {
   const lang = String(targetLang || "en").toLowerCase();
   if (lang === "en" || !blocks.length) return {};
   const textIdx = translatableIndexes(blocks);
-  const prio = new Set((opts.priorityIdx || []).filter((i) => textIdx.includes(i)));
+  const prio = new Set(
+    (opts.priorityIdx || []).filter((i) => textIdx.includes(i)),
+  );
   const ordered = [
     ...textIdx.filter((i) => prio.has(i)),
     ...textIdx.filter((i) => !prio.has(i)),
@@ -196,7 +235,7 @@ export async function translateArticleBlocks(blocks, targetLang, opts = {}) {
   for (let i = 0; i < ordered.length; i += BATCH) {
     const part = ordered.slice(i, i + BATCH);
     const results = await Promise.allSettled(
-      part.map((bi) => translateText(blocks[bi].text, lang))
+      part.map((bi) => translateText(blocks[bi].text, lang)),
     );
     results.forEach((r, k) => {
       if (r.status === "fulfilled" && r.value) updates[part[k]] = r.value;
@@ -206,4 +245,3 @@ export async function translateArticleBlocks(blocks, targetLang, opts = {}) {
   }
   return updates;
 }
-

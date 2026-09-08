@@ -16,7 +16,7 @@ function TechnologyView({
     onOpenDbLesson,
     dbLessons,
     onSelectTech,
-    onNavigate,
+    // onNavigate больше не нужен (дубль «Open track» убран) — проп остаётся у вызывающего
     isAuthed = false,
 }) {
     const t = useT();
@@ -138,27 +138,8 @@ function TechnologyView({
                                 : t("techPage.start")}
                         </span>
                     </button>
-                    {/* UX-аудит: OPEN TRACK — явная кнопка перехода в карту курса (hero-статус не читается как CTA) */}
-                    <button
-                        type="button"
-                        className="btn btn--ghost tech-page__cta"
-                        onClick={() => onNavigate("roadmap")}
-                    >
-                        <span className="tech-page__cta-label">
-                            {t("techPage.openTrack")}
-                        </span>
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                        >
-                            <path d="M5 12h14M13 6l6 6-6 6" />
-                        </svg>
-                    </button>
+                    {/* Аудит навигации 2026-09: дубль «Open track» убран — один
+                        primary-CTA на карточке; hero-чип — несеклабельный статус */}
                 </div>
             </section>
 
