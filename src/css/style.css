@@ -4185,7 +4185,7 @@ code {
   row-gap: 8px;
 }
 .docs-for .tech-switch__item {
-  padding: 8px 14px 8px 10px;
+  padding: 5px 14px 5px 10px;
   font-size: 12.5px;
   min-height: 38px;
   flex: none;
@@ -12268,23 +12268,20 @@ code {
   height: 28px;
   flex: none;
   color: var(--ring-fill);
+  /* Свечение «головы» не режется рамкой SVG: рисуется за рамку элемента
+     (карточка с padding 12–14 px его вмещает, клипающих границ нет) */
+  overflow: visible;
 }
 .sidebar-status__ekg-base {
   opacity: 1;
 }
 /* «Бегущая голова» ЭКГ: период = pathLength (100) — голова ВСЕГДА на линии
    (выходит справа — сразу входит слева, классический монитор), без тёмных фаз.
-   Цвет — бледно-мятный с белым (ярче базовой линии), читается даже на скрине */
+   Плоская, без свечения: бледно-мятный с белым (ярче базовой линии) */
 .sidebar-status__ekg-pulse {
   stroke-dasharray: 28 72;
   stroke-dashoffset: 0;
-  stroke: color-mix(in srgb, var(--primary-hover) 35%, #ffffff);
-  filter: drop-shadow(
-      0 0 3px color-mix(in srgb, var(--primary-hover) 95%, transparent)
-    )
-    drop-shadow(
-      0 0 8px color-mix(in srgb, var(--primary-hover) 70%, transparent)
-    );
+  stroke: color-mix(in srgb, var(--primary-hover) 25%, #ffffff);
   animation: sidebar-ekg-run 2.2s linear infinite;
 }
 @keyframes sidebar-ekg-run {
