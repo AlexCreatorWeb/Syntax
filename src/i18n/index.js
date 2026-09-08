@@ -16,6 +16,8 @@ export const LOCALES = {
       documentation: "Документация",
       community: "Сообщество",
       settings: "Настройки",
+      statusOnline: "Система онлайн",
+      statusSub: "Все сервисы работают",
       support: "Поддержка",
       complete: "Курс пройден",
       streak: "Серия: 12 дней",
@@ -1071,7 +1073,7 @@ export const LOCALES = {
       },
       preview: "Живое превью — так выглядит ваш дашборд после регистрации",
       proof: "К нам присоединились 50 000+ разработчиков",
-      lessons: "{n} уроков · с нуля",
+      lessons: "{n} уроков",
       lesson1: "Урок 1: {title}",
       quote: {
         name: "Мая К.",

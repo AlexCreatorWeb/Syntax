@@ -9,6 +9,8 @@ export default {
     documentation: "Documentation",
     community: "Community",
     settings: "Settings",
+    statusOnline: "System online",
+    statusSub: "All services operational",
     support: "Support",
     complete: "Course complete",
     streak: "12 Day Streak",
@@ -1058,7 +1060,7 @@ export default {
     preview:
       "Live preview — this is what your dashboard looks like after you sign up",
     proof: "Joined by 50,000+ developers",
-    lessons: "{n} lessons · Beginner+",
+    lessons: "{n} lessons",
     lesson1: "Lesson 1: {title}",
     quote: {
       name: "Maya K.",

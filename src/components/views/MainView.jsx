@@ -342,11 +342,6 @@ function MainView({
                 {t("home.proof")} ·{" "}
                 <span className="home__proof-rating">★ 4.8</span>
               </span>
-              {/* Аудит 2026-09: демо-цифры — одно правило честности: SAMPLE везде
-                  (в strip ниже те же числа с SAMPLE-чипом — дублировать без метки нельзя) */}
-              <span className="chip chip--sample home__proof-sample">
-                {t("tasks.sample")}
-              </span>
             </div>
           </div>
           <HeroDemo t={t} />
@@ -386,6 +381,7 @@ function MainView({
                   </span>
                 </span>
                 <span className="ai-tool__foot">
+                  <span className="ai-tool__dot" aria-hidden="true" />
                   <span className="ai-tool__first-text">
                     {t(`home.aiTools.${item.id}.first`)}
                   </span>

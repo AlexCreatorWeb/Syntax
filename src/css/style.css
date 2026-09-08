@@ -4200,6 +4200,14 @@ code {
   width: 18px;
   height: 18px;
 }
+/* Ловушка: лого Claude/Copilot — <img class="tech-logo">, а правило
+   `.tech-switch__item img.tech-logo { 30px }` раздувало иконку в доках —
+   пилюля «плывёт», иконка и текст выглядят разнесёнными (фидбек раунд 3) */
+.docs-for .tech-switch__item img.tech-logo,
+.docs-for .tech-switch__item .tech-logo--cursor {
+  width: 18px;
+  height: 18px;
+}
 .tech-switch__name {
   white-space: nowrap;
 }
@@ -11634,13 +11642,22 @@ code {
   line-height: 1.2;
 }
 .ai-tool__meta {
-  /* Аудит H3: без ellipsis (колонка ≥280px — строка влезает) */
+  /* Фидбек 2026-09 (раунд 3): зелёный сабтайтл — как на других карточках */
   font-size: 11.5px;
-  color: var(--muted);
+  color: var(--primary);
   font-variant-numeric: tabular-nums;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
+}
+/* Зелёная точка перед первым уроком (референс «Пример карточек с лейблом») */
+.ai-tool__dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--primary) 60%, transparent);
 }
 /* Низ на всю ширину карточки: первый урок (акцентный) + пилюля справа.
    (Аудит P3: зелёная точка дублировала бейдж «Новое» — убрана) */
@@ -11662,17 +11679,16 @@ code {
   overflow: hidden;
   line-height: 1.4;
 }
-/* Бейдж «Новое» (фидбек 2026-09: красный акцент, раунд 2: меньше) */
+/* Бейдж «Новое»: приглушённая зелёная пилюля В РЯДУ с сабтайтлом (референс,
+   фидбек 2026-09 раунд 3: из угла карточки — в низнюю строку) */
 .ai-tool__badge {
-  position: absolute;
-  /* в запасе padding-top: 30px — бейдж не перекрывает текст карточки */
-  top: 8px;
-  right: 12px;
-  background: var(--danger-strong);
-  color: #fff;
-  border: none;
+  flex: none;
+  margin-left: auto;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
   border-radius: 8px;
-  font-weight: 700;
+  color: var(--primary);
+  font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -12056,9 +12072,6 @@ code {
   .home__hero-cta {
     flex-wrap: wrap;
   }
-  .home__hero-btn {
-    flex: 1 1 auto;
-  }
 }
 
 @media (min-width: 1700px) {
@@ -12218,4 +12231,87 @@ code {
   height: 3px;
   border-radius: var(--radius-full);
   background: var(--primary);
+}
+
+/* ===== 2026-09-08: виджет-индикатор системы внизу сайдбара =====
+   Дизайн: Stitch (Protocol Neo), референс SyntaxAddDesign/индикатор.png.
+   Пульс (ekg-pulse) — отдельный path, позже анимируется. */
+.sidebar-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.sidebar-status__text {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sidebar-status__title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.sidebar-status__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--primary-hover);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--primary-hover) 70%, transparent);
+  /* дыхание в такт бегущей волне (2.6s) */
+  animation: sidebar-ekg-breathe 2.6s ease-in-out infinite;
+}
+.sidebar-status__sub {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-status__ekg {
+  width: 48px;
+  height: 22px;
+  flex: none;
+  color: var(--ring-fill);
+}
+/* Пульс — тот же цвет, что линия (референс: единая зелёная волна);
+   base-rule выше оставлен для совместимости, opacity снят */
+.sidebar-status__ekg-base {
+  opacity: 1;
+}
+/* «Бегущая голова» ЭКГ: короткий яркий сегмент (14 ед.) с длительной паузой
+   (120 ед. > длины пути ~92) курсирует по линии; период 134 = dash+gap — бесшовный цикл */
+.sidebar-status__ekg-pulse {
+  stroke-dasharray: 14 120;
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--primary-hover) 75%, transparent));
+  animation: sidebar-ekg-run 2.6s linear infinite;
+}
+@keyframes sidebar-ekg-run {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -134; }
+}
+@keyframes sidebar-ekg-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-status__ekg-pulse,
+  .sidebar-status__dot {
+    animation: none;
+  }
+  /* без анимации «голова» не видна — прячем оверлей, остаётся статичная линия */
+  .sidebar-status__ekg-pulse {
+    display: none;
+  }
 }

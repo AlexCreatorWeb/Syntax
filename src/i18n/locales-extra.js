@@ -13,6 +13,8 @@ export const LOCALES_EXTRA = {
       documentation: "Документація",
       community: "Спільнота",
       settings: "Налаштування",
+      statusOnline: "Система онлайн",
+      statusSub: "Усі сервіси працюють",
       support: "Підтримка",
       complete: "Курс пройдено",
       streak: "Серія: 12 днів",
@@ -548,7 +550,7 @@ export const LOCALES_EXTRA = {
       },
       preview: "Живе прев'ю — так виглядає ваш дашборд після реєстрації",
       proof: "Приєдналися 50 000+ розробників",
-      lessons: "{n} уроків · з нуля",
+      lessons: "{n} уроків",
       lesson1: "Урок 1: {title}",
       quote: {
         name: "Мая К.",
@@ -791,6 +793,8 @@ export const LOCALES_EXTRA = {
       documentation: "Documentación",
       community: "Comunidad",
       settings: "Ajustes",
+      statusOnline: "Sistema en línea",
+      statusSub: "Todos los servicios operativos",
       support: "Soporte",
       complete: "Curso completado",
       streak: "Racha de 12 días",
@@ -1331,7 +1335,7 @@ export const LOCALES_EXTRA = {
       },
       preview: "Vista previa en vivo — así se verá tu panel tras registrarte",
       proof: "Se han unido más de 50 000 desarrolladores",
-      lessons: "{n} lecciones · desde cero",
+      lessons: "{n} lecciones",
       lesson1: "Lección 1: {title}",
       quote: {
         name: "Maya K.",
@@ -1576,6 +1580,8 @@ export const LOCALES_EXTRA = {
       documentation: "Dokumentation",
       community: "Community",
       settings: "Einstellungen",
+      statusOnline: "System online",
+      statusSub: "Alle Dienste betriebsbereit",
       support: "Support",
       complete: "Kurs abgeschlossen",
       streak: "12-Tage-Serie",
@@ -2120,7 +2126,7 @@ export const LOCALES_EXTRA = {
       preview:
         "Live-Vorschau — so sieht dein Dashboard nach der Registrierung aus",
       proof: "Über 50 000 Entwickler sind dabei",
-      lessons: "{n} Lektionen · für Anfänger",
+      lessons: "{n} Lektionen",
       lesson1: "Lektion 1: {title}",
       quote: {
         name: "Maya K.",
