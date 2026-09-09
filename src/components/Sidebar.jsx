@@ -258,8 +258,10 @@ function Sidebar({
         ))}
       </nav>
 
-      {/* 2026-09-08: индикатор системы внизу (референс: SyntaxAddDesign/индикатор.png);
-          Settings поднят в группу Resources под Documentation */}
+      {/* 2026-09-08: индикатор системы (референс: SyntaxAddDesign/индикатор.png);
+          Settings поднят в группу Resources под Documentation.
+          2026-09-12 фидбэк «приподнять на 100–150px, не прилипать к низу» —
+          margin-bottom: 120px в CSS (.sidebar-status) */}
       <StatusWidget t={t} />
       {/* Аудит M5: сайдбар на главной разрежен — гостю внизу лёгкая промо-карточка */}
       {!session && (

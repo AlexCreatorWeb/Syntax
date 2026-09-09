@@ -12228,6 +12228,10 @@ code {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
+  /* 2026-09-12 фидбэк «лежит в самом низу, плохо видно» — приподнять на
+     100–150px, не прилипать к низу (гость: над промо-карточкой; юзер: над
+     нижним краём sticky-колонки). +20px gap колонки — общий зазор ~140px */
+  margin-bottom: 120px;
 }
 .sidebar-status__text {
   min-width: 0;
