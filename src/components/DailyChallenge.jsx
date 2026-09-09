@@ -121,7 +121,9 @@ function DailyChallenge({ isAuthed, onAuth, onNavigate, backTab = "tasks" }) {
           </p>
           <div className="daily-challenge__reward">
             <span className="xp">
-              {taskDone ? `+${task.xp + 500} XP` : t("tasks.daily.xpReward")}
+              {/* Честная сумма = XP задачи + daily-бонус 500 (раньше до выполнения
+                  показывался статичный «+500 XP» — не совпадал с фактом 550/600/700) */}
+              +{task.xp + 500} XP
             </span>
             <span className={`badge-${task.difficulty}`}>
               {t(`tasks.${task.difficulty}`)}

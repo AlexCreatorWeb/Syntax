@@ -211,6 +211,22 @@ function MainContent({
     }
     requireAuth(() => doOpenLesson(tid));
   };
+  // Демо-урок с главной (2026-07, фидбэк: «демо-урок = ПЕРВЫЙ урок!»): всегда
+  // первый урок трека — НЕ «первый невыполненный» (это openLesson/Continue).
+  // Без гейта: первый урок открыт всем, включая гостя. Нет трека/пустая БД —
+  // статическое демо (то же обещание «первый урок за 2 минуты»). Отдельная
+  // задача от «Start for free» (регистрация / продолжить обучение).
+  const openFirstLesson = (techId) => {
+    const tid = techId && techId !== "none" ? techId : null;
+    const first = tid
+      ? dbLessonsArr.find((l) => l.tech === tid)
+      : dbLessonsArr[0];
+    if (first) {
+      doOpenDbLesson(first, tid);
+      return;
+    }
+    onNavigate("editor", lessonJob(t));
+  };
   // 2026-09: Tasks = структурированный каталог. openTask(task) — задача из
   // src/content/tasks/*.json (job: файлы, тесты, XP, связь с уроком — в lib/taskJob.js).
   // Гость → auth-гейт (условия: задачи — за регистрацией).
@@ -281,7 +297,8 @@ function MainContent({
           <MainView
             onNavigate={onNavigate}
             onSignup={onSignup}
-            onDemo={() => openLesson(activeTech)}
+            onDemo={() => openFirstLesson(activeTech)}
+            onContinue={() => openLesson(activeTech)}
             activeTech={activeTech}
             onSelectTech={onSelectTech}
             dbLessons={dbLessons}

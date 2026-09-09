@@ -46,12 +46,26 @@ const CLIENTS = [
 ];
 
 const manifestCache = new Map();
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000; // фолбэк, если в URL нет параметра expire
 const STREAM_HOSTS = ["googlevideo.com", "youtube.com", "ytimg.com"];
+
+// Подписанный googlevideo-URL живёт до `expire` (~6ч) и работает с любого IP
+// (гейтится только player API, не CDN) — кэш до истечения URL, не 5 минут.
+function urlExpiresMs(u) {
+  try {
+    const p = new URL(u).searchParams.get("expire");
+    const t = p ? Number(p) * 1000 : 0;
+    return t > Date.now()
+      ? Math.min(t - 60_000, Date.now() + 6 * 3600 * 1000)
+      : 0;
+  } catch {
+    return 0;
+  }
+}
 
 async function playerManifest(videoId) {
   const hit = manifestCache.get(videoId);
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit;
+  if (hit && Date.now() < (hit.until || 0)) return hit;
   const reasons = [];
   for (const c of CLIENTS) {
     try {
@@ -83,6 +97,7 @@ async function playerManifest(videoId) {
       }
       const rec = {
         at: Date.now(),
+        until: urlExpiresMs(entry.url) || Date.now() + CACHE_TTL_MS,
         entry,
         client: c.name,
         title: j?.videoDetails?.title || "",
@@ -125,6 +140,8 @@ export default {
           {
             ok: true,
             url: `${url.origin}${url.pathname}?id=${id}&stream=1`,
+            directUrl: m.entry.url,
+            expiresAt: urlExpiresMs(m.entry.url),
             mimeType: m.entry.mimeType || "video/mp4",
             title: m.title,
             client: m.client,

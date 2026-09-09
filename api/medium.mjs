@@ -292,6 +292,18 @@ function parseMediumArticle(html) {
 }
 
 function extractAvatar(html) {
+  // 1) Byline-контекст (фидбэк 2026-09: «аватар не соответствует автору»):
+  // первый *avatar*-img в документе может быть не автором (рекомендуемые
+  // авторы и т.п.) — берём картинку ВНУТРИ блока postArticle-byline
+  // (аватар автора статьи всегда там; URL — cdn-images-1.medium.com).
+  const bylineM = html.match(/postArticle-byline[\s\S]{0,2500}?/i);
+  if (bylineM) {
+    const av = bylineM[0].match(
+      /<img[^>]*\b(?:data-src|src)="(https?:\/\/cdn-images-1\.medium\.com[^"\s]+)"/i,
+    );
+    if (av) return av[1];
+  }
+  // 2) Старый фолбэк: первый img с class *avatar* в документе.
   const patterns = [
     /<img[^>]*class="[^"]*[Aa]vatar[^"]*"[^>]*\b(?:data-src|src)="([^"]+)"/,
     /<div[^>]*class="[^"]*[Aa]vatar[^"]*"[^>]*>[\s\S]{0,600}?<(?:img|a)[^>]*\b(?:data-src|src)="(https?:[^"]+)"/,

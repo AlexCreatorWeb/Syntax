@@ -1,9 +1,9 @@
-// Аватар пользователя: data-URL (jpeg 256×256) в localStorage + зеркалирование
-// в profiles.avatarurl (Supabase, fire-and-forget из вызывающего кода).
-// Хранилище крошечное (jpeg 256px ≈ 15–40 КБ), но в profiles строка живёт в БД —
-// смена устройства пока не поднимает фото из БД (нет fetch profiles по id),
-// зато UI обновляется мгновенно и без мигания.
+// Аватар пользователя: data-URL (jpeg 256×256) в localStorage (оперативный кэш,
+// UI без мигания) + profiles.avatarurl в Supabase = источник правды.
+// При входе (SIGNED_IN / INITIAL_SESSION) syncAvatarFromDb поднимает фото из БД —
+// повторный вход с нового устройства/браузера видит аватарку (баг 2026-09: «слетает»).
 import { useEffect, useState } from "react";
+import { supabase } from "./supabase";
 
 const KEY = "syntax-avatar";
 let cache = localStorage.getItem(KEY) || "";
@@ -40,6 +40,29 @@ export function useAvatar() {
 }
 
 // Файл → data-URL jpeg 256×256 (cover-кроп по центру). Ошибка → reject.
+// БД → локальный кэш. Вызывается в App при каждой валидной сессии (вход, reload).
+// Правила: в БД не-пустое значение → перезаписать локальное; "" (сделали remove
+// на другом устройстве) → почистить локальное; null (строка без фото — legacy или
+// write-сбой на том устройстве) → локальное не трогать; нет строки / сети →
+// локальное не трогать (офис-деградация).
+export async function syncAvatarFromDb(user) {
+  if (!supabase || !user) return;
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("avatarurl")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (error || data == null) return;
+    const url = typeof data.avatarurl === "string" ? data.avatarurl : null;
+    if (url === null) return; // строка есть, фото не синхронизировали нигде
+    if (url === "") setAvatar(null);
+    else if (url !== getAvatar()) setAvatar(url);
+  } catch {
+    /* некритично — локальная копия продолжает работать */
+  }
+}
+
 export function fileToAvatarDataUrl(file, size = 256) {
   return new Promise((resolve, reject) => {
     if (!file || !/^image\//.test(file.type)) {

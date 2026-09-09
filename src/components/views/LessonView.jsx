@@ -2,7 +2,12 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import CodeEditor from "../CodeEditor";
 import { MdContent } from "../../lib/markdown-view";
 import TechList, { getTech } from "../../lib/techs";
-import { getLessonVideo } from "../../lib/lesson-video";
+import {
+  getLessonVideo,
+  getVideoCache,
+  setVideoCache,
+  clearVideoCache,
+} from "../../lib/lesson-video";
 import { useT } from "../../i18n/useT";
 import { useLanguage } from "../../context/useLanguage";
 import { getCompleted } from "../../lib/progress";
@@ -155,8 +160,25 @@ function PlayerControls({
 // Фолбэк (2026-09): onError/таймаут API → брендовая карточка + «Смотреть на
 // YouTube» (watch-страница открывается с любого IP; embed-контекст бот-гате
 //ется на datacenter-IP — Error 153) + «Попробовать ещё».
+// Стрим-прокси-цепочка (2026-09, «ежедневный бан»): Vercel → CF worker.
+// Разные egress-IP — в дни тотального YouTube-бот-гейта (Vercel-IP тоже
+// LOGIN_REQUIRED) один из двух шанс чисто выше, чем у единственного.
+// CF worker — тот же контракт (manifest + ?stream=1 с Range, CORS *),
+// деплой: workers/yt-proxy.js (scripts/deploy-yt-proxy-cf.mjs). URL стрима
+// берём из манифеста (d.url) — <video> указывает на тот прокси, что ответил.
+const PROXY_MANIFEST_URLS = [
+  (id) => `/api/yt-proxy?id=${encodeURIComponent(id)}`,
+  (id) =>
+    `https://yt-proxy.syntax-learn-5hk48.workers.dev/?id=${encodeURIComponent(id)}`,
+];
+
 function LessonVideo({ video, label, onWatched }) {
   const t = useT();
+  // Кэш-приоритет (2026-07): свежий подписанный стрим-URL для видео (см.
+  // lesson-video.js: getVideoCache) — сразу native-режим, YT-плеер и вовсе
+  // не грузится (лазы-инициализаторы: рендерится <LessonVideo key={video.id}>,
+  // remount на каждый урок — state всегда свежий).
+  const [initCache] = useState(() => getVideoCache(video.id));
   const [playing, setPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -169,8 +191,17 @@ function LessonVideo({ video, label, onWatched }) {
   // YouTube». retryTick — «Попробовать ещё» (пересоздание YT-плеера)
   const [ytError, setYtError] = useState(0);
   const [retryTick, setRetryTick] = useState(0);
-  // Режим плеера: "yt" — IFrame API; "native" — <video> через стрим-прокси
-  const [mode, setMode] = useState("yt");
+  // Режим плеера: "yt" — IFrame API; "native" — <video> (кэш/прямой CDN/
+  // стрим-прокси)
+  const [mode, setMode] = useState(() => (initCache ? "native" : "yt"));
+  // URL стрима: из кэша (приоритет) или от того прокси, что ответил
+  const [nativeStream, setNativeStream] = useState(() =>
+    initCache ? initCache.direct || initCache.url : "",
+  );
+  // Фолбэк-URL (прокси-стрим), если прямой CDN-URL упал (IP-bound и т.п.)
+  const [nativeFallback, setNativeFallback] = useState(() =>
+    initCache && initCache.direct ? initCache.url : "",
+  );
   const videoRef = useRef(null);
   // Кастомный полноэкранный режим: оверлей поверх страницы (браузерный
   // requestFullscreen «портит вид» — фидбек 2026-09)
@@ -183,12 +214,19 @@ function LessonVideo({ video, label, onWatched }) {
   // → onWatched() один раз; дальше только UI, без повторных вызовов
   const watchedRef = useRef(0);
   const watchedSentRef = useRef(false);
+  // Watchdog без autoplay: пользователь нажал Play, а плеер так и не начал
+  // воспроизведение (гейтнутый IP: onError(153) при этом НЕ приходит — плеер
+  // молча сидит в CUED, duration при этом грузится и старый no-stream
+  // watchdog молчит) → фолбэк через 10с. STATE (не ref: флаг должен
+  // триггерить эффект).
+  const [playPending, setPlayPending] = useState(false);
 
   // Инициализация IFrame API-плеера. fs:0 — нативную YT-кнопку fullscreen
   // прячем, свою рисуем в контролах (браузерный fullscreen не вписывается в дизайн).
   // Safety: API не подгрузился за 20с (блокировка/сбой) → тоже фолбэк-карточка.
   useEffect(() => {
-    if (!playing) return undefined;
+    // mode!="yt" (кэш-приоритет: свежий стрим-URL уже есть) — YT-плеер не создаём
+    if (!playing || mode !== "yt") return undefined;
     let destroyed = false;
     let playerStarted = false;
     const failTimer = setTimeout(() => {
@@ -212,10 +250,15 @@ function LessonVideo({ video, label, onWatched }) {
       .then((YT) => {
         if (destroyed || !hostRef.current) return;
         playerStarted = true;
+        // Новый плеер — сброс флага watchdog (async-колбэк — setState штатно)
+        setPlayPending(false);
         playerRef.current = new YT.Player(hostRef.current, {
           videoId: video.id,
           playerVars: {
-            autoplay: 1,
+            // Autoplay УБРАН (2026-07, фидбэк): старт только по нашей кнопке
+            // Play. Плеер создаётся после клика по постеру, но после загрузки
+            // он сидит в CUED (пауза) — bigplay показывается (onReady →
+            // isPlaying=false). Плюс: запрос стрима уходят только на нажатии.
             rel: 0, // без «следующих видео» других каналов
             playsinline: 1,
             fs: 0, // без нативной кнопки fullscreen (наша — в контролах)
@@ -225,12 +268,17 @@ function LessonVideo({ video, label, onWatched }) {
               if (destroyed) return;
               setDuration(e.target.getDuration());
               setIsReady(true);
+              // Без autoplay плеер на ready гарантированно в CUED (пауза) →
+              // большая кнопка Play в кадре (условие `!isPlaying || !isReady`)
+              setIsPlaying(false);
             },
             onStateChange: (e) => {
               if (destroyed) return;
               setIsPlaying(e.data === YT.PlayerState.PLAYING);
-              if (e.data === YT.PlayerState.PLAYING)
+              if (e.data === YT.PlayerState.PLAYING) {
                 setDuration(e.target.getDuration());
+                setPlayPending(false); // поехало — watchdog не нужен
+              }
             },
             onError: (e) => {
               // 100 — нет видео, 101/150 — запрет встраивания, 102 — приватное,
@@ -260,12 +308,40 @@ function LessonVideo({ video, label, onWatched }) {
   useEffect(() => {
     if (mode !== "yt" || !ytError || !playing) return undefined;
     let cancelled = false;
-    fetch(`/api/yt-proxy?id=${encodeURIComponent(video.id)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (!cancelled && d && d.ok && d.url) setMode("native");
-      })
-      .catch(() => {});
+    // Цепочка прокси по порядку (Vercel → CF worker): первый оживший выигрывает.
+    // Таймаут ноги 8с: медленный/зависший прокси не держит цепочку.
+    const tryChain = (i) => {
+      if (cancelled || i >= PROXY_MANIFEST_URLS.length) return;
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 8000);
+      fetch(PROXY_MANIFEST_URLS[i](video.id), { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((d) => {
+          clearTimeout(to);
+          if (cancelled) return;
+          if (d && d.ok && d.url) {
+            // Кэш на ~6ч (жизнь подписанного URL): повторный просмотр урока —
+            // без YouTube и без прокси (см. lazy-init mode/nativeStream)
+            setVideoCache(video.id, {
+              direct: d.directUrl || "",
+              url: d.url,
+              expiresAt: d.expiresAt || Date.now() + 6 * 3600 * 1000,
+            });
+            // Прямой googlevideo-URL优先 (без 60с-лимитов serverless-стрима);
+            // прокси-стрим — фолбэк при падении прямого
+            setNativeStream(d.directUrl || d.url);
+            setNativeFallback(d.directUrl ? d.url : "");
+            setMode("native");
+          } else {
+            tryChain(i + 1);
+          }
+        })
+        .catch(() => {
+          clearTimeout(to);
+          if (!cancelled) tryChain(i + 1);
+        });
+    };
+    tryChain(0);
     return () => {
       cancelled = true;
     };
@@ -323,8 +399,25 @@ function LessonVideo({ video, label, onWatched }) {
     const p = playerRef.current;
     if (!p) return;
     if (isPlaying) p.pauseVideo();
-    else p.playVideo();
+    else {
+      setPlayPending(true);
+      p.playVideo();
+    }
   }, [isPlaying, mode]);
+
+  // «Нажали Play — не поехало» (см. playAttemptedRef): 10с нет PLAYING →
+  // тот же фолбэк, что и no-stream (карточка/прокси).
+  useEffect(() => {
+    if (mode !== "yt" || !playing || ytError || isPlaying) return undefined;
+    if (!playPending) return undefined;
+    const to = setTimeout(() => {
+      const p = playerRef.current;
+      if (p && p.getPlayerState && p.getPlayerState() !== 1) {
+        setYtError((prev) => prev || "no-play");
+      }
+    }, 10000);
+    return () => clearTimeout(to);
+  }, [mode, playing, ytError, isPlaying, playPending, retryTick]);
 
   const seekToClientX = useCallback(
     (clientX) => {
@@ -380,18 +473,31 @@ function LessonVideo({ video, label, onWatched }) {
             className={`lesson-view__player${isFs ? " lesson-view__player--fs" : ""}`}
           >
             <div className="lesson-view__player-box">
-              {/* Нативный <video>: стрим-прокси (api/yt-proxy.mjs) — обход
-                  YT-бот-гейта (Error 153) через серверный player API */}
+              {/* Нативный <video>: кэш-URL / прямой CDN / стрим-прокси —
+                  обход YT-бот-гейта (Error 153) через серверный player API */}
               <video
                 ref={videoRef}
                 className="lesson-view__player-native"
-                src={`/api/yt-proxy?id=${encodeURIComponent(video.id)}&stream=1`}
-                autoPlay
+                src={
+                  nativeStream ||
+                  `/api/yt-proxy?id=${encodeURIComponent(video.id)}&stream=1`
+                }
                 playsInline
-                preload="auto"
+                preload="metadata" // без autoPlay: preload=auto тянул бы стрим на паузе
                 onLoadedMetadata={(e) => setDuration(e.target.duration || 0)}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
+                onError={() => {
+                  // Прямой CDN-URL упал (e.g. IP-bound подпись) → пробуем
+                  // прокси-стрим; он тоже не жил — кэш протух, к карточке.
+                  if (nativeFallback && nativeStream !== nativeFallback) {
+                    setNativeStream(nativeFallback);
+                  } else {
+                    clearVideoCache(video.id);
+                    setMode("yt");
+                    setYtError((prev) => prev || "stream-dead");
+                  }
+                }}
               />
               <div
                 className="lesson-view__player-catcher"
@@ -690,6 +796,7 @@ function LessonView({
               />
             ) : (
               <LessonVideo
+                key={video.id}
                 video={video}
                 label={t("lessonView.video")}
                 onWatched={handleVideoWatched}

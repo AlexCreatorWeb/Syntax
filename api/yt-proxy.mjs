@@ -73,12 +73,28 @@ const CLIENTS = [
     },
   },
 ];
-const manifestCache = new Map(); // id -> { at, entry, title, lengthSeconds, client }
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const manifestCache = new Map(); // id -> { at, until, entry, title, lengthSeconds, client }
+const CACHE_TTL_MS = 5 * 60 * 1000; // фолбэк, если в URL нет параметра expire
+
+// Подписанный googlevideo-URL живёт до параметра `expire` (обычно ~6ч) и
+// работает с любого IP (гейтится только player API, не CDN) — кэш манифеста
+// держим до истечения URL (с запасом 60с), а не 5 минут: повторные просмотры
+// не бьют по player API вовсе.
+function urlExpiresMs(u) {
+  try {
+    const p = new URL(u).searchParams.get("expire");
+    const t = p ? Number(p) * 1000 : 0;
+    return t > Date.now()
+      ? Math.min(t - 60_000, Date.now() + 6 * 3600 * 1000)
+      : 0;
+  } catch {
+    return 0;
+  }
+}
 
 async function playerManifest(videoId) {
   const hit = manifestCache.get(videoId);
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit;
+  if (hit && Date.now() < (hit.until || 0)) return hit;
   const reasons = [];
   for (const c of CLIENTS) {
     try {
@@ -110,6 +126,7 @@ async function playerManifest(videoId) {
       }
       const rec = {
         at: Date.now(),
+        until: urlExpiresMs(entry.url) || Date.now() + CACHE_TTL_MS,
         entry,
         client: c.name,
         title: j?.videoDetails?.title || "",
@@ -136,11 +153,16 @@ export default async function handler(req, res) {
     const m = await playerManifest(id);
     if (!m.ok) return res.status(502).json({ ok: false, reason: m.reason });
 
-    // 1) Манифест: ссылка на файл + метаданные
+    // 1) Манифест: ссылка на файл + метаданные. directUrl — подписанный
+    // googlevideo-URL для ПРЯМОГО воспроизведения браузером (CDN без бот-чека;
+    // без 60с-лимитов serverless-стрима); expiresAt — момент истечения
+    // подписи (миллисекунды). url (прокси-стрим) остаётся фолбэком.
     if (url.searchParams.get("stream") !== "1") {
       return res.status(200).json({
         ok: true,
         url: `/api/yt-proxy?id=${id}&stream=1`,
+        directUrl: m.entry.url,
+        expiresAt: urlExpiresMs(m.entry.url),
         mimeType: m.entry.mimeType || "video/mp4",
         bitrate: Number(m.entry.bitrate) || 0,
         title: m.title,

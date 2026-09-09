@@ -4,14 +4,15 @@ import react from "@vitejs/plugin-react";
 // 2026-09: YouTube-стрим-прокси в DEV. VPS-IP гейтнут YouTube-ом (player API
 // = LOGIN_REQUIRED по всем клиентам, embed = Error 153) — manifest/стрим
 // должны идти с ЧУСТОГО IP. Источники по очереди (первый ответивший выигрывает):
-//   1) SUPABASE Edge Function «yt-proxy» (Fastly-край, чистые IP) —
-//      supabase/yt-proxy-edge-function.ts, создается в дашборде (1 вставка).
-//   2) PROD Vercel (api/yt-proxy.mjs) — после Redeploy.
+//   1) PROD Vercel (api/yt-proxy.mjs) — быстрый (502 JSON за 1–2с), основной.
+//   2) SUPABASE Edge Function «yt-proxy» (Fastly-край) — страховка; если функция
+//      не задеплоена, Fastly-край вертит 403 ~30с — поэтому ВТОРОЙ по очереди
+//      (ловушка 2026-07: был первым — вся dev-цепочка вилась 34с).
 // Пока ни одно не развернуто — 404 → фронт показывает карточку
 // «Смотреть на YouTube» (штатная деградация).
 const PROXIES = [
-  "https://xaslezkoktydranikqnx.supabase.co/functions/v1/yt-proxy",
   "https://syntax-sooty.vercel.app/api/yt-proxy",
+  "https://xaslezkoktydranikqnx.supabase.co/functions/v1/yt-proxy",
 ];
 async function ytProxyDev(req, res) {
   const headers = req.headers.range ? { Range: req.headers.range } : {};

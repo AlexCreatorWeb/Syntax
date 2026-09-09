@@ -498,6 +498,72 @@ function coverSvg(name, logo, num) {
 }
 
 // Обложка по треку (нет логотипа → фолбэк на hqdefault YouTube)
+// ── Кэш подписанных стрим-URL (2026-07, «ежедневный бан» + кэширование) ──
+// Подписанный googlevideo-URL (из player API) живёт ~6 часов (параметр
+// `expire`) и работает с ЛЮБОГО IP: бот-гейт бьёт по player API и embed-
+// контексту, но не по CDN. Значит: получив URL один раз (через любой прокси),
+// в пределах окна урок играет напрямую из CDN — без YouTube-iframe, без
+// прокси, без 153. Хранилище — localStorage (на устройство).
+const VID_CACHE_KEY = "syntax-vid-cache";
+const VID_CACHE_LIMIT = 100; // запись {id: {url, proxied, expiresAt}}
+const VID_CACHE_MIN_MS = 60 * 1000; // <1 мин жизни — считаем протухшим
+
+function readVidCache() {
+  try {
+    const raw = localStorage.getItem(VID_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeVidCache(map) {
+  try {
+    localStorage.setItem(VID_CACHE_KEY, JSON.stringify(map));
+  } catch {
+    /* quota/приватный режим — некритично */
+  }
+}
+
+/** Свежая запись кэша для видео или null (протухшие удаляются на лету). */
+export function getVideoCache(id) {
+  if (!id) return null;
+  const map = readVidCache();
+  const e = map[id];
+  if (!e) return null;
+  if (!e.expiresAt || e.expiresAt < Date.now() + VID_CACHE_MIN_MS) {
+    delete map[id];
+    writeVidCache(map);
+    return null;
+  }
+  return e;
+}
+
+/** @param {{url: string, proxied?: string, expiresAt: number}} entry */
+export function setVideoCache(id, entry) {
+  if (!id || !entry || !entry.url) return;
+  const map = readVidCache();
+  map[id] = entry;
+  // Кап: оставляем свежие VID_CACHE_LIMIT, старые (по expiresAt) выбрасываем
+  const keys = Object.keys(map);
+  if (keys.length > VID_CACHE_LIMIT) {
+    keys
+      .sort((a, b) => (map[a].expiresAt || 0) - (map[b].expiresAt || 0))
+      .slice(0, keys.length - VID_CACHE_LIMIT)
+      .forEach((k) => delete map[k]);
+  }
+  writeVidCache(map);
+}
+
+export function clearVideoCache(id) {
+  if (!id) return;
+  const map = readVidCache();
+  if (map[id]) {
+    delete map[id];
+    writeVidCache(map);
+  }
+}
+
 function makeThumb(techId, name, num) {
   const logo = COVER_LOGOS[techId];
   if (!logo) return `https://i.ytimg.com/vi/NP2NJVfgWm8/hqdefault.jpg`;
@@ -525,10 +591,9 @@ export function getLessonVideo(job) {
   return {
     id,
     num,
-    // Кастомный плеер: controls=0 через IFrame API, свои контролы. src —
-    // для прямой вставки (без API): только rel=0. Ловушка: &playlist=<id>
-    // включает playlist-режим и ВЫЗЫВАЕТ «Up next»-карточку — не добавлять.
-    src: `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`,
+    // Кастомный плеер: controls=0 через IFrame API, свои контролы. Ловушка:
+    // &playlist=<id> включает playlist-режим и ВЫЗЫВАЕТ «Up next»-карточку —
+    // в src плеера (LessonView) не добавлять.
     thumb: makeThumb(job.techId, job.techId.toUpperCase(), num),
   };
 }

@@ -129,6 +129,10 @@ function firstImgFromDescription(html) {
 function normalizeItem(raw, feed) {
   const link = cleanLink(raw.link);
   if (!link || !raw.title) return null;
+  // Языковой гейт ДО всех остальных проверок: CJK/нерасширенная латиница
+  // не доходит до UI ни по какому из шлюзов (vercel/rss2json/allorigins/jina).
+  if (!isTranslatableItem({ title: raw.title, summary: raw.description || "" }))
+    return null;
   const summary = htmlToText(raw.description)
     .replace(/\s*Continue reading on Medium\s*»?\s*$/i, "")
     .slice(0, 240);
@@ -151,6 +155,65 @@ function isTechRelated(item, feed) {
   return feed.keywords.test(`${item.title} ${item.summary}`);
 }
 
+// Языковой гейт (фидбэк 2026-09: «в новостях китайские символы — не
+// переводим, не пропускать»). Цепочка перевода жёстко EN→{ru,uk,es,de}
+// (MyMemory langpair=en|…, Google sl=en), а теги Medium ГЛОБАЛЬНЫЕ — в
+// фиды попадают корейские баннер-рекламы (тег «css» — статья про банковский
+// кредитный скоринг, прошла по «CSS» в названии), китайские (vue), русские
+// (node) и т.п. В EN-интерфейсе такие новости отображаются сырыми CJK-символами
+// и не транслируются. Отсекаем: (а) CJK (хань/кана/хангыль) ≥15% букв — даже
+// смешанный заголовок типа «使用 AbortController 取消重複 API 請求» это CJK-статья;
+// (б) прочие нерасширенные-латиницей письма (кириллица, арабская, греческая…)
+// ≥40% букв. Латиница с диакритикой (турецкий İ/ğ, французский é, немецкий ß)
+// проходит — такие статьи хотя бы читаемы и частично транслируемы.
+export function scriptStats(text) {
+  let letters = 0;
+  let latin = 0;
+  let cjk = 0;
+  for (const ch of String(text || "")) {
+    const o = ch.codePointAt(0);
+    const isLatin =
+      (o >= 0x41 && o <= 0x5a) ||
+      (o >= 0x61 && o <= 0x7a) ||
+      (o >= 0xc0 && o <= 0x24f) || // Latin-1 Supplement/Ext-A/B: é, ß, İ, ğ…
+      (o >= 0x1e00 && o <= 0x1eff);
+    const isCjk =
+      (o >= 0x3040 && o <= 0x30ff) || // kana
+      (o >= 0x3400 && o <= 0x9fff) || // CJK unified (han)
+      (o >= 0xac00 && o <= 0xd7af) || // hangul syllables
+      (o >= 0xf900 && o <= 0xfaff); // CJK compatibility
+    if (isLatin) {
+      letters += 1;
+      latin += 1;
+    } else if (isCjk) {
+      letters += 1;
+      cjk += 1;
+    } else if (
+      (o >= 0x370 && o <= 0x3ff) || // греческая
+      (o >= 0x400 && o <= 0x4ff) || // кириллица
+      (o >= 0x590 && o <= 0x5ff) || // иврит
+      (o >= 0x600 && o <= 0x6ff) || // арабская
+      (o >= 0x900 && o <= 0x97f) // деванагари
+    ) {
+      letters += 1; // не-латиница, не-CJK
+    }
+    // цифры/эмодзи/знаки — не буквы, в статистике не участвуют
+  }
+  return { letters, latin, cjk };
+}
+
+// false = статья, которую наша EN-цепочка не переведёт (см. комментарий выше).
+// Короткие строки (<8 букв) не отсекаем — нет уверенности в языке.
+export function isTranslatableItem(item) {
+  const { letters, latin, cjk } = scriptStats(
+    `${item.title || ""} ${item.summary || ""}`,
+  );
+  if (letters < 8) return true;
+  if (cjk / letters >= 0.15) return false;
+  if ((letters - latin) / letters >= 0.4) return false;
+  return true;
+}
+
 // Кэш на сессию: первый fetch записывает, дальше — из памяти (как lessons).
 let newsCache = null;
 // Кэш в localStorage: поллинг раз в 10 мин НЕ перечитывает ленты чаще TTL,
@@ -163,9 +226,12 @@ function readLsCache() {
     const raw = localStorage.getItem(LS_CACHE_KEY);
     if (!raw) return null;
     const c = JSON.parse(raw);
-    return Array.isArray(c.items) && c.ts && Date.now() - c.ts < CACHE_TTL_MS
-      ? c.items
-      : null;
+    if (!Array.isArray(c.items) || !c.ts || Date.now() - c.ts >= CACHE_TTL_MS)
+      return null;
+    // Гейт и при ЧТЕНИИ кэша: кэш, записанный старой версией приложения, может
+    // держать CJK-статьи до TTL (2ч) — не даём им показаться ещё раз.
+    const items = c.items.filter(isTranslatableItem);
+    return items.length ? items : null;
   } catch {
     return null;
   }

@@ -250,6 +250,7 @@ function MainView({
   onNavigate,
   onSignup,
   onDemo,
+  onContinue,
   activeTech,
   onSelectTech,
   dbLessons,
@@ -294,17 +295,18 @@ function MainView({
             </span>
             <h1 className="home__hero-title">{t("home.offer.title")}</h1>
             <p className="home__hero-desc">{t("home.offer.desc")}</p>
-            {/* Фидбек 2026-09: в hero всегда одна пара — «Начать бесплатно» +
-              «Попробовать демо-урок». Гость → регистрация; авторизованный →
-              «Начать бесплатно» ведёт на продолжение обучения (первый
-              невыполненный урок), демо-урок открывается напрямую. */}
+            {/* Пара CTA с РАЗДЕЛЁННЫМИ задачами (2026-07, фидбэк: «демо-урок =
+              первый урок; начать бесплатно ≠ демо — не дублировать»):
+              гость — «Start for free» (регистрация) + демо; авторизованный —
+              «Continue learning» (первый НЕВЫПОЛНЕННЫЙ урок) + демо. Демо =
+              ВСЕГДА первый урок трека (openFirstLesson), без гейта. */}
             <div className="home__hero-cta">
               <button
                 type="button"
                 className="btn btn--primary home__hero-btn"
-                onClick={isAuthed ? onDemo : onSignup}
+                onClick={isAuthed ? onContinue : onSignup}
               >
-                {t("home.offer.start")}
+                {isAuthed ? t("home.lesson.continue") : t("home.offer.start")}
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -533,7 +535,7 @@ function MainView({
           <button
             type="button"
             className="btn btn--primary home__hero-btn"
-            onClick={isAuthed ? onDemo : onSignup}
+            onClick={isAuthed ? onContinue : onSignup}
           >
             {t(isAuthed ? "home.lesson.continue" : "header.signup")}
             <svg

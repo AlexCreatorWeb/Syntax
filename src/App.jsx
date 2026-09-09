@@ -22,6 +22,7 @@ import {
   isGuestActive,
   setGuestActive,
 } from "./lib/auth";
+import { syncAvatarFromDb } from "./lib/avatar";
 import { syncProgressFromDb, pushProgressToDb } from "./lib/db-progress";
 import {
   fetchMediumNews,
@@ -367,6 +368,7 @@ function App() {
       if (s && s.user) {
         setGuestMode(false);
         syncProfile(s.user); // SIGNED_IN: строка в profiles (fire-and-forget)
+        syncAvatarFromDb(s.user); // фото из БД: повторный вход / новое устройство
       }
     });
     return () => unsub();
